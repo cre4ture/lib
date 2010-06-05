@@ -1,0 +1,140 @@
+unit MultiplexList;
+
+interface
+
+uses Classes, SplitSocket, SysUtils, {$ifdef Lazarus}TCPSocket_Lazarus{$else}TCPSocket{$endif}, StatusThread;
+
+type
+  TSocketMultiplexListOnOpeningTunnel = procedure(Sender: TObject;
+    SMulti: TSocketMultiplex; Tunnel: TSplitSocket;
+    var Accept: Boolean) of object;
+  TSocketMultiplexListOnOpenedTunnel = procedure(Sender: TObject;
+    SMulti: TSocketMultiplex; Tunnel: TSplitSocket) of object;
+  TSocketMultiplexListOnRemoveSocket = procedure(Sender: TObject;
+    SMulti: TSocketMultiplex) of object;
+  TSocketMultiplexList = class(TComponent)
+  private
+    FOnSocketOpeningTunnel: TSocketMultiplexListOnOpeningTunnel;
+    FOnSocketOpenedTunnel: TSocketMultiplexListOnOpenedTunnel;
+    FList: TList;
+    FOnException: TExceptionEvent;
+    FOnRemoveSocket: TSocketMultiplexListOnRemoveSocket;
+    function GetSocket(i: Integer): TSocketMultiplex;
+    procedure SocketMultiplexOnNoConnection(Sender: TObject);
+    procedure SocketMultiplexOnOpeningTunnel(Sender: TObject;
+      Tunnel: TSplitSocket; var Accept: Boolean);
+    procedure SocketMultiplexOnOpenedTunnel(Sender: TObject;
+      Tunnel: TSplitSocket);
+    procedure SocketMultiplexOnException(Sender: TThread; E: Exception;
+      msg: String);
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    procedure AddSocketMultiplex(SMulti: TSocketMultiplex); overload;
+    property Sockets[i: integer]: TSocketMultiplex read GetSocket;
+    function Count: Integer;
+    function AddSocketMultiplex(Socket: TSocket; Master: Boolean): TSocketMultiplex;
+      overload;
+    procedure RemoveSocketMultiplex(SMulti: TSocketMultiplex);
+  published
+    property OnSocketOpeningTunnel: TSocketMultiplexListOnOpeningTunnel
+          read FOnSocketOpeningTunnel write FOnSocketOpeningTunnel;
+    property OnSocketOpenedTunnel: TSocketMultiplexListOnOpenedTunnel
+          read FOnSocketOpenedTunnel write FOnSocketOpenedTunnel;
+    property OnException: TExceptionEvent
+          read FOnException write FOnException;
+    property OnRemoveSocket: TSocketMultiplexListOnRemoveSocket
+          read FOnRemoveSocket write FOnRemoveSocket;
+  end;
+
+procedure Register;
+
+implementation
+
+procedure Register;
+begin
+  RegisterComponents('nice things', [TSocketMultiplexList]);
+end;
+
+procedure TSocketMultiplexList.AddSocketMultiplex(
+  SMulti: TSocketMultiplex);
+begin
+  FList.Add(SMulti);
+  SMulti.OnNoConnection := @SocketMultiplexOnNoConnection;
+  SMulti.OnOpeningTunnel := SocketMultiplexOnOpeningTunnel;
+  SMulti.OnOpenedTunnel := SocketMultiplexOnOpenedTunnel;
+  SMulti.OnException := SocketMultiplexOnException;
+end;
+
+function TSocketMultiplexList.AddSocketMultiplex(
+  Socket: TSocket; Master: Boolean): TSocketMultiplex;
+begin
+  Result := TSocketMultiplex.Create(TTCPSocket.Create(Socket), Master);
+  AddSocketMultiplex(Result);
+end;
+
+function TSocketMultiplexList.Count: Integer;
+begin
+  Result := FList.Count;
+end;
+
+constructor TSocketMultiplexList.Create(AOwner: TComponent);
+begin
+  inherited;
+  FList := TList.Create;
+end;
+
+destructor TSocketMultiplexList.Destroy;
+var i: integer;
+begin
+  for i := FList.Count-1 downto 0 do
+    if FList[i] <> nil then
+    begin
+      TSocketMultiplex(FList[i]).Close;
+    end;
+  FList.Free;
+  inherited;
+end;
+
+function TSocketMultiplexList.GetSocket(i: Integer): TSocketMultiplex;
+begin
+  if (i >= 0)and(i < FList.Count) then
+  begin
+    Result := TSocketMultiplex(FList[i]);
+  end else raise Exception.Create('TSocketMultiplexList.GetSocket: Fehler bei Bereichsüberprüfung!');
+end;
+
+procedure TSocketMultiplexList.RemoveSocketMultiplex(
+  SMulti: TSocketMultiplex);
+begin
+  FList.Remove(SMulti);
+end;
+
+procedure TSocketMultiplexList.SocketMultiplexOnNoConnection(
+  Sender: TObject);
+begin
+  RemoveSocketMultiplex(TSocketMultiplex(Sender));
+end;
+
+procedure TSocketMultiplexList.SocketMultiplexOnOpeningTunnel(
+  Sender: TObject; Tunnel: TSplitSocket; var Accept: Boolean);
+begin
+  if Assigned(FOnSocketOpeningTunnel) then
+    OnSocketOpeningTunnel(Self,TSocketMultiplex(Sender),Tunnel,Accept);
+end;
+
+procedure TSocketMultiplexList.SocketMultiplexOnOpenedTunnel(
+  Sender: TObject; Tunnel: TSplitSocket);
+begin
+  if Assigned(FOnSocketOpenedTunnel) then
+    OnSocketOpenedTunnel(Self,TSocketMultiplex(Sender),Tunnel);
+end;
+
+procedure TSocketMultiplexList.SocketMultiplexOnException(Sender: TThread;
+  E: Exception; msg: String);
+begin
+  if Assigned(FOnException) then
+    FOnException(Sender,E,msg);
+end;
+
+end.
