@@ -62,10 +62,10 @@ type
     TagNameNr: Integer;
     TagType: THTMLParserTagType;
     ParentElement: THTMLElement;
-    property TagName: String read FTagName;
+    property TagName: String read FTagName write FTagName;
     property AttributeValue[Name: WideString]: WideString
        read GetAttributeValueByName
-       write SetAttributeValueByName;
+       write SetAttributeValueByName; default;
     property AttributesByName[const Name: WideString]: THTMLAttribute read GetAttrByNameDef;
     property Attributes[Index: Integer]: THTMLAttribute read GetAttributeByIndex;
     property ChildElements[Index: Integer]: THTMLElement read GetChildTag;
@@ -137,6 +137,11 @@ type
     attr_value: string;
     function routine(CurElement: THTMLElement; Data: pointer): Boolean;
   end;
+
+const
+  ShyChar = #1; {character used to represent soft-hyphen in strings}
+  NbspChar = #2; {character used to represent no-break space in strings}
+  NAnchorChar = #3 ; {character used to represent an Anchor }
 
 function UnEscapeStr(s: string; esc: char = '\'): string;
 function EscapeStr(s: string; esc: char = '\'; toesc: char = '"'): string;
@@ -727,7 +732,7 @@ begin
     fdata.tag_name := ftag_name;
     fdata.attr_name := ftag_attribute;
     fdata.attr_value := ftag_attribute_value;
-    Result := root_tag.FindTagRoutine({$ifdef lazarus}@{$endif}fdata.routine,nil);
+    Result := root_tag.FindTagRoutine({$ifdef lazarus}{@}{$endif}fdata.routine,nil);
   finally
     fdata.Free;
   end;

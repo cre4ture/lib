@@ -24,7 +24,7 @@ type
     FThreadsWaiting: Integer;
   public
     property ThreadsWaiting: Integer read FThreadsWaiting;
-    function WaitFor(Timeout: DWORD): TWaitResult; override;
+    function WaitFor(Timeout: DWORD): TWaitResult; // change by creature: "error caused by static function"  override;
     constructor Create(EventAttributes: PSecurityAttributes; AManualReset,
       InitialState: Boolean; const Name: string);
   end;
