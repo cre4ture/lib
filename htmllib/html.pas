@@ -137,11 +137,7 @@ type
     attr_value: string;
     function routine(CurElement: THTMLElement; Data: pointer): Boolean;
   end;
-
-const
-  ShyChar = #1; {character used to represent soft-hyphen in strings}
-  NbspChar = #2; {character used to represent no-break space in strings}
-  NAnchorChar = #3 ; {character used to represent an Anchor }
+  
 
 function UnEscapeStr(s: string; esc: char = '\'): string;
 function EscapeStr(s: string; esc: char = '\'; toesc: char = '"'): string;
