@@ -468,13 +468,14 @@ var child: THTMLElement;
       child.AttributeAdd(LowerCase(p.CurrAttr[i].Name),p.CurrAttr[i].Value);
 
     if (p.CurTagType <> pttEmptyTag)and(not html_isemptytag(tname)) then
-      child.ParseChilds(p);
+      if child.ParseChilds(p) < 0 then // end tag error workaround
+        ende := true;
   end;
 
   procedure DoEndTag;
   begin
     ende := SameTagNames(TagName, LowerCase(p.CurName));
-    if not ende then
+    if not ende then  // workaround for common syntax errors in htmlcode
     begin
       if (ParentElement <> nil)and
          (SameTagNames(ParentElement.TagName, LowerCase(p.CurName))) then
@@ -482,6 +483,8 @@ var child: THTMLElement;
         child := THTMLElement.Create(Self,'<-/'+LowerCase(p.CurName));
         child.TagType := pttNone;
         ende := true;
+        // activate workaround:
+        Result := (Result+1) *-1;
       end else
       begin
         child := THTMLElement.Create(Self,'x/'+p.CurName);
@@ -504,13 +507,12 @@ var child: THTMLElement;
     child.TagType := p.CurTagType;
   end;
 
-var i: integer;
 begin
   ende := false;
-  i := 0;
+  Result := 0;
   while (not ende)and(p.Parse) do
   begin
-    inc(i);
+    inc(Result);
     case p.CurTagType of
     pttStartTag, pttEmptyTag: DoStartTag;
     pttEndTag: DoEndTag;
@@ -518,7 +520,6 @@ begin
     pttComment: DoComment;
     end;
   end;
-  Result := i;
 end;
 
 function THTMLElement.FindTagRoutine(
