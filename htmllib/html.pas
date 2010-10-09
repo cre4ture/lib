@@ -27,8 +27,8 @@ uses
   Classes, SysUtils, parser, StrUtils{$ifdef memcheck}, MemCheckObject{$endif};
 
 const
-  html_emptytags: array[0..5] of string = (
-    'link', 'meta', 'img', 'br', 'input', 'param'
+  html_emptytags: array[0..6] of string = (
+    'link', 'meta', 'img', 'br', 'input', 'param', 'tr"' (*OGame QuickFix for IE*)
   );
 
 type
@@ -137,6 +137,18 @@ type
     attr_value: string;
     function routine(CurElement: THTMLElement; Data: pointer): Boolean;
   end;
+  //For HTMLGenerateHumanReadableText:
+  THTMLGenerateHumanReadableText_dataobj = class
+  private
+    rootnode: THTMLElement;
+    list: TStringList;
+    line: string;
+    function routine(CurElement: THTMLElement; Data: pointer): Boolean;
+  public
+    function generate: string;
+    constructor Create(node: THTMLElement);
+    destructor Destroy; override;
+  end;
   
 
 function UnEscapeStr(s: string; esc: char = '\'): string;
@@ -145,8 +157,20 @@ function html_isemptytag(tagname: string): Boolean;
 function HTMLFindRoutine_NameAttribute(root_tag: THTMLElement; ftag_name,
   ftag_attribute, ftag_attribute_value: string): THTMLElement;
 
+function HTMLGenerateHumanReadableText(node: THTMLElement): string;
 
 implementation
+
+function HTMLGenerateHumanReadableText(node: THTMLElement): string;
+var iterator: THTMLGenerateHumanReadableText_dataobj;
+begin
+  iterator := THTMLGenerateHumanReadableText_dataobj.Create(node);
+  try
+    Result := iterator.generate;
+  finally
+    iterator.Free;
+  end;
+end;
 
 function html_isemptytag(tagname: string): Boolean;
 var i: integer;
@@ -458,7 +482,9 @@ var child: THTMLElement;
       child := THTMLTable.Create(Self, tname)
     else
     if tname = 'tr' then
+    begin
       child := THTMLTableRow.Create(Self, tname)
+    end
     else
       child := THTMLElement.Create(Self, tname);
 
@@ -740,6 +766,70 @@ function THTMLFindRoutine_dataobj.routine(CurElement: THTMLElement;
 begin
   Result := (CurElement.TagName = Self.tag_name)and
             (CurElement.AttributeValue[Self.attr_name] = Self.attr_value);
+end;
+
+{ THTMLGenerateHumanReadableText_dataobj }
+
+constructor THTMLGenerateHumanReadableText_dataobj.Create(
+  node: THTMLElement);
+begin
+  inherited Create;
+  rootnode := node;
+  list := TStringList.Create;
+end;
+
+destructor THTMLGenerateHumanReadableText_dataobj.Destroy;
+begin
+  list.Free;
+  inherited;
+end;
+
+function THTMLGenerateHumanReadableText_dataobj.generate: string;
+begin
+  rootnode.FindTagRoutine(routine, nil);
+  Result := list.Text;
+end;
+
+function THTMLGenerateHumanReadableText_dataobj.routine(
+  CurElement: THTMLElement; Data: pointer): Boolean;
+
+  procedure append(text: string);
+  begin
+    line := line + text;
+  end;
+
+  procedure newLine;
+  begin
+    list.Add(line);
+    line := '';
+  end;
+
+begin
+  Result := false; // we just want to iterate over all elements!
+  
+  case CurElement.TagType of
+    pttStartTag, pttEmptyTag:
+      begin
+        if (CurElement.TagName = 'tr')or
+           (CurElement.TagName = 'br') then
+          newLine
+        else
+        if (CurElement.TagName = 'td')or
+           (CurElement.TagName = 'th')  then
+          append(#9)   // tab
+        else
+        if (CurElement.TagName = 'script') then
+          ;  // noting
+      end;
+    pttEndTag, pttComment:
+      ; // nothing
+  else
+    if not (
+       (CurElement.ParentElement <> nil) and
+       (CurElement.ParentElement.TagName = 'script')
+       ) then
+      append(CurElement.FullTagContent);
+  end;
 end;
 
 end.

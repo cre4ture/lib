@@ -37,7 +37,7 @@ type
     procedure Clear;
   end;
 
-procedure SaveClipboardtoFile(Filename, PluginFilename, PlugInName,
+procedure SaveClipboardtoFile(Filename, Description, PlugInName,
   ogame_domain: String; UserUniName: String);
 function ReadClipboardHtml: String;
 function ReadClipboardHtml_Ex: WideString;
@@ -179,7 +179,7 @@ begin
 end;
 
 
-procedure SaveClipboardtoFile(Filename, PluginFilename, PlugInName, ogame_domain: String;
+procedure SaveClipboardtoFile(Filename, Description, PlugInName, ogame_domain: String;
   UserUniName: String);
 
   procedure WriteStringToStream(s: string; stream: TStream);
@@ -214,7 +214,7 @@ begin
   WriteStringToStream('cS - clipbrdfile',stream);
   WriteStringToStream(GetClipboardText,stream);
   WriteStringToStream(ReadClipboardHtml,stream);
-  WriteStringToStream(PluginFilename,stream);
+  WriteStringToStream(Description,stream);
   WriteStringToStream(PlugInName,stream);
   WriteStringToStream(ogame_domain,stream);
   WriteStringToStream(UserUniName,stream);
