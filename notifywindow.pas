@@ -19,19 +19,18 @@ type
     priority: integer;
     PROCEDURE CreateParams(VAR Params: TCreateParams); OVERRIDE;
     destructor Destroy; override;
-    // How to aviod this warning?
     constructor Create(AOwner: TComponent; aGroup: TNotify_frm_grp); reintroduce;
-    { Public-Deklarationen }
   end;
   TNotify_frm_grp = class
   private
+    owner: TComponent;
     window_list: TList;
     procedure Sort;
   protected
     procedure RemoveNotifyWindow(frm: Tfrm_notify);
   public
     procedure refresh_positions;
-    constructor Create;
+    constructor Create(aOwner: TComponent);
     destructor Destroy; override;
     function NewNotifyWindow: Tfrm_notify; overload;
     function NewNotifyWindow(aClass: Tfrm_notify_class): Tfrm_notify; overload;
@@ -58,8 +57,11 @@ begin
   INHERITED;
 
   begin
-    Params.ExStyle := Params.ExStyle OR WS_EX_APPWINDOW;
-    Params.WndParent:= 0;//Application.Handle;
+    (*Params.ExStyle := Params.ExStyle
+      //AND (not WS_EX_APPWINDOW)
+      //OR WS_EX_TOOLWINDOW
+      ;*)
+    Params.WndParent := 0;//Application.Handle;
   end;
 end;
 
@@ -68,10 +70,11 @@ begin
   Result := window_list.Count;
 end;
 
-constructor TNotify_frm_grp.Create;
+constructor TNotify_frm_grp.Create(aOwner: TComponent);
 begin
-  inherited;
+  inherited Create;
   window_list := TList.Create;
+  owner := aOwner;
 end;
 
 destructor TNotify_frm_grp.Destroy;
@@ -79,7 +82,7 @@ begin
   while window_list.Count > 0 do
     window(0).free;
     
-  window_list.free; 
+  window_list.free;
   inherited;
 end;
 
@@ -91,7 +94,7 @@ end;
 function TNotify_frm_grp.NewNotifyWindow(aClass: Tfrm_notify_class): Tfrm_notify;
 var frm: Tfrm_notify;
 begin
-  frm := aClass.Create(Application, Self);
+  frm := aClass.Create(nil, Self);
   window_list.Add(frm);
   frm.Left := (Screen.Width - frm.Width) div 2;
   frm.Top := (Screen.Height - frm.Height) div 2;
@@ -143,6 +146,10 @@ end;
 
 procedure Tfrm_notify.FormCreate(Sender: TObject);
 begin
+  ShowWindow(Handle, SW_HIDE) ;
+  SetWindowLong(Handle, GWL_EXSTYLE,
+    getWindowLong(Handle, GWL_EXSTYLE) or WS_EX_TOOLWINDOW) ;
+  ShowWindow(Handle, SW_SHOW) ;
   DoubleBuffered := True;
 end;
 

@@ -203,6 +203,10 @@ begin
   oldCount := FPtrList.Count;
   if (newCount > oldCount) then
   begin
+    // organise capacity better than default behaviour:
+    if FPtrList.Capacity < newCount then
+      FPtrList.Capacity := newCount + 200;
+
     FPtrList.Count := newCount;
     for i := oldCount to newCount-1 do
       FPtrList[i] := NewItemPtr;

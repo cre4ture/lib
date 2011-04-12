@@ -112,6 +112,7 @@ end;
 function THTMLParser.Parse: Boolean;
 var ps, pe: Integer;
     aname, aval: string;
+    treffer: char;
 begin
   ClearAttrList();
 
@@ -151,21 +152,42 @@ begin
   else CurTagType := pttStartTag;
 
   //Tagname lesen
-  pe := find_first_char(HTMLCode,' >'#9#13,CurPosition);
+  treffer := find_first_char(HTMLCode, '! >'#9#13, CurPosition, pe);
   if HTMLCode[pe-1] = '/' then
     pe := pe-1;
   CurName := Copy(HTMLCode,CurPosition+1,pe-CurPosition-1);
 
-  //teste auf Comment
-  if Copy(CurName,1,3) = '!--' then
+  // Kommentar? oder CDATA?
+  if (treffer = '!') then
   begin
-    CurName := Copy(CurName,1,3);
-    CurTagType := pttComment;
-    pe := fast_pos(HTMLCode,'-->',length(HTMLCode),3,CurPosition);
-    CurContent := Copy(HTMLCode,CurPosition,pe-CurPosition+3);
-    CurPosition := pe+3;
-    Result := true;
-    Exit;
+    CurName := Copy(HTMLCode, CurPosition+1, 3);
+    if CurName = '!--' then
+    begin
+      CurTagType := pttComment;
+      pe := fast_pos(HTMLCode,'-->',length(HTMLCode),3,CurPosition);
+      CurContent := Copy(HTMLCode,CurPosition,pe-CurPosition+3);
+      CurPosition := pe+3;
+      Result := true;
+      Exit;
+    end
+    else
+    begin
+      CurName := Copy(HTMLCode, CurPosition+1, 8);
+      if CurName = '![CDATA[' then
+      begin
+        inc(CurPosition, 9);
+        CurTagType := pttContent;
+        pe := fast_pos(HTMLCode,']]>',length(HTMLCode),3,CurPosition);
+        CurContent := Copy(HTMLCode,CurPosition,pe-CurPosition);
+        CurPosition := pe+3;
+        Result := true;
+        Exit;
+      end
+      else
+      begin
+        CurName := '!???';
+      end;
+    end;
   end;
 
   CurPosition := pe;
