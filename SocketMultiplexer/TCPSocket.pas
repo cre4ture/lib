@@ -63,7 +63,7 @@ type
     Started: TEvent;
     procedure DoOnClientConnect;
   public
-    ListenSocket: TTCPSocket;
+    ListenSocket: TTCPSocket;  //ListenSocket, Aktiviert wenn Server aktiv (s. StartServer, StopServer)
     OnClientConnect: TSimpleServerClientConnect;
     property ServerPort: Integer read FServerPort;
     property ServerActive: Boolean read FServerActive;
@@ -71,7 +71,7 @@ type
     function Start(Port: Integer): Boolean;
     procedure Stop;
     destructor Destroy; override;
-    constructor Create;   //ListenSocket, Aktiviert wenn Server aktiv (s. StartServer, StopServer)
+    constructor Create;
   end;
   TSimpleServerComponent = class(TComponent)
   private
@@ -83,6 +83,27 @@ type
   published
     SimpleServer: TSimpleServer;
     property OnClientConnect: TSimpleServerClientConnect read FOnClientConnect write SetOnClientConnect;
+  end;
+  TSimpleClientThread = class;
+  TSimpleClientThreadOnSynchronize = procedure(Sender: TSimpleClientThread;
+    Data: pointer) of object;
+  TSimpleClientThreadOnThreadRun = procedure(Sender: TSimpleClientThread;
+    socket: TTCPSocket) of object;
+  TSimpleClientThread = class(TSThread)
+  private
+    SyncData: pointer;
+    procedure doCallOnSyncEvent;
+  protected
+    ClientSocket: TTCPSocket;
+  public
+    OnThreadRun: TSimpleClientThreadOnThreadRun;
+    OnSyncronise: TSimpleClientThreadOnSynchronize;
+    property Terminated;
+    procedure triggerSyncEvent(data: pointer);
+    procedure Execute; override;
+    procedure Close;
+    destructor Destroy; override;
+    constructor Create(socket: TSocket);
   end;
 
 var
@@ -207,7 +228,8 @@ function TSimpleTCPSocket.ReceiveLength: Integer;
 begin
   Result := 0;
   if FConnected then
-    if ioctlsocket(FSocket, FIONREAD, Longint(Result)) = SOCKET_ERROR then Error('ReceiveLength');
+    if ioctlsocket(FSocket, FIONREAD, Longint(Result)) = SOCKET_ERROR then
+      Error('ReceiveLength');
 end;
 
 function TSimpleTCPSocket.RemoteHost: TTCPHost;
@@ -398,6 +420,64 @@ procedure TSimpleServerComponent.SetOnClientConnect(
 begin
   SimpleServer.OnClientConnect := p;
   FOnClientConnect := p;
+end;
+
+{ TSimpleClientThread }
+
+procedure TSimpleClientThread.Close;
+begin
+  Self.Terminate;
+  if ClientSocket <> nil then
+    ClientSocket.Close;
+end;
+
+constructor TSimpleClientThread.Create(socket: TSocket);
+begin
+  inherited Create(False);
+  FreeOnTerminate := False;
+  ClientSocket := TTCPSocket.Create(socket);
+end;
+
+destructor TSimpleClientThread.Destroy;
+begin
+  Terminate;
+  ClientSocket.Close;
+  Resume;
+  if ReturnValue = STILL_ACTIVE then
+    WaitFor;
+  inherited;
+end;
+
+procedure TSimpleClientThread.doCallOnSyncEvent;
+begin
+  OnSyncronise(Self, SyncData);
+end;
+
+procedure TSimpleClientThread.Execute;
+begin
+  inherited;
+
+  ReturnValue := STILL_ACTIVE;
+  Status := 'Started...';
+  try
+    if Assigned(OnThreadRun) then
+    begin
+      OnThreadRun(Self, ClientSocket);
+    end;
+  except
+    on E: Exception do
+    begin
+      Status := 'Exception while running custom thread ' + Name + ':' + E.Message + ' (' + E.ClassName + ') -> terminate connection';
+    end;
+  end;
+  Status := 'Closed';
+  ReturnValue := 0;
+end;
+
+procedure TSimpleClientThread.triggerSyncEvent(data: pointer);
+begin
+  SyncData := data;
+  Synchronize(doCallOnSyncEvent);
 end;
 
 end.

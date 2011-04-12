@@ -32,6 +32,7 @@ const
   );
 
 type
+  TXDocType = (xdt_html, xdt_xml);
   THTMLAttribute = class{$ifdef memcheck}(TMemCheckObj){$endif}
   public
     Name: WideString;
@@ -50,6 +51,8 @@ type
     attrs: TList;
     childs: TList;
     dummyAttr: THTMLAttribute;
+    docType: TXDocType;
+    function html_isemptytag(tagname: string): Boolean;
     function GetAttributeValueByName(Name: WideString): WideString;
     procedure SetAttributeValueByName(Name: WideString; value: WideString);
     function GetAttributeByIndex(Index: Integer): THTMLAttribute;
@@ -73,7 +76,8 @@ type
     /// Constructor of THTMLELement
     /// Attension: If you give here the aParent parameter, you must not
     /// call AddChildElement in addition.
-    constructor Create(aParent: THTMLElement; const aTagName: String);
+    constructor Create(aParent: THTMLElement;
+      const aTagName: String; aDocType: TXDocType = xdt_html);
     function FindChildTag(aName: WideString; Index: Integer = 0): THTMLElement;
     ///  FindChildTagPath
     ///  'html/body/div:10/a:2' <- find such paths
@@ -137,6 +141,14 @@ type
     attr_value: string;
     function routine(CurElement: THTMLElement; Data: pointer): Boolean;
   end;
+  //For HTMLFindRoutine_NameAttributeWithin:
+  THTMLFindRoutine_dataobj_within = class
+  public
+    tag_name: string;
+    attr_name: string;
+    attr_value: string;
+    function routine(CurElement: THTMLElement; Data: pointer): Boolean;
+  end;
   //For HTMLGenerateHumanReadableText:
   THTMLGenerateHumanReadableText_dataobj = class
   private
@@ -153,8 +165,9 @@ type
 
 function UnEscapeStr(s: string; esc: char = '\'): string;
 function EscapeStr(s: string; esc: char = '\'; toesc: char = '"'): string;
-function html_isemptytag(tagname: string): Boolean;
 function HTMLFindRoutine_NameAttribute(root_tag: THTMLElement; ftag_name,
+  ftag_attribute, ftag_attribute_value: string): THTMLElement;
+function HTMLFindRoutine_NameAttribute_Within(root_tag: THTMLElement; ftag_name,
   ftag_attribute, ftag_attribute_value: string): THTMLElement;
 
 function HTMLGenerateHumanReadableText(node: THTMLElement): string;
@@ -172,16 +185,20 @@ begin
   end;
 end;
 
-function html_isemptytag(tagname: string): Boolean;
+function THTMLElement.html_isemptytag(tagname: string): Boolean;
 var i: integer;
 begin
   Result := False;
-  for i := 0 to length(html_emptytags)-1 do
+
+  if (docType = xdt_html) then
   begin
-    if (tagname = html_emptytags[i]) then
+    for i := 0 to length(html_emptytags)-1 do
     begin
-      Result := True;
-      Break;
+      if (tagname = html_emptytags[i]) then
+      begin
+        Result := True;
+        Break;
+      end;
     end;
   end;
 end;
@@ -241,9 +258,11 @@ begin
   Value := aValue;
 end;
 
-constructor THTMLElement.Create(aParent: THTMLElement; const aTagName: String);
+constructor THTMLElement.Create(aParent: THTMLElement;
+  const aTagName: String; aDocType: TXDocType = xdt_html);
 begin
   inherited Create;
+  docType := aDocType;
   FTagName := aTagName;
   dummyAttr := THTMLAttribute.Create();
   attrs := TList.Create;
@@ -486,7 +505,7 @@ var child: THTMLElement;
       child := THTMLTableRow.Create(Self, tname)
     end
     else
-      child := THTMLElement.Create(Self, tname);
+      child := THTMLElement.Create(Self, tname, docType);
 
     child.TagType := p.CurTagType;
 
@@ -506,14 +525,14 @@ var child: THTMLElement;
       if (ParentElement <> nil)and
          (SameTagNames(ParentElement.TagName, LowerCase(p.CurName))) then
       begin
-        child := THTMLElement.Create(Self,'<-/'+LowerCase(p.CurName));
+        child := THTMLElement.Create(Self,'<-/'+LowerCase(p.CurName), docType);
         child.TagType := pttNone;
         ende := true;
         // activate workaround:
         Result := (Result+1) *-1;
       end else
       begin
-        child := THTMLElement.Create(Self,'x/'+p.CurName);
+        child := THTMLElement.Create(Self,'x/'+p.CurName, docType);
         child.TagType := pttNone;
       end;
     end;
@@ -521,14 +540,14 @@ var child: THTMLElement;
 
   procedure DoContent;
   begin
-    child := THTMLElement.Create(Self, '><');
+    child := THTMLElement.Create(Self, '><',docType);
     child.TagType := pttContent;
     child.Content := p.CurContent;
   end;
 
   procedure DoComment;
   begin
-    child := THTMLElement.Create(Self,p.CurName);
+    child := THTMLElement.Create(Self,p.CurName,docType);
     child.Content := p.CurContent;
     child.TagType := p.CurTagType;
   end;
@@ -744,13 +763,26 @@ begin
   childs.Delete(index);
 end;
 
-
-
 function HTMLFindRoutine_NameAttribute(root_tag: THTMLElement; ftag_name,
   ftag_attribute, ftag_attribute_value: string): THTMLElement;
 var fdata: THTMLFindRoutine_dataobj;
 begin
   fdata := THTMLFindRoutine_dataobj.Create;
+  try
+    fdata.tag_name := ftag_name;
+    fdata.attr_name := ftag_attribute;
+    fdata.attr_value := ftag_attribute_value;
+    Result := root_tag.FindTagRoutine({$ifdef lazarus}{@}{$endif}fdata.routine,nil);
+  finally
+    fdata.Free;
+  end;
+end;
+
+function HTMLFindRoutine_NameAttribute_Within(root_tag: THTMLElement; ftag_name,
+  ftag_attribute, ftag_attribute_value: string): THTMLElement;
+var fdata: THTMLFindRoutine_dataobj_within;
+begin
+  fdata := THTMLFindRoutine_dataobj_within.Create;
   try
     fdata.tag_name := ftag_name;
     fdata.attr_name := ftag_attribute;
@@ -830,6 +862,15 @@ begin
        ) then
       append(CurElement.FullTagContent);
   end;
+end;
+
+{ THTMLFindRoutine_dataobj_within }
+
+function THTMLFindRoutine_dataobj_within.routine(CurElement: THTMLElement;
+  Data: pointer): Boolean;
+begin
+  Result := (CurElement.TagName = Self.tag_name)and
+            (pos(Self.attr_value, CurElement.AttributeValue[Self.attr_name]) > 0);
 end;
 
 end.

@@ -20,7 +20,6 @@ begin
     pstart := pfind + length(find);
     pfind := PosEx(find, str, pstart);
   end;
-  raise Exception.Create('creaturesStrUtils: ReplaceStr: untested function');
 end;
 
 end.

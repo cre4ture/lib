@@ -11,7 +11,11 @@ interface
 uses
   Classes, SysUtils, strutils;
 
-function find_first_char(s: string; search_chars: string; pos: Integer): Integer;
+function find_first_char(
+  s: string;
+  search_chars: string;
+  pos: Integer;
+  var where: Integer): char;
 function char_pos(s: string; c: char; pos: integer): Integer;
 function pos_no_case(s, search: string; source_length, search_length, offset: integer): integer;
 function fast_pos(s, search: string; source_length, search_length, offset: integer): integer;
@@ -45,19 +49,26 @@ begin
   Result := PosEx(c, s, pos);
 end;
 
-function find_first_char(s: string; search_chars: string; pos: Integer): Integer;
-{ Gibt die position des zuerst gefundenen Zeichens zurück, falls keines der
-  beiden Zeichen gefunden wurde, wird length(s)+1 zurückgegeben! }
+function find_first_char(
+  s: string;
+  search_chars: string;
+  pos: Integer;
+  var where: Integer): char;
+{ Gibt das zuerst gefundene Zeichen zur�ck, falls keines gefunden wurde: #0
+  Die Position wird in "where" geschrieben, falls keines der
+  beiden Zeichen gefunden wurde, wird where := length(s)+1 ! }
 var p, ic: integer;
 begin
-  Result := length(s)+1;
+  where := length(s)+1;
+  Result := #0;
 
   for ic := 1 to length(search_chars) do
   begin
     p := char_pos(s, search_chars[ic], pos);
-    if (p > 0)and(p < Result) then
+    if (p > 0)and(p < where) then
     begin
-      Result := p;
+      where := p;
+      Result := search_chars[ic];
     end;
   end;
 end;
