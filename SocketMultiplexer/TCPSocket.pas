@@ -60,7 +60,7 @@ type
     NewSocket: TSocket;
     FServerPort: Integer;
     FServerActive: Boolean;
-    Started: TEvent;
+    update_status: TEvent;
     procedure DoOnClientConnect;
   public
     ListenSocket: TTCPSocket;  //ListenSocket, Aktiviert wenn Server aktiv (s. StartServer, StopServer)
@@ -298,9 +298,16 @@ end;
 
 procedure TSimpleServer.Stop;
 begin
+  update_status.ResetEvent;
+
   FServerActive := False;
   if ListenSocket <> nil then
     ListenSocket.Close;
+
+  if not Suspended then
+  begin
+    update_status.WaitFor(high(Cardinal));
+  end;
 end;
 
 function TSimpleServer.Start(Port: Integer): Boolean;
@@ -310,9 +317,11 @@ begin
 
   FServerPort := Port;
   FServerActive := True;
-  Started.ResetEvent;
+  update_status.ResetEvent;
   Resume;
-  Result := (Started.WaitFor(high(Cardinal)) = wrSignaled)and(FServerActive);
+  Result :=
+    (update_status.WaitFor(high(Cardinal)) = wrSignaled)and  // warte auf event
+    (FServerActive);  // erfolgreich gestartet?
 end;
 
 procedure TSimpleServer.Execute;
@@ -329,7 +338,7 @@ begin
       try
         ListenSocket.Bind(FServerPort);
         ListenSocket.Listen;
-        Started.SetEvent;
+        update_status.SetEvent;
         while (not Terminated)and(FServerActive) do
         begin
           Status := 'Listening...';
@@ -354,7 +363,7 @@ begin
         begin
           Status := 'Exception while listening in ' + Name + ':' + E.Message + ' (' + E.ClassName + ') -> Server Paused';
           FServerActive := False;
-          Started.SetEvent;
+          update_status.SetEvent;
         end;
       end;
       ListenSocket.Free;
@@ -362,6 +371,7 @@ begin
     else
     begin
       Status := 'Paused';
+      update_status.SetEvent;
       Suspend;
     end;
   end;
@@ -386,7 +396,7 @@ begin
   if ReturnValue = STILL_ACTIVE then
     WaitFor;
 
-  Started.Free;
+  update_status.Free;
   inherited;
 end;
 
@@ -395,7 +405,7 @@ begin
   inherited Create(False);
   FServerActive := False;
   FreeOnTerminate := False;
-  Started := TEvent.Create(nil,True,False,'');
+  update_status := TEvent.Create(nil,True,False,'');
 end;
 
 procedure Register;

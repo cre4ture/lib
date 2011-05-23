@@ -31,21 +31,25 @@ type
     pttEndTag,
     pttEmptyTag,
     pttContent,
-    pttComment
+    pttComment,
+    pttCDATA
   );
   THTMLParser = class
   private
+    fCurPos: integer;
     AttrList: TList;
     procedure ClearAttrList;
     function GetCurrAttr(Index: Integer): THTMLParser_Attribute;
     function AddAttribute(Name, Value: String): Integer;
+    function getCP: Integer;
+    procedure setCP(const Value: Integer);
   public
     CurName: string;
     CurTagType: THTMLParserTagType;
     HTMLCode: string;
-    CurPosition: Integer;
     CurContent: String;
     Ready: Boolean;
+    property CurPosition: Integer read getCP write setCP;
     property CurrAttr[Index: Integer]: THTMLParser_Attribute read GetCurrAttr;
     procedure StartParser;
     function Parse: Boolean;
@@ -104,13 +108,18 @@ begin
   inherited;
 end;
 
+function THTMLParser.getCP: Integer;
+begin
+  result := fCurPos;
+end;
+
 function THTMLParser.GetCurrAttr(Index: Integer): THTMLParser_Attribute;
 begin
   Result := THTMLParser_Attribute(AttrList[Index]^);
 end;
 
 function THTMLParser.Parse: Boolean;
-var ps, pe: Integer;
+var ps, pe, tmp: Integer;
     aname, aval: string;
     treffer: char;
 begin
@@ -175,7 +184,7 @@ begin
       CurName := Copy(HTMLCode, CurPosition+1, 8);
       if CurName = '![CDATA[' then
       begin
-        inc(CurPosition, 9);
+        CurPosition := CurPosition + 9;
         CurTagType := pttContent;
         pe := fast_pos(HTMLCode,']]>',length(HTMLCode),3,CurPosition);
         CurContent := Copy(HTMLCode,CurPosition,pe-CurPosition);
@@ -192,11 +201,13 @@ begin
 
   CurPosition := pe;
 
-  while ReadAttribute(HTMLCode, CurPosition, aname, aval) do
+  tmp := CurPosition;
+  while ReadAttribute(HTMLCode, tmp, aname, aval) do
   begin
     //Wenn Attribute vorhanden, dann lese die erst ein. Ansonsten breche ab!
     AddAttribute(aname,aval);
   end;
+  CurPosition := tmp;
 
   if (HTMLCode[CurPosition] = '/') then
   begin
@@ -207,6 +218,14 @@ begin
 
   CurPosition := CurPosition+1;
   Result := True;
+end;
+
+procedure THTMLParser.setCP(const Value: Integer);
+begin
+  if Value >= fCurPos then
+    fCurPos := Value
+  else
+    raise Exception.Create('THTMLParser.setCP: Step Backward detected!');
 end;
 
 procedure THTMLParser.StartParser;
