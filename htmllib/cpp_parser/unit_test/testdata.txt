@@ -1,0 +1,1053 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+	"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="Author" content="LEO Dictionary Team">
+	<meta name="description" content="LEO Deutsch-Englisch Wörterbuch">
+	<meta name="keywords" content="LEO, German, English, Deutsch, Englisch, Dictionary, Wörterbuch">
+	<title>dict.leo.org - Ergebnisse f&uuml;r "stress"</title>
+	<link REV="made" HREF="mailto:dict@leo.org">
+	<link rel="SHORTCUT ICON" href="/favicon_en.ico">
+
+	<link rel="ICON" href="/favicon_en.ico" type="image/x-icon">
+	<link rel="alternate"
+		href="http://www.leo.org/dict/plugins/Opera/Widget/LEOWidget.zip"
+		title="LEO widget" type="application/x-opera-widgets">
+	<link rel="search" type="application/opensearchdescription+xml"
+	 title="LEO Eng-Deu" href="/plugins/Shared/Searches/leo_ende_de.xml">
+	<script language="javascript" type="text/javascript">
+    lp = "ende";
+    lang = "de";
+	</script>
+	<!-- default/dict <HEAD> material --> 
+<link rel="stylesheet" type="text/css" href="/css/top.b64-B1FoY2.css">
+
+<script language="javascript" type="text/javascript">
+  var pda=false;
+  var application="dict";
+  server="http://dict.leo.org";
+</script>
+
+<script language="javascript" type="text/javascript" src="/js/top-Cirpdw.js">
+
+</script>
+<noscript>
+  <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="/css/ie-BGLzuz.css"/>
+  <![endif]-->
+  <!--[if lte IE 7]>
+    <link rel="stylesheet" type="text/css" href="/css/ie5-6-7-Czbe0Y.css"/>
+  <![endif]-->
+  <!--[if lt IE 7]>
+    <link rel="stylesheet" type="text/css" href="/css/ie5-6-BhF-Pi.css"/>
+  <![endif]-->
+</noscript>
+
+<!--[if lte IE 6]>
+<style type="text/css">
+.maxwidth {
+	width: expression(minMaxWidth(640,1200)) ;
+}
+</style>
+<![endif]-->
+
+</head>
+
+<body onLoad="setCss();">
+
+	<div id="divMoreInfo" class="popup">
+	</div>
+	<div id="divForumInfo" class="popup">
+		<ul class="tab" id="forumNavigation">
+
+			<li><span class="active" id="tab0">loading ...</span></li>
+		</ul>
+		<div class="tabContentContainer">
+			<h1 class="drag" onmousedown="makeDraggable(document.getElementById('divForumInfo'));">
+				<span class="spirit s_close" onclick="document.getElementById('divForumInfo').style.display='none';">&#160;</span>
+			</h1>
+			<div id="forumContent" class="content">&#160;</div>
+		</div>
+
+	</div>
+
+	<div id='filter' class="popup">
+		<form name='filter' action=''>
+			<h1 class="drag" onmousedown="makeDraggable(document.getElementById('filter'));">
+				<span class="spirit s_close" onclick="document.getElementById('filter').style.display='none';" title="close">&#160;</span>
+			</h1>
+			<table cellpadding='2' cellspacing='0'>
+				<tr>
+
+					<th colspan='2'>Filter</th>
+				</tr>
+				<tr>
+					<td colspan='2' id='filterContent'>
+						&#160;
+					</td>
+				</tr>
+			</table>
+
+		</form>
+	</div>
+
+	<table id="header">
+		<tr>
+			<td>
+				<a href="http://www.leo.org/"><span class="spirit s_leo" title="LEO"><span>LEO</span></span></a>
+				Ein <a href="http://www.leo.org/">Online-Service</a> der LEO GmbH 
+				<a href="http://www.leo.org/"><span class="spirit s_leo_l" title="LEO"><span>LEO</span></span></a>
+
+			</td>
+		</tr>
+	</table>
+	
+	<!-- # linker, oberer und mittlerer + rechter Anteil # -->
+	<table id="body">
+		<tr>
+			<td colspan="5">
+				<!--
+ Inhalt des "oberen" Seitenteils: (tabstop=2!)
+ - Navigation
+ - Zusatzinformation (Zugriffe, Sprachvariante, etc.)
+ - Eingabe/Suchmaske
+ - Werbung
+-->
+
+<!-- ============================================== -->
+<div id="popup" class="popup">
+	<h1 onmouseup="dragStop(event, 'popup');"
+		onmousedown="dragStart(event, 'popup');" class="drag">
+		<span class="spirit s_close" onclick="document.getElementById('popup').style.display='none';">&#160;</span>
+	</h1>
+	<div style="height: 425px;" id="popupcontent" class="content">
+		&#160;
+	</div>
+</div>
+
+<table id="mainnavigation">
+
+  <tr>
+    <td class="active">
+      <a href="/ende?lp=ende&amp;search=stress"><span class="spirit s_de"><span>DE</span></span><span class="spirit 
+s_en"><span>EN</span></span>&nbsp;<b>Englisch</b></a>
+      <br/>
+      <a href="/forum/index.php?lang=de&amp;lp=ende">Forum</a> |
+      <a href="/trainer/index.php?lang=de&amp;lp=ende">Trainer</a>
+
+    </td>
+    <td class="inactive">
+      <a href="/frde?lp=frde&amp;search=stress"><span class="spirit s_de"><span>DE</span></span><span class="spirit 
+s_fr"><span>FR</span></span>&nbsp;Franz&ouml;sisch</a>
+      <br/>
+      <a href="/forum/index.php?lang=de&amp;lp=frde">Forum</a> |
+      <a href="/trainer/index.php?lang=de&amp;lp=frde">Trainer</a>
+
+    </td>
+    <td class="inactive">
+      <a href="/esde?lp=esde&amp;search=stress"><span class="spirit s_de"><span>DE</span></span><span class="spirit 
+s_es"><span>ES</span></span>&nbsp;Spanisch</a>
+      <br/>
+      <a href="/forum/index.php?lang=de&amp;lp=esde">Forum</a> |
+      <a href="/trainer/index.php?lang=de&amp;lp=esde">Trainer</a>
+
+    </td>
+    <td class="inactive">
+      <a href="/itde?lp=itde&amp;search=stress"><span class="spirit s_de"><span>DE</span></span><span class="spirit 
+s_it"><span>IT</span></span>&nbsp;Italienisch</a>
+      <br/>
+      <a href="/forum/index.php?lang=de&amp;lp=itde">Forum</a> |
+      <a href="/trainer/index.php?lang=de&amp;lp=itde">Trainer</a>
+
+    </td>
+    <td class="inactive">
+      <a href="/chde?lp=chde&amp;search=stress"><span class="spirit s_de"><span>DE</span></span><span class="spirit 
+s_ch"><span>ZH</span></span>&nbsp;Chinesisch</a>
+      <br/>
+      <a href="/forum/index.php?lang=de&amp;lp=chde">Forum</a> |
+      <a href="/trainer/index.php?lang=de&amp;lp=chde">Trainer</a>
+
+    </td>
+    <td class="inactive">
+      <a href="/rude?lp=rude&amp;search=stress"><span class="spirit s_de"><span>DE</span></span><span class="spirit 
+s_ru"><span>RU</span></span>&nbsp;Russisch</a>
+      <br/>
+      <a href="/forum/index.php?lang=de&amp;lp=rude">Forum</a> |
+      <a href="/trainer/index.php?lang=de&amp;lp=rude">Trainer</a>
+
+    </td>
+  </tr>
+</table>
+<table id="searchrow">
+  <tr>
+    <td class="searchform">
+      <form method="get" action="/ende" name="dict" id="dict">
+      <table>
+        <tr>
+          <td>
+
+            <table>
+              <tr>
+				<td width="1%" colspan="3"> 
+					<a href="/ende?searchLoc=-1&amp;searchLocRelinked=-
+1&amp;lp=ende&amp;search=stress&amp;lp=ende&amp;searchLocRelinked=1&amp;search=">
+					<span class="spirit s_en"><span>en</span></span></a>
+					&nbsp;
+					<a href="/ende?
+searchLoc=0&amp;searchLocRelinked=0&amp;lp=ende&amp;search=stress&amp;lp=ende&amp;searchLocRelinked=1&amp;search=">&lt;&gt;</a>
+					&nbsp;
+					<a href="/ende?
+searchLoc=1&amp;searchLocRelinked=1&amp;lp=ende&amp;search=stress&amp;lp=ende&amp;searchLocRelinked=1&amp;search=">
+
+					<span class="spirit s_de"><span>de</span></span></a>
+				</td>
+				<td>&#160;</td>
+        <td rowspan="2" valign="middle" >
+					<a href="http://www.leo.org/" class="spirit s_leo_ende">
+						<span >ende</span>
+					</a>
+					
+				</td>
+
+				<script language="javascript" type="text/javascript">
+					lp = "ende";
+					lang = "de";
+					if (lp == "rude") {
+						initAssistence();
+					}
+				</script>
+                <td rowspan="2" valign="middle">
+                  <input name="lp" value="ende" type="hidden"/>
+                  <input type="hidden" name="lang" value="de"/>
+                  <input type="hidden" name="searchLoc" value="0"/>
+                  <input type="hidden" name="cmpType" value="relaxed"/>
+                   <input type="hidden" name="sectHdr" value="on"/>
+                  <input type="hidden" name="spellToler" value=""/>
+
+                  <input name="search" value="stress"
+                   size="18" maxlength="100" onFocus="setClear();" accesskey="q" title="Search" />
+				
+				<script language="javascript" type="text/javascript">
+					setFocus(true);
+				</script>
+                </td>
+                <td valign="middle">
+                  <input type="submit" value="Go" style="width:43px;"/>
+                </td>
+              </tr>
+			<tr>
+
+				<td colspan="4">
+					<span id="dictionary">
+						<div class="options">
+							<span title="Such Filter" id="filter-img" onclick="dictionary.option.toggle(this, 'filters');">
+								Erweiterte Suche
+								
+							</span>
+							<div class="panel">
+								<div id="filter-alphabeticindex" class="content">
+									<h1>
+
+										Suchfilter einstellen 
+										<span onclick="dictionary.option.toggle(this, 'filters');" 
+class="spirit s_close">close</span>
+									</h1>
+									<table>
+										<thead>
+											<tr>
+												<th>
+													Optionen
+												</th>
+
+												<th>
+													Wortkategorien
+												</th>
+												<th>
+													Fachgebiete
+												</th>
+											</tr>
+										<tbody>
+											<tr>
+												<td>
+
+													<ul class="tree">
+														<li title="">
+															<input 
+type="checkbox" value="off" name="multiwordShowSingle" />
+															<label 
+for="opt0">
+																
+Keine Anzeige von Einzelworttreffern bei Mehrwortsuche
+															</label>
+														</li>
+														<li title="">
+															<input 
+type="checkbox" value="off" name="relink" />
+
+															<label 
+for="opt0">
+																
+Keine R&uuml;ckverlinkung der Ergebnisse
+															</label>
+														</li>
+													</ul>
+												</td>
+												<td rowspan="3">
+													<ul class="tree">
+														<li title="Substantive">
+
+															<input 
+type="checkbox" value="0" name="cat" />
+															<label 
+for="cat0">
+																
+Substantive
+															</label>
+														</li>
+														<li title="Verben">
+															<input 
+type="checkbox" value="1" name="cat" />
+															<label 
+for="cat1">
+																
+Verben
+															</label>
+
+														</li>
+														<li title="Adjektive, 
+Adverbien">
+															<input 
+type="checkbox" value="2" name="cat" />
+															<label 
+for="cat2">
+																
+Adjektive, Adverbien
+															</label>
+														</li>
+														<li 
+title="Pr&auml;positionen, Pronomen etc.">
+															<input 
+type="checkbox" value="3" name="cat"  />
+
+															<label 
+for="cat3">
+																
+Pr&auml;positionen, Pronomen etc.
+															</label>
+														</li>
+														<li title="Definitionen">
+															<input 
+type="checkbox" value="4" name="cat" />
+															<label 
+for="cat4">
+																
+Definitionen
+															</label>
+
+														</li>
+														<li 
+title="Abk&uuml;rzungen, Symbole etc.">
+															<input 
+type="checkbox" value="5" name="cat" />
+															<label 
+for="cat5">
+																
+Abk&uuml;rzungen, Symbole etc.
+															</label>
+														</li>
+														<li title="Wendungen 
+und Ausdrücke">
+															<input 
+type="checkbox" value="6" name="cat"  />
+
+															<label 
+for="cat6">
+																
+Wendungen und Ausdrücke
+															</label>
+														</li>
+														<li title="Beispiel">
+															<input 
+type="checkbox" value="7" name="cat" />
+															<label 
+for="cat7">
+																
+Beispiel
+															</label>
+														</li>
+
+														<li title="Flektierte 
+Formen">
+															<input 
+type="checkbox" value="8" name="cat" />
+															<label 
+for="cat8">
+																
+Flektierte Formen
+															</label>
+														</li>
+													</ul>
+												</td>
+												<td rowspan="3">
+
+													<ul class="tree">
+														<li title="Geistes- & 
+Gesellschaftswissenschaften">
+															<input 
+type="checkbox" value="0" name="rlm" id="rlm0" />
+															<label 
+for="rlm0">
+																
+Geistes- & Gesellschaftswissenschaften
+															</label>
+															<span 
+class="spirit s_help" onclick="help(event, document.getElementById('help_rlm_0'));" title="Domains">&#160;</span>
+														</li>
+
+														<li title="Technik & 
+angewandte Wissenschaften">
+															<input 
+type="checkbox" value="1" name="rlm" id="rlm1" />
+															<label 
+for="rlm1">
+																
+Technik & angewandte Wissenschaften
+															</label>
+															<span 
+class="spirit s_help" onclick="help(event, document.getElementById('help_rlm_1'));" title="Domains">&#160;</span>
+														</li>
+
+														<li title="Wirtschaft & 
+Finanzen">
+
+															<input 
+type="checkbox" value="2" name="rlm" id="rlm2" />
+															<label 
+for="rlm2">
+																
+Wirtschaft & Finanzen
+															</label>
+															<span 
+class="spirit s_help" onclick="help(event, document.getElementById('help_rlm_2'));" title="Domains">&#160;</span>
+														</li>
+
+														<li 
+title="Naturwissenschaften">
+															<input 
+type="checkbox" value="3" name="rlm" id="rlm3" />
+
+															<label 
+for="rlm3">
+																
+Naturwissenschaften
+															</label>
+															<span 
+class="spirit s_help" onclick="help(event, document.getElementById('help_rlm_3'));" title="Domains">&#160;</span>
+														</li>
+
+														<li title="Kunst & 
+Freizeit">
+															<input 
+type="checkbox" value="4" name="rlm" id="rlm4" />
+															<label 
+for="rlm4">
+																
+Kunst & Freizeit
+															</label>
+
+															<span 
+class="spirit s_help" onclick="help(event, document.getElementById('help_rlm_4'));" title="Domains">&#160;</span>
+														</li>
+
+														<li 
+title="Allgemeinsprache">
+															<input 
+type="checkbox" value="5" name="rlm" id="rlm5" />
+															<label 
+for="rlm5">
+																
+Allgemeinsprache
+															</label>
+															<span 
+class="spirit s_help" onclick="help(event, document.getElementById('help_rlm_5'));" title="Domains">&#160;</span>
+														</li>
+
+													</ul>
+												</td>
+											</tr>
+											<tr>
+												<th  style="border-right: 1px solid 
+#6181FF">
+													Stilebene
+												</th>
+											</tr>
+											<tr>
+
+												<td style="border-right: 1px solid 
+#6181FF">
+													<ul class="tree" >
+														<li title="Unterhaltung - 
+coll. | fam. | hum. | sl.">
+															<input 
+type="checkbox" value="0" name="phr"  />
+															<label 
+for="phr0">
+																
+Unterhaltung - coll. | fam. | hum. | sl.
+															</label>
+														</li>
+														<li title="Gehoben - 
+form. | poet.">
+
+															<input 
+type="checkbox" value="1" name="phr" />
+															<label 
+for="phr1">
+																
+Gehoben - form. | poet.
+															</label>
+														</li>
+														<li title="Historisch - 
+obs. | dated | archaic">
+															<input 
+type="checkbox" value="2" name="phr"  />
+															<label 
+for="phr2">
+																
+Historisch - obs. | dated | archaic
+															</label>
+
+														</li>
+														<li title="Nieder - vulg. 
+| pej.">
+															<input 
+type="checkbox" value="3" name="phr" />
+															<label 
+for="phr3">
+																
+Nieder - vulg. | pej.
+															</label>
+														</li>
+													</ul>
+												</td>
+
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div class="action">
+									<input style="margin-left: 20px;" type="button" 
+value="zur&uuml;cksetzen" onclick="dictionary.option.resetFilters(this.parentNode);dictionary.option.toggle(this, 'filters');document.dict.submit();"/>
+									<input type="button" value="anwenden" 
+onclick="dictionary.option.setFilters(this.parentNode);dictionary.option.toggle(this, 'filters');if (document.dict.search.value!=''){document.dict.submit();}"/>
+									<input type="button" value="abbrechen" 
+onclick="dictionary.option.toggle(this, 'filters');"/>
+								</div>
+
+							</div>
+							<script>
+								dictionary.option.setFilters(document.getElementById('filter-alphabeticindex'));
+							</script>
+						</div>
+					</span>
+				</td>
+                <td>
+                  <input type="reset" value="Clear" style="width:43px;" onClick="clearForm(); return true;"/>
+                </td>
+
+              </tr>
+              <!-- <tr class="language"> -->
+              <tr class="small">
+                <td colspan="2">
+                  <a href="/ende?lang=en&amp;lp=ende&amp;search=stress"><b>English&nbsp;version</b></a>
+                </td>
+                <td colspan="3" align="center">
+                  <a href="/ende?lang=de&amp;lp=ende">Ank&uuml;ndigungen</a>
+
+                </td>
+                <td>
+                  <i>632.722</i>&nbsp;Eintr&auml;ge&nbsp;&nbsp;<i>3.522.140</i>&nbsp;Anfragen
+                </td>
+                <td>
+                  <script type="text/javascript" language="javascript">
+                    document.write('<input type="button" value="Text" style="width:43px;" onClick="if (!translate){translate = new Translate();}translate.display(this);"/>');
+                  </script>
+                  &#160;
+
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      </form>
+    </td>
+
+    <!-- # Werbung # -->
+    <td class="standard_banner">
+      <a href="http://advert.leo.org/adv_dict_ende.kw20_1" target="_blank"><img border="0" alt="Klicken Sie hier!" src="/rb_starting_2011.gif" height="60" 
+width="468"></a>
+      <br/>
+      <small>Werbung</small>
+   </td>
+  </tr>
+</table>
+
+			</td>
+		</tr>
+		<tr id="main">
+			<!--
+ Inhalt des "linken" Seitenteils: (tabstop=2!)
+ - Optionen
+ - Legende
+ - Logo- und Textlinks
+-->
+
+<!-- ============================================== -->
+<td class="sidebar">
+  <table class="border">
+    <tr>
+      <th>
+
+        Werbung
+      </th>
+    </tr>
+    <tr>
+      <td>
+        <table>
+          <tr>
+            <td colspan=2>
+              <script type="text/javascript"
+                src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+              </script>
+
+            </td>
+          </tr>
+          <!-- # Textlinks # -->
+          <tr>
+            <th colspan=2>
+              Textlink-Werbung:
+            </th>
+          </tr>
+          <tr>
+
+            <td valign="top" align="right">
+              -
+            </td>
+            <td>
+              <a href="http://www.sprachreisen.de/?counter=leo_textlink_englWobuch1209"
+                title=""
+                target="_blank" rel="nofollow">
+                Sprachreisen &amp; Sprachkurse mit iSt</a>
+            </td>
+          </tr>
+
+          <tr>
+            <td valign="top" align="right">
+              -
+            </td>
+            <td>
+              <a href="http://www.linguland.com/"
+                title="Linguland Sprachreisen und Sprachschulen"
+                target="_blank" rel="nofollow">
+                Linguland Sprachreisen und Sprachschulen</a>
+            </td>
+          </tr>
+
+          <tr>
+            <td valign="top" align="right">
+              -
+            </td>
+            <td>
+              <a href="http://www.sprachcaffe.com"
+                title="Sprachcaffe"
+                target="_blank" rel="nofollow">
+                Sprachcaffe - Sprachreisen&nbsp;&amp; Sprachkurse</a>
+            </td>
+
+          </tr>
+          <tr>
+            <td valign="top" align="right">
+              -
+            </td>
+            <td>
+              <a href="http://www.multi-circuit-boards.eu"
+                title=""
+                target="_blank" rel="nofollow">
+                Leiterplatten - Discount</a>
+            </td>
+
+          </tr>
+          <tr>
+            <td valign="top" align="right">
+              -
+            </td>
+            <td>
+              <a href="http://www.linguland.com/vorbereitungskurse_sprachtests-47.htm"
+                title="Cambridge, TOEFL & andere Sprachtests"
+                target="_blank" rel="nofollow">
+                Cambridge, TOEFL & andere Sprachtests</a>
+
+            </td>
+          </tr>
+          <tr>
+            <td valign="top" align="right">
+              -
+            </td>
+            <td>
+              <a href="http://leoe.fremdsprachenlernen.org/"
+                title=""
+                target="_blank" rel="nofollow">
+                GratisEbook: Englisch ohne Vokabelpauken</a>
+
+            </td>
+          </tr>
+          <tr>
+            <td valign="top" align="right">
+              -
+            </td>
+            <td>
+              <a href="http://www.culturalcare.de/land.aspx?v=3&utm_source=Leo.org&utm_medium=Textlink&utm_campaign=Leo_Link"
+                title=""
+                target="_blank" rel="nofollow">
+                Au Pair in den USA - kostenlose Brosch&uuml;re</a>
+
+            </td>
+          </tr>
+          <tr>
+            <td valign="top" align="right">
+              -
+            </td>
+            <td>
+              <a href="http://www.carpe.de/?50396"
+                title=""
+                target="_blank" rel="nofollow">
+                Sprachreisen &amp; Auslandspraktikum</a>
+
+            </td>
+          </tr>
+          <tr>
+            <td valign="top" align="right">
+              -
+            </td>
+            <td>
+              <a href="http://www.sprachreise-international.de/"
+                title=""
+                target="_blank" rel="nofollow">
+                Sprachreisen mit Language International</a>
+
+            </td>
+          </tr>
+          <tr>
+            <td valign="top" align="right">
+              -
+            </td>
+            <td>
+              <a href="http://www.esl.ch/de"
+                title="Sprachreisen mit ESL - Sprachaufenthalte"
+                target="_blank" rel="nofollow">
+                Sprachreisen mit ESL - Sprachaufenthalte</a>
+
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</td>
+<td style="padding-top:7px;" width="10px">&nbsp;&nbsp;</td>
+
+			  <td id="contentholder">     <div id="singleword">         <form action="" method="POST" name="WORDS">   <input type="hidden" 
+name="lp" value="ende">   <input type="hidden" name="lang" value="de">   <input type="hidden" name="postBack" value="savevocable"> 	<table 
+id="subnavigation" class="border"> 	<tr> 	<th style="padding-top:2px;padding-bottom:1px;"> 	<a href="/pages.ende/tipps_de.html?
+lp=ende&amp;lang=de">Suchtipps</a>&nbsp;| 	<a href="/pages.ende/abbrev_de.html?lp=ende&amp;lang=de">Abk&uuml;rzungen</a>&nbsp;| 	<a 
+href="/pages.ende/einsendungen_de.html?lp=ende&amp;lang=de">Neuer&nbsp;Eintrag</a>&nbsp;| 	<a href="/pages.ende/error_de.html?
+lp=ende&amp;lang=de">Fehler&nbsp;melden</a>&nbsp;| 	<a href="/pages.ende/faq_de.html?lp=ende&amp;lang=de">FAQ</a>&nbsp;| 	<a 
+href="/pages.ende/links_de.html?lp=ende&amp;lang=de">N&uuml;tzliche&nbsp;Links</a>&nbsp;| 	<a href="/pages.ende/kontakt_de.html?
+lp=ende&amp;lang=de">Kontakt</a> 	</th> 	</tr> 	<tr> 	<th style="padding-top:2px;padding-bottom:1px;"> 	<a href="/pages.ende/toolbars_de.html?
+lp=ende&amp;lang=de">Toolbars</a>&nbsp;| 	<a href="/pages.ende/lion_de.html?lp=ende&amp;lang=de">Lion</a>&nbsp;| 	<a 
+href="/pages.ende/smartphones_de.html?lp=ende&amp;lang=de">Smartphones</a>&nbsp;| 	<a href="/pages.ende/stat_de.html?
+lp=ende&amp;lang=de">Statistik</a>&nbsp;| 	<a href="/pages.ende/about_de.html?lp=ende&amp;lang=de">&Uuml;ber&nbsp;uns</a>&nbsp;| 	<a 
+href="/pages.ende/helpers_de.html?lp=ende&amp;lang=de">Mitwirkung</a>&nbsp;| 	<a href="/pages.ende/werbung_de.html?
+lp=ende&amp;lang=de">Werbung</a> 	</th> 	</tr> 	</table>   <table>     <tr>       <td style="padding-top:4px;">       </td>     </tr>   </table>  <table 
+cellpadding=0 cellspacing=0 width="100%" id="results"     border=><tr>   <th> 		<span class="spirit s_filter" onclick="displayFilterOptionsTable
+(event,'results',1,'Realm');" title="filter">&#160;</span>   </th>   <th>ENGLISCH</th>   <th>&nbsp;&nbsp;&nbsp;</th>   <th>DEUTSCH</th>   <th> 		
+<span class="spirit s_filter" onclick="displayFilterOptionsTable(event,'results',3,'Realm');" title="filter">&#160;</span>   </th> 	</tr>   <tr>     <td colspan=2>      
+ <input type="button" name="savebutton" value="Speichern"   onclick="ajaxGetSelectedVocables = new AjaxGetSelectedVocables();   ajaxGetPopUp.request
+(event,'WORDS');"> der ausgew&auml;hlten W&ouml;rter im Trainer&nbsp;     </td>     <td>&nbsp;     </td>     <td colspan=2 class="right">       <strong>       120 
+Treffer       </strong>     </td>   </tr>   <tr><th>&#160;</th><th colspan="3">Unmittelbare Treffer</th><th><a href="/pages.ende/ergebnisse_de.html?
+lp=ende&amp;lang=de#unmittelbar" class="spirit s_help" onclick="" title="Hilfe">&#160;</a></th></tr><tr><td>&nbsp;</td><td class="center" style="padding-
+top:7px;" colspan=4>&nbsp;Substantive    (18 of 21)</td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input type="checkbox" value="641530" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1641530');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=aggro&amp;trestr=0x28001">aggro</A> <small><i>(Aust.; Brit.)</i></small> 
+[<i>coll.</i>]</td><td nowrap width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x28001">der</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Stress&amp;trestr=0x28001"><B>Stress</B></A></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" 
+onclick="getMoreInfo(event,'3641530');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="132146" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1132146');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=general&amp;trestr=0x401">general</A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=adaptation&amp;trestr=0x401">adaptation</A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=syndrome&amp;trestr=
+</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8001"><B>stress</B></A> 
+&#160;&#160;- <small><i>mental pressure</i></small></td><td nowrap width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x8001">der</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Stress&amp;trestr=0x8001"><B>Stress</B></A></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" 
+onclick="getMoreInfo(event,'3691787');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="882177" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1882177');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8001"><B>stress</B></A></td><td nowrap 
+width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x8001">der</A> <A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Akzent&amp;trestr=0x8001">Akzent</A></td><td nowrap width="5%" class="right"><span class="spirit 
+s_info_r" onclick="getMoreInfo(event,'3882177');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input type="checkbox" 
+value="691788" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1691788');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8001"><B>stress</B></A> &#160;&#160;- 
+<small><i>mental pressure</i></small></td><td nowrap width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x8001">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Anspannung&amp;trestr=0x8001">Anspannung</A></td><td nowrap width="5%" class="right"><span class="spirit 
+s_info_r" onclick="getMoreInfo(event,'3691788');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="282074" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1282074');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8001"><B>stress</B></A></td><td nowrap 
+width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x8001">die</A> <A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Anstrengung&amp;trestr=0x8001">Anstrengung</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3282074');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input 
+type="checkbox" value="462988" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1462988');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Beanspruchbarkeit&amp;trestr=0x801">Beanspruchbarkeit</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3462988');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" 
+value="691785" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1691785');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> 
+&#160;&#160;<small><i>also&#160;</i></small> [tech.]</td><td nowrap width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <
+nowrap width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x2801">die</A> <A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Belastung&amp;trestr=0x2801">Belastung</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3282076');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" 
+value="882176" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1882176');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8001"><B>stress</B></A></td><td nowrap 
+width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=berufliche&amp;trestr=0x8001">berufliche</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Belastung&amp;trestr=0x8001">Belastung</A></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" 
+onclick="getMoreInfo(event,'3882176');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input type="checkbox" 
+value="691789" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1691789');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x401"><B>stress</B></A> [ling.]</td><td 
+nowrap width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x401">die</A> <A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Betonung&amp;trestr=0x401">Betonung</A></td><td nowrap width="5%" class="right"><span class="spirit 
+s_info_r" onclick="getMoreInfo(event,'3691789');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="691790" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1691790');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8001"><B>stress</B></A> &#160;&#160;- 
+<small><i>physical pressure</i></small></td><td nowrap width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x8001">der</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Druck&amp;trestr=0x8001">Druck</A></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" 
+onclick="getMoreInfo(event,'3691790');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input type="checkbox" 
+value="991828" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1991828');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> [tech.]</td><td 
+nowrap width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=gerichteter&amp;trestr=0x801">gerichteter</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Druck&amp;trestr=0x801">Druck</A></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" 
+onclick="getMoreInfo(event,'3991828');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="882179" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1882179');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> [tech.]</td><td nowrap 
+width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Materialbeanspruchung&amp;trestr=0x801">Materialbeanspruchung</A></td><td nowrap width="5%" 
+class="right"><span class="spirit s_info_r" onclick="getMoreInfo(event,'3882179');">&#160;</span> </td></t
+</A></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" onclick="getMoreInfo(event,'3882181');">&#160;</span> </td></tr>  <tr 
+valign="top"><td nowrap width="5%"><input type="checkbox" value="691786" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" 
+onclick="getMoreInfo(event,'1691786');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8001"><B>stress</B></A> &#160;&#160;- <small><i>emphasis</i></small></td><td nowrap 
+width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x8001">der</A> <A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Nachdruck&amp;trestr=0x8001">Nachdruck</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3691786');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input 
+type="checkbox" value="882180" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1882180');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Reaktionskraft&amp;trestr=0x801">Reaktionskraft</A></td><td nowrap width="5%" class="right"><span class="spirit 
+s_info_r" onclick="getMoreInfo(event,'3882180');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="691784" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1691784');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8001"><B>stress</B></A> [<i>fig.</i>]</td><td nowrap 
+width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x8001">der</A> <A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Schwerpunkt&amp;trestr=0x8001">Schwerpunkt</A> &#160;&#160;- 
+<small><i>Hauptgewicht</i></small></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" onclick="getMoreInfo
+(event,'3691784');">&#160;</span> </td></tr><tr><td>&nbsp;</td><td class="center" style="padding-top:7px;" colspan=4>&nbsp;Verben     (2 of 9)</td></tr>  <tr 
+valign="top" class="even"><td nowrap width="5%"><input type="checkbox" value="884351" name="idword[]" style="vertical-align:middle;"><span class="spirit 
+s_info_l" onclick="getMoreInfo(event,'1884351');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=to&amp;trestr=0x8002">to</A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8002"><B>stress</B></A></td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=anspannen&amp;trestr=0x8002">anspannen</A> <small>|&#160;<i><A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=spannte&amp;trestr=0x8002">spannte</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=an&amp;trestr=0x8002">an</A>, <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=angespannt&amp;trestr=0x8002">angespannt</A></i>&#160;|</small></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3884351');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" 
+value="343095" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1343095');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=to&amp;trestr=0x8002">to</A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8002"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=sth.&amp;trestr=0x8002">sth.</A></td><td nowrap w
+(event,'3343095');">&#160;</span> </td></tr><tr> 		<th>&nbsp;</th> 		<th colspan="3">Keine Grundformen ableitbar   </th> 		
+<th><a href="/pages.ende/ergebnisse_de.html?lp=ende&lang=de#grundformen" class="spirit s_help" onclick="" title="Hilfe">&#160;</a></th> 	
+</tr><tr><th>&#160;</th><th colspan="3">Weitere Treffer</th><th><a href="/pages.ende/ergebnisse_de.html?lp=ende&amp;lang=de#weitere" class="spirit s_help" 
+onclick="" title="Hilfe">&#160;</a></th></tr><tr><td>&nbsp;</td><td class="center" style="padding-top:7px;" colspan=4><A 
+NAME="sect0"></A>&nbsp;Substantive    (78 of 763)</td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input type="checkbox" value="282079" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1282079');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> [tech.]</td><td nowrap 
+width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Spannung&amp;trestr=0x801">Spannung</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3282079');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" 
+value="882178" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1882178');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> [tech.]</td><td 
+nowrap width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x801">der</A> <A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungshaushalt&amp;trestr=0x801">Spannungshaushalt</A></td><td nowrap width="5%" 
+class="right"><span class="spirit s_info_r" onclick="getMoreInfo(event,'3882178');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap 
+width="5%"><input type="checkbox" value="882182" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1882182');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=spezifische&amp;trestr=0x801">spezifische</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Belastung&amp;trestr=0x801">Belastung</A></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" 
+onclick="getMoreInfo(event,'3882182');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="779350" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1779350');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x2001"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=amenorrhea&amp;trestr=0x2001">amenorrhea</A><small><sup>AE</sup></small> [med.]</td><td nowrap 
+width="2%"></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x2001">die</A> <A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Stressamenorrh%C3%B6&amp;trestr=0x2001">Stressamenorrhö</A></td><td nowrap width="5%" 
+class="right"><span class="spirit s_info_r" onclick="getMoreInfo(event,'3779350');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap 
+width="5%"><input type="checkbox" value="908751" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1908751');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x2001"><B>stress</B></A> <A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;sear
+style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1882184');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A 
+HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=amplitude&amp;trestr=0x801">amplitude</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungsamplitude&amp;trestr=0x801">Spannungsamplitude</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3882184');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input 
+type="checkbox" value="882183" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1882183');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=amplitude&amp;trestr=0x801">amplitude</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x801">der</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungsausschlag&amp;trestr=0x801">Spannungsausschlag</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3882183');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" 
+value="282082" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1282082');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=analysis&amp;trestr=0x801">analysis</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Beanspruchungsanalyse&amp;trestr=0x801">Beanspruchungsanalyse</A></td><td nowrap width="5%" 
+class="right"><span class="spirit s_info_r" onclick="getMoreInfo(event,'3282082');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap 
+width="5%"><input type="checkbox" value="882187" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1882187');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=analysis&amp;trestr=0x801">analysis</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Belastungsanalyse&amp;trestr=0x801">Belastungsanalyse</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3882187');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" 
+value="882185" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1882185');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=analysis&amp;trestr=0x801">analysis</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x801">der</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Festigkeitsnachweis&amp;trestr=0x801">Festigkeitsnachweis</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3882185');">&#160;</span> </td>
+lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=Kr
+%C3%A4ftebestimmung&amp;trestr=0x801">Kräftebestimmung</A></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" onclick="getMoreInfo
+(event,'3882188');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="282083" name="idword[]" 
+style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1282083');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A 
+HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=analysis&amp;trestr=0x801">analysis</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungsanalyse&amp;trestr=0x801">Spannungsanalyse</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3282083');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input 
+type="checkbox" value="882189" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1882189');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=analysis&amp;trestr=0x801">analysis</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungsermittlung&amp;trestr=0x801">Spannungsermittlung</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3882189');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" 
+value="882186" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1882186');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=analysis&amp;trestr=0x801">analysis</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x801">der</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungsnachweis&amp;trestr=0x801">Spannungsnachweis</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3882186');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input 
+type="checkbox" value="282084" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1282084');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8001"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=analyst&amp;trestr=0x8001">analyst</A></td><td nowrap width="2%"></td><td valign="middle" width="43%">&nbsp;<A 
+HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x8001">der</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Statiker&amp;trestr=0x8001">Statiker</A></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" 
+onclick="getMoreInfo(event,'3282084');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="282085" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1282085');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x8001"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=analysts&amp;trestr=0x8001">analysts</A> &#160;<small><i>pl.</i></sma
+(event,'1282086');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=area&amp;trestr=0x801">area</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x801">der</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungsquerschnitt&amp;trestr=0x801">Spannungsquerschnitt</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3282086');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" 
+value="966413" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1966413');">&#160;</span></td><td 
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=at&amp;trestr=0x801">at</A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=WLL&amp;trestr=0x801">WLL</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Tragspannung&amp;trestr=0x801">Tragspannung</A> &#160;&#160;- <small><i>Hebetechnik</i></small></td><td 
+nowrap width="5%" class="right"><span class="spirit s_info_r" onclick="getMoreInfo(event,'3966413');">&#160;</span> </td></tr>  <tr valign="top" 
+class="even"><td nowrap width="5%"><input type="checkbox" value="922401" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" 
+onclick="getMoreInfo(event,'1922401');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=circle&amp;trestr=0x801">circle</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x801">der</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungskreis&amp;trestr=0x801">Spannungskreis</A></td><td nowrap width="5%" class="right"><span class="spirit 
+s_info_r" onclick="getMoreInfo(event,'3922401');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="928160" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1928160');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=coat&amp;trestr=0x801">coat</A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=method&amp;trestr=0x801">method</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=das&amp;trestr=0x801">das</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Rei%C3%9Flackverfahren&amp;trestr=0x801">Reißlackverfahren</A></td><td nowrap width="5%" class="right"><span 
+class="spirit s_info_r" onclick="getMoreInfo(event,'3928160');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input 
+type="checkbox" value="282087" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1282087');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=coefficient&amp;trestr=0x801">coefficient</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=der&amp;trestr=0x801">der</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungsbeiwert&amp;trestr=0x801">Spannungsbeiwert</A></td><td nowrap width="5%" class="right"><span class
+valign="middle" width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=das&amp;trestr=0x801">das</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Beanspruchungskollektiv&amp;trestr=0x801">Beanspruchungskollektiv</A></td><td nowrap width="5%" 
+class="right"><span class="spirit s_info_r" onclick="getMoreInfo(event,'3906302');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap 
+width="5%"><input type="checkbox" value="282088" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1282088');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=concentration&amp;trestr=0x801">concentration</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Kerbwirkung&amp;trestr=0x801">Kerbwirkung</A></td><td nowrap width="5%" class="right"><span class="spirit 
+s_info_r" onclick="getMoreInfo(event,'3282088');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="882190" 
+name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1882190');">&#160;</span></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=concentration&amp;trestr=0x801">concentration</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungsanh%C3%A4ufung&amp;trestr=0x801">Spannungsanhäufung</A></td><td nowrap width="5%" 
+class="right"><span class="spirit s_info_r" onclick="getMoreInfo(event,'3882190');">&#160;</span> </td></tr>  <tr valign="top" class="even"><td nowrap 
+width="5%"><input type="checkbox" value="282089" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1282089');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=concentration&amp;trestr=0x801">concentration</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungskonzentration&amp;trestr=0x801">Spannungskonzentration</A></td><td nowrap width="5%" 
+class="right"><span class="spirit s_info_r" onclick="getMoreInfo(event,'3282089');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input 
+type="checkbox" value="882192" name="idword[]" style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo
+(event,'1882192');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=concentration&amp;trestr=0x801">concentration</A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=factor&amp;trestr=0x801">factor</A> [abbr.: SCF] [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?
+lp=ende&amp;p=PSyjpkwAA&amp;search=Formzahl&amp;trestr=0x801">Formzahl</A> &#160;&#160;- <small><i>z.B. bei geometrischen 
+Unstetigkeiten</i></small></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" onclick="getMoreInfo(event,'3882192');">&#160;</span> 
+</td></tr>  <tr valign="top" class="even"><td nowrap width="5%"><input type="checkbox" value="882191" name="idword[]" style="vertical-align:middle;"><span 
+class="spirit s_info_l" onclick="getMore
+lp=ende&amp;p=PSyjpkwAA&amp;search=Spannungskonzentrationsfaktor&amp;trestr=0x801">Spannungskonzentrationsfaktor</A> &#160;&#160;- <small><i>z.B. 
+bei geometrischen Unstetigkeiten</i></small></td><td nowrap width="5%" class="right"><span class="spirit s_info_r" onclick="getMoreInfo
+(event,'3882191');">&#160;</span> </td></tr>  <tr valign="top"><td nowrap width="5%"><input type="checkbox" value="928161" name="idword[]" 
+style="vertical-align:middle;"><span class="spirit s_info_l" onclick="getMoreInfo(event,'1928161');">&#160;</span></td><td valign="middle" width="43%">&nbsp;<A 
+HREF="ende?lp=ende&amp;p=HpZR0yYAA&amp;search=stress&amp;trestr=0x801"><B>stress</B></A> <A HREF="ende?
+lp=ende&amp;p=HpZR0yYAA&amp;search=concentrations&amp;trestr=0x801">concentrations</A> [tech.]</td><td nowrap width="2%"></td><td valign="middle" 
+width="43%">&nbsp;<A HREF="ende?lp=ende&amp;p=PSyjpkwAA&amp;search=die&amp;trestr=0x801">die</A> <A HREF="ende?lp=ende&amp;p=PSyjpk
