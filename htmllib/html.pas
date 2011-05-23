@@ -23,8 +23,15 @@ interface
 {$define lazarus}
 {$endif}
 
+{$define use_cpp_parser}
+
 uses
-  Classes, SysUtils, parser, StrUtils{$ifdef memcheck}, MemCheckObject{$endif};
+  Classes, SysUtils
+  , StrUtils
+  {$ifdef memcheck}, MemCheckObject{$endif}
+  {$ifdef use_cpp_parser}, cpp_dll_interface{$endif}
+  {$ifndef use_cpp_parser}, parser{$endif}
+  ;
 
 const
   html_emptytags: array[0..6] of string = (
@@ -32,6 +39,11 @@ const
   );
 
 type
+  {$ifndef use_cpp_parser}
+  TParserInterface = THTMLParser;
+  {$else}
+  TParserInterface = TCPPHTMLParser;
+  {$endif}
   TXDocType = (xdt_html, xdt_xml);
   THTMLAttribute = class{$ifdef memcheck}(TMemCheckObj){$endif}
   public
@@ -57,7 +69,7 @@ type
     procedure SetAttributeValueByName(Name: WideString; value: WideString);
     function GetAttributeByIndex(Index: Integer): THTMLAttribute;
     function GetChildTag(Index: Integer): THTMLElement;
-    function ParseChilds(p: THTMLParser): Integer;
+    function ParseChilds(p: TParserInterface): Integer;
     function GetAttrByName(const name: WideString): THTMLAttribute;
     function GetAttrByNameDef(const name: WideString): THTMLAttribute;
   public
@@ -228,16 +240,24 @@ begin
 end;
 
 procedure THTMLElement.ParseHTMLCode(const s: String);
-var p: THTMLParser;
+var p: TParserInterface;
 begin
   //RootElement ist das Element selbst!
-  p := THTMLParser.Create;
-  p.HTMLCode := s;
-  p.StartParser;
-  repeat
-    ParseChilds(p);
-  until p.Ready;
-  p.Free;
+  {$ifndef use_cpp_parser}
+  p := TParserInterface.Create();
+  try
+    p.HTMLCode := s;
+    p.StartParser;
+  {$else}
+  p := TParserInterface.Create(s);
+  try
+  {$endif}
+    repeat
+      ParseChilds(p);
+    until p.Ready;
+  finally
+    p.Free;
+  end;
 end;
 
 function THTMLAttribute.AsInteger: Integer;
@@ -488,7 +508,7 @@ begin
   end;
 end;
 
-function THTMLElement.ParseChilds(p: THTMLParser): Integer;
+function THTMLElement.ParseChilds(p: TParserInterface): Integer;
 var child: THTMLElement;
     ende: Boolean;
 
