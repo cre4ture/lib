@@ -29,8 +29,6 @@ uses
   Classes, SysUtils
   , StrUtils
   {$ifdef memcheck}, MemCheckObject{$endif}
-  {$ifdef use_cpp_parser}, cpp_dll_interface{$endif}
-  {$ifndef use_cpp_parser}, parser{$endif}
   ;
 
 const
@@ -39,11 +37,33 @@ const
   );
 
 type
-  {$ifndef use_cpp_parser}
-  TParserInterface = THTMLParser;
-  {$else}
-  TParserInterface = TCPPHTMLParser;
-  {$endif}
+  THTMLPathNotFoundException = class(Exception);
+  THTMLParserTagType = (
+    pttNone,
+    pttStartTag,
+    pttEndTag,
+    pttEmptyTag,
+    pttContent,
+    pttComment,
+    pttCDATA
+  );
+  THTMLParser_Attribute = record
+    Name: String;
+    Value: String;
+  end;
+  TParserInterface = class
+  protected
+    function getCurrAttr(Index: Integer): THTMLParser_Attribute; virtual; abstract;
+  public
+    function CurName: string; virtual; abstract;
+    function CurTagType: THTMLParserTagType; virtual; abstract;
+    function CurContent: String; virtual; abstract;
+    property CurrAttr[Index: Integer]: THTMLParser_Attribute read getCurrAttr;
+    function Ready: boolean; virtual; abstract;
+    function Parse: Boolean; virtual; abstract;
+    function AttrCount: Integer; virtual; abstract;
+    constructor Create(htmlcode: string); virtual; abstract;
+  end;
   TXDocType = (xdt_html, xdt_xml);
   THTMLAttribute = class{$ifdef memcheck}(TMemCheckObj){$endif}
   public
@@ -186,6 +206,11 @@ function HTMLGenerateHumanReadableText(node: THTMLElement): string;
 
 implementation
 
+uses
+  {$ifdef use_cpp_parser}cpp_dll_interface{$endif}
+  {$ifndef use_cpp_parser}parser{$endif};
+
+
 function HTMLGenerateHumanReadableText(node: THTMLElement): string;
 var iterator: THTMLGenerateHumanReadableText_dataobj;
 begin
@@ -249,7 +274,7 @@ begin
     p.HTMLCode := s;
     p.StartParser;
   {$else}
-  p := TParserInterface.Create(s);
+  p := TCPPHTMLParser.Create(s);
   try
   {$endif}
     repeat
@@ -567,7 +592,7 @@ var child: THTMLElement;
 
   procedure DoComment;
   begin
-    child := THTMLElement.Create(Self,p.CurName,docType);
+    child := THTMLElement.Create(Self,'<!--',docType);
     child.Content := p.CurContent;
     child.TagType := p.CurTagType;
   end;
@@ -637,7 +662,8 @@ function THTMLElement.FindChildTagPath_e(aPath: String): THTMLElement;
 begin
   Result := FindChildTagPath(aPath);
   if Result = nil then
-    raise Exception.Create('THTMLElement.FindChildTagPath_e(' + aPath + '): '+
+    raise THTMLPathNotFoundException.Create(
+                           'THTMLElement.FindChildTagPath_e(' + aPath + '): '+
                            ' could not find tag!');
 end;
 
