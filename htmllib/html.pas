@@ -26,10 +26,12 @@ interface
 {$define use_cpp_parser}
 
 uses
-  Classes, SysUtils
-  , StrUtils
-  {$ifdef memcheck}, MemCheckObject{$endif}
+  Classes, SysUtils, parser_types,
+  StrUtils {$ifdef memcheck}, MemCheckObject{$endif}
+  {$ifdef use_cpp_parser}, cpp_dll_interface{$endif}
+  {$ifndef use_cpp_parser}, parser{$endif}
   ;
+  
 
 const
   html_emptytags: array[0..6] of string = (
@@ -38,20 +40,12 @@ const
 
 type
   THTMLPathNotFoundException = class(Exception);
-  THTMLParserTagType = (
-    pttNone,
-    pttStartTag,
-    pttEndTag,
-    pttEmptyTag,
-    pttContent,
-    pttComment,
-    pttCDATA
-  );
-  THTMLParser_Attribute = record
-    Name: String;
-    Value: String;
-  end;
-  TParserInterface = class
+{$ifndef use_cpp_parser}
+  TParserInterface = THTMLParser;
+{$else}
+  TParserInterface = TCPPHTMLParser;
+{$endif}
+  {TParserInterface = class
   protected
     function getCurrAttr(Index: Integer): THTMLParser_Attribute; virtual; abstract;
   public
@@ -63,7 +57,7 @@ type
     function Parse: Boolean; virtual; abstract;
     function AttrCount: Integer; virtual; abstract;
     constructor Create(htmlcode: string); virtual; abstract;
-  end;
+  end;}
   TXDocType = (xdt_html, xdt_xml);
   THTMLAttribute = class{$ifdef memcheck}(TMemCheckObj){$endif}
   public
@@ -206,11 +200,6 @@ function HTMLGenerateHumanReadableText(node: THTMLElement): string;
 
 implementation
 
-uses
-  {$ifdef use_cpp_parser}cpp_dll_interface{$endif}
-  {$ifndef use_cpp_parser}parser{$endif};
-
-
 function HTMLGenerateHumanReadableText(node: THTMLElement): string;
 var iterator: THTMLGenerateHumanReadableText_dataobj;
 begin
@@ -268,15 +257,8 @@ procedure THTMLElement.ParseHTMLCode(const s: String);
 var p: TParserInterface;
 begin
   //RootElement ist das Element selbst!
-  {$ifndef use_cpp_parser}
-  p := TParserInterface.Create();
+  p := TParserInterface.Create(s);
   try
-    p.HTMLCode := s;
-    p.StartParser;
-  {$else}
-  p := TCPPHTMLParser.Create(s);
-  try
-  {$endif}
     repeat
       ParseChilds(p);
     until p.Ready;
@@ -541,7 +523,7 @@ var child: THTMLElement;
   var i: Integer;
       tname: string;
   begin
-    tname := LowerCase(p.CurName);
+    tname := p.CurName;
     if tname = 'table' then
       child := THTMLTable.Create(Self, tname)
     else
@@ -555,7 +537,7 @@ var child: THTMLElement;
     child.TagType := p.CurTagType;
 
     for i := 0 to p.AttrCount-1 do
-      child.AttributeAdd(LowerCase(p.CurrAttr[i].Name),p.CurrAttr[i].Value);
+      child.AttributeAdd(p.CurrAttr[i].Name,p.CurrAttr[i].Value);
 
     if (p.CurTagType <> pttEmptyTag)and(not html_isemptytag(tname)) then
       if child.ParseChilds(p) < 0 then // end tag error workaround
@@ -564,13 +546,13 @@ var child: THTMLElement;
 
   procedure DoEndTag;
   begin
-    ende := SameTagNames(TagName, LowerCase(p.CurName));
+    ende := SameTagNames(TagName, p.CurName);
     if not ende then  // workaround for common syntax errors in htmlcode
     begin
       if (ParentElement <> nil)and
-         (SameTagNames(ParentElement.TagName, LowerCase(p.CurName))) then
+         (SameTagNames(ParentElement.TagName, p.CurName)) then
       begin
-        child := THTMLElement.Create(Self,'<-/'+LowerCase(p.CurName), docType);
+        child := THTMLElement.Create(Self,'<-/'+p.CurName, docType);
         child.TagType := pttNone;
         ende := true;
         // activate workaround:

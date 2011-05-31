@@ -24,6 +24,54 @@ namespace creax {
 		std::string value;
 	};
 
+	class myOStrStream 
+	{
+	private:
+		static const size_t textLength = 255;
+		char text[textLength+1];
+		size_t pos;
+		std::ostringstream* ostr; // wird nur bei bedarf(text > 255 zeichen) erstellt!
+
+		void flushToStream() const
+		{
+			if (ostr == NULL) ((std::ostringstream*)(ostr)) = new std::ostringstream();
+			(*(std::ostringstream*)(ostr)).write(text, pos);
+			*(size_t*)(&pos) = 0;
+		}
+
+	public:
+
+		myOStrStream():
+		  pos(0), ostr(NULL)
+		{}
+
+		~myOStrStream()
+		{
+			if (ostr != NULL) delete ostr;
+		}
+
+		myOStrStream& operator << (const char c)
+		{
+			if (pos == textLength) {
+				flushToStream();
+			}
+			text[pos++] = c;
+			return *this;
+		}
+
+		std::string str() const
+		{
+			if (ostr == NULL) {
+				*(char*)(&text[pos]) = 0;
+				return std::string(text);
+			} else {
+				flushToStream();
+				return (*ostr).str();
+			}
+		}
+
+	};
+
 	class htmlparser {
 	private:
 
@@ -39,7 +87,7 @@ namespace creax {
 			return false;
 		}
 
-		htmlattribute* makeAttribute(const std::ostringstream& name, const std::ostringstream& value)
+		htmlattribute* makeAttribute(const myOStrStream& name, const myOStrStream& value)
 		{
 			htmlattribute* attr = new htmlattribute;
 			attr->name = name.str();
@@ -76,7 +124,7 @@ namespace creax {
 
 		htmlattribute* readAttribute_name()
 		{
-			std::ostringstream name;
+			myOStrStream name;
 			// read name
 			while (*cpos != 0) {
 				switch (*cpos) {
@@ -99,14 +147,14 @@ namespace creax {
 					cpos++;
 					return readAttribute_value(name);
 				default:
-					name << (*cpos);
+					name << tolower(*cpos);
 				}
 				cpos++;
 			}
 			return NULL;
 		}
 
-		htmlattribute* readAttribute_value(const std::ostringstream& name)
+		htmlattribute* readAttribute_value(const myOStrStream& name)
 		{
 			// is a " or ' used to mark the value?
 			switch (*cpos) {
@@ -120,9 +168,9 @@ namespace creax {
 			return NULL;
 		}
 
-		htmlattribute* readAttribute_value_withQ(const std::ostringstream& name, const char quote)
+		htmlattribute* readAttribute_value_withQ(const myOStrStream& name, const char quote)
 		{
-			std::ostringstream value;
+			myOStrStream value;
 			// read value till quote or #0 or #13
 			while ((*cpos != quote)) {
 				switch (*cpos) {
@@ -142,9 +190,9 @@ namespace creax {
 			return makeAttribute(name, value);
 		}
 
-		htmlattribute* readAttribute_value_withoutQ(const std::ostringstream& name)
+		htmlattribute* readAttribute_value_withoutQ(const myOStrStream& name)
 		{
-			std::ostringstream value;
+			myOStrStream value;
 			// read value till tab return or space or /
 			while ((*cpos != 0)) {
 				switch (*cpos) {
@@ -184,7 +232,7 @@ namespace creax {
 
 		bool readStartTag_starting_at_its_name()
 		{
-			std::ostringstream name;
+			myOStrStream name;
 			curTagType = tt_StartTag;
 			while (*cpos != 0) {
 				switch (*cpos) {
@@ -206,7 +254,7 @@ namespace creax {
 					}
 					break;
 				default:
-					name << (*cpos);
+					name << tolower(*cpos);
 					break;
 				}
 				cpos++;
@@ -216,7 +264,7 @@ namespace creax {
 
 		bool readEndTag_starting_at_its_name()
 		{
-			std::ostringstream name;
+			myOStrStream name;
 			curTagType = tt_EndTag;
 			while (*cpos != 0) {
 				switch (*cpos) {
@@ -226,7 +274,7 @@ namespace creax {
 					curTagName = name.str();
 					return true;
 				default:
-					name << (*cpos);
+					name << tolower(*cpos);
 					break;
 				}
 				cpos++;
@@ -237,7 +285,7 @@ namespace creax {
 		bool readContent() {
 
 			bool run = true;
-			std::ostringstream content;
+			myOStrStream content;
 			while (run) {
 				switch (*cpos) {
 				default:
@@ -258,7 +306,7 @@ namespace creax {
 
 		bool readCDATA() 
 		{
-			std::stringstream cdata;
+			myOStrStream cdata;
 			const char* end = strstr(cpos, "]]>");
 			while ((*cpos != 0)&&(cpos != end)) {
 				cdata << (*cpos);
@@ -272,7 +320,7 @@ namespace creax {
 
 		bool readComment()
 		{
-			std::stringstream cdata;
+			myOStrStream cdata;
 			const char* end = strstr(cpos, "-->");
 			while ((*cpos != 0)&&(cpos != end)) {
 				cdata << (*cpos);
@@ -291,10 +339,25 @@ namespace creax {
 		std::string curContent;
 		mefu::auto_ptr_vector<htmlattribute> curTagAttributes;
 
+		std::vector<const char*> pAttrNames;
+		std::vector<const char*> pAttrValues;
+
 		htmlparser(const char* const ahtmlcode)
 			: htmlcode(ahtmlcode), 
 			cpos(ahtmlcode)
 		{}
+
+		bool initpAttrs()
+		{
+			size_t acount = curTagAttributes.size();
+			pAttrNames.resize(acount);
+			pAttrValues.resize(acount);
+			for (size_t i = 0; i < acount; i++) {
+				pAttrNames[i] = curTagAttributes[i]->name.c_str();
+				pAttrValues[i] = curTagAttributes[i]->value.c_str();
+			}
+			return (acount != 0);
+		}
 
 		bool parse()
 		{

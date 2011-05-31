@@ -17,43 +17,29 @@ unit parser;
 interface
 
 uses
-  Classes, SysUtils, fast_strings;
+  Classes, SysUtils, fast_strings, parser_types;
 
 type
-  PHTMLParser_Attribute = ^THTMLParser_Attribute;
-  THTMLParser_Attribute = record
-    Name: String;
-    Value: String;
-  end;
-  THTMLParserTagType = (
-    pttNone,
-    pttStartTag,
-    pttEndTag,
-    pttEmptyTag,
-    pttContent,
-    pttComment,
-    pttCDATA
-  );
   THTMLParser = class
   private
     fCurPos: integer;
     AttrList: TList;
+    fHTMLCode: string;
     procedure ClearAttrList;
     function GetCurrAttr(Index: Integer): THTMLParser_Attribute;
     function AddAttribute(Name, Value: String): Integer;
     function getCP: Integer;
     procedure setCP(const Value: Integer);
+    procedure StartParser;
   public
     CurName: string;
     CurTagType: THTMLParserTagType;
-    HTMLCode: string;
     CurContent: String;
     Ready: Boolean;
     property CurPosition: Integer read getCP write setCP;
     property CurrAttr[Index: Integer]: THTMLParser_Attribute read GetCurrAttr;
-    procedure StartParser;
     function Parse: Boolean;
-    constructor Create;
+    constructor Create(htmlcode: string);
     destructor Destroy; override;
     function AttrCount: Integer;
   end;
@@ -96,10 +82,12 @@ begin
   end;
 end;
 
-constructor THTMLParser.Create;
+constructor THTMLParser.Create(htmlcode: string);
 begin
-  inherited;
+  inherited Create();
+  fHTMLCode := htmlcode;
   AttrList := TList.Create;
+  StartParser;
 end;
 
 destructor THTMLParser.Destroy;
@@ -126,7 +114,7 @@ begin
   ClearAttrList();
 
   //Wenn am ende des strings angekommen -> fertig!
-  If CurPosition >= length(HTMLCode) then
+  If CurPosition >= length(fHTMLCode) then
   begin
     Result := False;
     Ready := True;
@@ -136,24 +124,24 @@ begin
   ps := CurPosition;
   //Wenn Letzter Tag ein Starttag war und "script" hieﬂ, muss der n‰chste tag </script> sein!
   if (CurTagType = pttStartTag)and(LowerCase(CurName) = 'script') then
-    CurPosition := pos_no_case(HTMLCode,'</script',length(HTMLCode),8,CurPosition)
+    CurPosition := pos_no_case(fHTMLCode,'</script',length(fHTMLCode),8,CurPosition)
   else
-    CurPosition := char_pos(HTMLCode,'<',CurPosition);
+    CurPosition := char_pos(fHTMLCode,'<',CurPosition);
   CurTagType := pttNone;
   //Wenn Ende erreicht, rest noch als content zur¸ckgeben!
   if CurPosition = 0 then
-    CurPosition := length(HTMLCode)+1;
+    CurPosition := length(fHTMLCode)+1;
 
   //teste auf content
   if (ps < CurPosition) then
   begin
     CurTagType := pttContent;
-    CurContent := Copy(HTMLCode,ps,CurPosition-ps);
+    CurContent := Copy(fHTMLCode,ps,CurPosition-ps);
     Result := true;
     Exit;
   end;
 
-  if (CurPosition > 0)and(HTMLCode[CurPosition+1] = '/') then
+  if (CurPosition > 0)and(fHTMLCode[CurPosition+1] = '/') then
   begin
     CurTagType := pttEndTag;
     CurPosition := CurPosition+1;
@@ -161,33 +149,33 @@ begin
   else CurTagType := pttStartTag;
 
   //Tagname lesen
-  treffer := find_first_char(HTMLCode, '! >'#9#13, CurPosition, pe);
-  if HTMLCode[pe-1] = '/' then
+  treffer := find_first_char(fHTMLCode, '! >'#9#13, CurPosition, pe);
+  if fHTMLCode[pe-1] = '/' then
     pe := pe-1;
-  CurName := Copy(HTMLCode,CurPosition+1,pe-CurPosition-1);
+  CurName := Copy(fHTMLCode,CurPosition+1,pe-CurPosition-1);
 
   // Kommentar? oder CDATA?
   if (treffer = '!') then
   begin
-    CurName := Copy(HTMLCode, CurPosition+1, 3);
+    CurName := Copy(fHTMLCode, CurPosition+1, 3);
     if CurName = '!--' then
     begin
       CurTagType := pttComment;
-      pe := fast_pos(HTMLCode,'-->',length(HTMLCode),3,CurPosition);
-      CurContent := Copy(HTMLCode,CurPosition,pe-CurPosition+3);
+      pe := fast_pos(fHTMLCode,'-->',length(fHTMLCode),3,CurPosition);
+      CurContent := Copy(fHTMLCode,CurPosition,pe-CurPosition+3);
       CurPosition := pe+3;
       Result := true;
       Exit;
     end
     else
     begin
-      CurName := Copy(HTMLCode, CurPosition+1, 8);
+      CurName := Copy(fHTMLCode, CurPosition+1, 8);
       if CurName = '![CDATA[' then
       begin
         CurPosition := CurPosition + 9;
         CurTagType := pttContent;
-        pe := fast_pos(HTMLCode,']]>',length(HTMLCode),3,CurPosition);
-        CurContent := Copy(HTMLCode,CurPosition,pe-CurPosition);
+        pe := fast_pos(fHTMLCode,']]>',length(fHTMLCode),3,CurPosition);
+        CurContent := Copy(fHTMLCode,CurPosition,pe-CurPosition);
         CurPosition := pe+3;
         Result := true;
         Exit;
@@ -202,14 +190,14 @@ begin
   CurPosition := pe;
 
   tmp := CurPosition;
-  while ReadAttribute(HTMLCode, tmp, aname, aval) do
+  while ReadAttribute(fHTMLCode, tmp, aname, aval) do
   begin
     //Wenn Attribute vorhanden, dann lese die erst ein. Ansonsten breche ab!
     AddAttribute(aname,aval);
   end;
   CurPosition := tmp;
 
-  if (HTMLCode[CurPosition] = '/') then
+  if (fHTMLCode[CurPosition] = '/') then
   begin
     CurPosition := CurPosition+1;
     if(CurTagType = pttStartTag) then

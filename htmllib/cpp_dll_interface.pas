@@ -2,13 +2,16 @@ unit cpp_dll_interface;
 
 interface
 
-uses html;
+uses parser_types, Classes;
 
 type
   ppChar = ^PChar;
   pParserHandle = ^Integer;
   pTagType = ^THTMLParserTagType;
-  TCPPHTMLParser = class(TParserInterface)
+  PCharList = array[0..MaxListSize] of pChar;
+  pPCharList = ^PCharList;
+  ppPCharList = ^pPCharList;
+  TCPPHTMLParser = class
   private
     myParser: pParserHandle;
     fname: PChar;
@@ -17,15 +20,18 @@ type
     fattrcount: cardinal;
     fcode: string;
     fready: boolean;
+    fAttrNames: pPCharList;
+    fAttrValues: pPCharList;
   protected
-    function getCurrAttr(Index: Integer): THTMLParser_Attribute; override;
+    function getCurrAttr(Index: Cardinal): THTMLParser_Attribute;
   public
-    function CurContent: String; override;
-    function CurName: string; override;
-    function CurTagType: THTMLParserTagType; override;
-    function Parse: Boolean; override;
-    function Ready: boolean; override;
-    function AttrCount: Integer; override;
+    property CurrAttr[Index: Cardinal]: THTMLParser_Attribute read getCurrAttr;
+    function CurContent: String;
+    function CurName: string;
+    function CurTagType: THTMLParserTagType;
+    function Parse: Boolean;
+    function Ready: boolean;
+    function AttrCount: Integer;
     constructor Create(htmlcode: string);
     destructor Destroy; override;
   end;
@@ -40,7 +46,9 @@ function creax_createParser(htmlcode: PChar): pParserHandle; cdecl; external cpp
 function creax_freeParser(parser: pParserHandle): pParserHandle; cdecl; external cpp_parser_dll;
 function creax_parse(parser: pParserHandle; tag_type: pTagType;
   tagName: ppChar; tagContent: ppChar;
-  attributeCount: PCardinal): boolean; cdecl; external cpp_parser_dll;
+  attributeCount: PCardinal; names: ppPCharList;
+  values: ppPCharList): boolean; cdecl; external cpp_parser_dll;
+
 function creax_getAttribute(parser: pParserHandle; index: cardinal;
   name: ppChar; value: ppChar): boolean; cdecl; external cpp_parser_dll;
 
@@ -70,13 +78,17 @@ begin
   Result := fcontent;
 end;
 
-function TCPPHTMLParser.getCurrAttr(Index: Integer): THTMLParser_Attribute;
-var pname, pvalue: PChar;
+function TCPPHTMLParser.getCurrAttr(Index: Cardinal): THTMLParser_Attribute;
+//var pname, pvalue: PChar;
 begin
-  if (not creax_getAttribute(myParser, index, @pname, @pvalue)) then
+  {if (not creax_getAttribute(myParser, index, @pname, @pvalue)) then
     raise Exception.Create('TCPPHTMLParser.GetCurrAttr(): Failed fetching attribute!');
   Result.Name := pname;
-  Result.Value := pvalue;
+  Result.Value := pvalue;}
+  if (Index >= fattrcount) then
+    raise Exception.Create('TCPPHTMLParser.getCurrAttr(): index out of bounds!');
+  Result.Name := (fAttrNames^)[Index];
+  Result.Value := (fAttrValues^)[Index];
 end;
 
 function TCPPHTMLParser.CurName: string;
@@ -91,7 +103,8 @@ end;
 
 function TCPPHTMLParser.Parse: Boolean;
 begin
-  Result := creax_parse(myParser, @ftype, @fname, @fcontent, @fattrcount);
+  Result := creax_parse(myParser, @ftype, @fname, @fcontent, @fattrcount,
+    @fAttrNames, @fAttrValues);
   if not Result then
     fready := true;
 end;

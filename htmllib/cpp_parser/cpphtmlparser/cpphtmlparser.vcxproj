@@ -39,10 +39,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\..\..\..\tools\htmlparser\</OutDir>
+    <OutDir>..\..\..\..\..\tools\htmlparser\data\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\..\..\..\..\tools\htmlparser\data\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -62,7 +63,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CPPHTMLPARSER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -79,7 +80,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllinterface.cpp" />
-    <ClCompile Include="parser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="auto_ptr_vector.h" />
