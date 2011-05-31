@@ -22,7 +22,9 @@ bool creax_parse(void* pparser,
 	creax::tag_type* tagType,
 	const char** tagName, 
 	const char** tagContent,
-	size_t* tagAttributeCount)
+	size_t* tagAttributeCount,
+	const char*** attrNames,
+	const char*** attrValues)
 {
 	creax::htmlparser* parser = (creax::htmlparser*)pparser;
 	bool result = parser->parse();
@@ -31,6 +33,10 @@ bool creax_parse(void* pparser,
 		*tagName = parser->curTagName.c_str();
 		*tagContent = parser->curContent.c_str();
 		*tagAttributeCount = parser->curTagAttributes.size();
+		if (parser->initpAttrs()) {
+			*attrNames = &parser->pAttrNames[0];
+			*attrValues = &parser->pAttrValues[0];
+		}
 	}
 	return result;
 }
