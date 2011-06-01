@@ -30,12 +30,14 @@ namespace creax {
 		static const size_t textLength = 255;
 		char text[textLength+1];
 		size_t pos;
-		std::ostringstream* ostr; // wird nur bei bedarf(text > 255 zeichen) erstellt!
+		std::string *ostr;
 
 		void flushToStream() const
 		{
-			if (ostr == NULL) ((std::ostringstream*)(ostr)) = new std::ostringstream();
-			(*(std::ostringstream*)(ostr)).write(text, pos);
+			if (ostr == NULL) ((std::string*)(ostr)) = new std::string();
+			
+			*(char*)(&text[pos]) = 0;
+			(*(std::string*)(ostr)) += text;
 			*(size_t*)(&pos) = 0;
 		}
 
@@ -66,7 +68,7 @@ namespace creax {
 				return std::string(text);
 			} else {
 				flushToStream();
-				return (*ostr).str();
+				return (*ostr);
 			}
 		}
 
