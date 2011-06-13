@@ -522,6 +522,7 @@ var child: THTMLElement;
   procedure DoStartTag;
   var i: Integer;
       tname: string;
+      tmp_attr: THTMLParser_Attribute;
   begin
     tname := p.CurName;
     if tname = 'table' then
@@ -537,7 +538,10 @@ var child: THTMLElement;
     child.TagType := p.CurTagType;
 
     for i := 0 to p.AttrCount-1 do
-      child.AttributeAdd(p.CurrAttr[i].Name,p.CurrAttr[i].Value);
+    begin
+      tmp_attr := p.CurrAttr[i];
+      child.AttributeAdd(tmp_attr.Name,tmp_attr.Value);
+    end;
 
     if (p.CurTagType <> pttEmptyTag)and(not html_isemptytag(tname)) then
       if child.ParseChilds(p) < 0 then // end tag error workaround
