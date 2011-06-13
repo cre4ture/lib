@@ -40,6 +40,15 @@ type
     {$endif}
     procedure Execute; override;
   end;
+  TSimpleThread = class;
+  TSimpleThreadRun = procedure(thread: TSimpleThread) of object;
+  TSimpleThread = class(TSThread)
+  private
+    OnThreadRun: TSimpleThreadRun;
+  public
+    procedure Execute; override;
+    constructor Create(aOnThreadRun: TSimpleThreadRun);
+  end;
   TToMainThreadOnSyncData = procedure(Sender: TObject; Index: Byte;
     Data: Pointer; Size: Integer) of object;
   TToMainThread = class(TComponent)
@@ -203,6 +212,22 @@ begin
   {$else}
   PostMessage(FHandle,WM_APP + Index,Integer(Data),Size);
   {$endif}
+end;
+
+{ TSimpleThread }
+
+constructor TSimpleThread.Create(aOnThreadRun: TSimpleThreadRun);
+begin
+  inherited Create(true);
+  OnThreadRun := aOnThreadRun;
+  Resume;
+end;
+
+procedure TSimpleThread.Execute;
+begin
+  inherited;
+  if assigned(OnThreadRun) then
+    OnThreadRun(self);
 end;
 
 end.
