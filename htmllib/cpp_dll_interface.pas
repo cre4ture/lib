@@ -8,7 +8,7 @@ type
   ppChar = ^PChar;
   pParserHandle = ^Integer;
   pTagType = ^THTMLParserTagType;
-  PCharList = array[0..MaxListSize] of pChar;
+  PCharList = packed array[0..MaxListSize] of PChar;
   pPCharList = ^PCharList;
   ppPCharList = ^pPCharList;
   TCPPHTMLParser = class
@@ -47,7 +47,7 @@ function creax_freeParser(parser: pParserHandle): pParserHandle; cdecl; external
 function creax_parse(parser: pParserHandle; tag_type: pTagType;
   tagName: ppChar; tagContent: ppChar;
   attributeCount: PCardinal; names: ppPCharList;
-  values: ppPCharList): boolean; cdecl; external cpp_parser_dll;
+  values: ppPCharList): Boolean; cdecl; external cpp_parser_dll;
 
 function creax_getAttribute(parser: pParserHandle; index: cardinal;
   name: ppChar; value: ppChar): boolean; cdecl; external cpp_parser_dll;
