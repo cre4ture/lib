@@ -175,6 +175,30 @@ type
     attr_value: string;
     function routine(CurElement: THTMLElement; Data: pointer): Boolean;
   end;
+  // for HTMLFindRoutineEx
+  THTMLFindRoutingEx_FindCondition_NameType = (
+    frefcnt_content,
+    frefcnt_tagname,
+    frefcnt_attribute
+  );
+  THTMLFindRoutingEx_FindCondition = class
+  public
+    nametype: THTMLFindRoutingEx_FindCondition_NameType;
+    attrname: string;
+    value: string;
+    within: boolean;
+    function apply(node: THTMLElement): boolean;
+  end;
+  THTMLFindRoutineEx = class
+  private
+    fList: TList;
+  public
+    function addCondition(cond: THTMLFindRoutingEx_FindCondition): integer;
+    function routine(CurElement: THTMLElement; Data: pointer): Boolean;
+    constructor Create;
+    destructor Destroy;
+    function searchFor(root_tag: THTMLElement): THTMLElement;
+  end;
   //For HTMLGenerateHumanReadableText:
   THTMLGenerateHumanReadableText_dataobj = class
   private
@@ -903,6 +927,82 @@ function THTMLFindRoutine_dataobj_within.routine(CurElement: THTMLElement;
 begin
   Result := (CurElement.TagName = Self.tag_name)and
             (pos(Self.attr_value, CurElement.AttributeValue[Self.attr_name]) > 0);
+end;
+
+{ THTMLFindRoutineEx }
+
+function THTMLFindRoutineEx.addCondition(
+  cond: THTMLFindRoutingEx_FindCondition): integer;
+begin
+  Result := fList.Add(cond);
+end;
+
+constructor THTMLFindRoutineEx.Create;
+begin
+  inherited Create;
+  fList := TList.Create;
+end;
+
+destructor THTMLFindRoutineEx.Destroy;
+begin
+  while (fList.Count > 0) do
+  begin
+    THTMLFindRoutingEx_FindCondition(fList[0]).Free;
+    fList.Delete(0);
+  end;
+  fList.Free;
+  inherited Destroy;
+end;
+
+function THTMLFindRoutineEx.routine(CurElement: THTMLElement;
+  Data: pointer): Boolean;
+var i: integer;
+    cond: THTMLFindRoutingEx_FindCondition;
+begin
+  Result := true;
+  for i := 0 to fList.Count-1 do
+  begin
+    cond := THTMLFindRoutingEx_FindCondition(fList[i]);
+    Result := cond.apply(CurElement);
+    if (not Result) then
+      break;
+  end;
+end;
+
+function THTMLFindRoutineEx.searchFor(root_tag: THTMLElement): THTMLElement;
+begin
+  Result := root_tag.FindTagRoutine({$ifdef lazarus}{@}{$endif}self.routine,nil);
+end;
+
+{ THTMLFindRoutingEx_FindCondition }
+
+function THTMLFindRoutingEx_FindCondition.apply(
+  node: THTMLElement): boolean;
+var cond_content: string;
+begin
+  case nametype of
+  frefcnt_content:
+    begin
+      cond_content := node.Content;
+    end;
+  frefcnt_tagname:
+    begin
+      cond_content := node.TagName;
+    end;
+  frefcnt_attribute:
+    begin
+      cond_content := node.AttributeValue[attrname];
+    end;
+  end;
+
+  if within then
+  begin
+    Result := pos(value, cond_content) > 0;
+  end
+  else
+  begin
+    Result := (value = cond_content);
+  end;
 end;
 
 end.

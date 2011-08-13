@@ -40,7 +40,7 @@ implementation
 
 uses SysUtils;
 
-const cpp_parser_dll = 'data/cpphtmlparser.dll';
+const cpp_parser_dll = 'cpphtmlparser.dll';
 
 function creax_createParser(htmlcode: PChar): pParserHandle; cdecl; external cpp_parser_dll;
 function creax_freeParser(parser: pParserHandle): pParserHandle; cdecl; external cpp_parser_dll;
