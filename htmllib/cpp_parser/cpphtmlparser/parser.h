@@ -5,7 +5,6 @@
 #include <sstream>
 #include <vector>
 #include "auto_ptr_vector.h"
-#include "dllinterface.h"
 
 namespace creax {
 
