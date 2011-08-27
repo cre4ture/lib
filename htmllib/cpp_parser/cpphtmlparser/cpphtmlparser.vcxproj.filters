@@ -18,15 +18,18 @@
     <ClCompile Include="dllinterface.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="html_parser.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="parser.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="auto_ptr_vector.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="dllinterface.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="html_parser.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
