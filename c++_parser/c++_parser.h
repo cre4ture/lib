@@ -1,6 +1,7 @@
 #pragma once
 
 #include "parser.h"
+#include "auto_ptr_vector.h"
 
 #define SYMBOL_CHAR_CASE \
 	';':\
@@ -21,11 +22,12 @@ namespace creax {
 
 	enum cpp_token_type { ctt_start, ctt_special_char, ctt_name, ctt_end };
 
-	class cpp_parser
+	class cpp_token_parser
 	{
 	private:
 		const char *code_start;
 		const char *cpos;
+		bool unread_last_token;
 
 		cpp_token_type getNextToken(myOStrStream &token)
 		{
@@ -79,21 +81,28 @@ token_spec_char_end:
 		std::string token_str;
 		cpp_token_type token_type;
 
-		cpp_parser(const char* code)
+		cpp_token_parser(const char* code)
 			: code_start(code),
 			  cpos(code),
-			  token_type(ctt_start)
+			  token_type(ctt_start),
+			  unread_last_token(false)
 		{
 	
 		}
 
-		~cpp_parser()
+		~cpp_token_parser()
 		{
 
 		}
 
 		cpp_token_type parse()
 		{
+			if (unread_last_token)
+			{
+				unread_last_token = false;
+				return token_type;
+			}
+
 			if (token_type == ctt_end)
 				throw std::runtime_error("Unexpected end of file");
 
@@ -102,6 +111,18 @@ token_spec_char_end:
 			token_str = token.str();
 			return token_type;
 		}
+
+		void back_parse()
+		{
+			if (!unread_last_token)
+			{
+				unread_last_token = true;
+			}
+			else
+			{
+				throw std::runtime_error("internal error: unread already done!");
+			}
+		}
 	};
 
 	enum cpp_keyword {
@@ -109,6 +130,9 @@ token_spec_char_end:
 //		ckw_void,
 		ckw_return,
 		ckw_static,
+		ckw_for,
+		ckw_do,
+		ckw_while,
 		ckw_none // this must be the last!!
 	};
 
@@ -117,13 +141,27 @@ token_spec_char_end:
 // 		"void", no keyword! it is a (special kind of) type!
 		"return",
 		"static",
+		"for",
+		"do",
+		"while",
 		NULL // this must be the last!!
 	};
+
+	cpp_keyword identifyKeyword(const std::string &name)
+	{
+		for (size_t i = 0; i < ckw_none; i++)
+		{
+			if (name == cpp_keywords[i])
+				return (cpp_keyword)i;
+		}
+		return ckw_none;
+	}
 
 	class cpp_type
 	{
 	public:
 		std::string name;
+		cpp_type *ptr_type;
 	};
 
 	class cpp_ptr_type: public cpp_type
@@ -139,10 +177,60 @@ token_spec_char_end:
 	};
 
 	const cpp_type typeList[] = {
-		"char",
-		"bool",
-		"int",
-		""
+		"char", NULL,
+		"bool", NULL,
+		"int", NULL,
+		"", NULL
+	};
+
+	class cpp_type_bib
+	{
+	private:
+		const cpp_type_bib *parent;
+		mefu::auto_ptr_vector<cpp_type> types;
+
+	public:
+		cpp_type_bib(cpp_type_bib *a_parent)
+			:parent(a_parent)
+		{
+
+		}
+
+		~cpp_type_bib()
+		{
+
+		}
+
+		void addType(cpp_type *atype)
+		{
+			types.push_back(atype);
+		}
+
+		cpp_type* getPtrTypeOf(cpp_type *atype)
+		{
+			if (atype->ptr_type)
+			{
+				return atype->ptr_type;
+			}
+			else
+			{
+				cpp_ptr_type *ptr = new cpp_ptr_type(atype);
+				addType(ptr);
+				return ptr;
+			}
+		}
+
+		cpp_type* identifyType(std::string name)
+		{
+			for (size_t i = 0; i < types.size(); i++)
+			{
+				if (name == types[i]->name)
+				{
+					return types[i];
+				}
+			}
+			return NULL;
+		}
 	};
 
 	enum cpp_builder_elementtype
@@ -152,20 +240,131 @@ token_spec_char_end:
 		cbe_function_prototype
 	};
 
+	enum cpp_command_type
+	{
+		cct_none,
+		cct_return
+	};
+
+	const char* cmd_type_list[] = {
+		"none",
+		"return"
+	}; 
+
+	class cpp_command_parser
+	{
+	private:
+		cpp_token_parser &parser;
+
+	public:
+		cpp_command_parser(cpp_token_parser &a_parser)
+			:parser(a_parser)
+		{
+			
+		}
+
+		~cpp_command_parser()
+		{
+			
+		}
+
+		cpp_command_type cmd_type;
+		std::string cmd_object;
+
+		bool parse()
+		{
+			switch (parser.parse())
+			{
+			case ctt_name:
+				// zuweisung, funktionsaufruf, variablendeklaration, schleifenstart, ...
+				{
+					cpp_keyword kw = identifyKeyword(parser.token_str);
+					switch (kw)
+					{
+					case ckw_return:
+						cmd_type = cct_return;
+						switch (parser.parse())
+						{
+						case ctt_special_char:
+							{
+								switch (parser.token_str[0])
+								{
+								case ';':
+									// return nothing
+									cmd_object = "";
+									break;
+								default:
+									throw std::runtime_error("Unexpected: " + parser.token_str);
+								}
+							}
+							cmd_object = "";
+							break;
+						case ctt_name:
+							// value to be returned TODO: read full cmd
+							if (parser.token_str == "0")
+							{
+								cmd_object = "0";
+							}
+							else
+							{
+								throw std::runtime_error("Unsupported returnvalue: " + parser.token_str);
+							}
+							break;
+						default:
+							throw std::runtime_error("Unexpected: " + parser.token_str);
+						}
+						break;
+					default:
+						throw std::runtime_error("Unexpected: " + parser.token_str);
+					}
+				}
+				break;
+			case ctt_special_char:
+				{
+					switch (parser.token_str[0])
+					{
+					case ';':
+						cmd_type = cct_none;
+						break;
+					case '}':
+						// end of command block reached
+						return false;
+					}
+				}
+				break;
+			default:
+				throw std::runtime_error("Unexpected: " + parser.token_str);
+			}
+
+			return true;
+		}
+	};
+
+	class cpp_cmd
+	{
+	private:
+		std::string typetostr()
+		{
+			return cmd_type_list[tp];
+		}
+
+	public:
+		cpp_command_type tp; 
+		std::string op;
+		std::string name;
+
+		std::string toString()
+		{
+			std::ostringstream ostr;
+			ostr << "cmd: '" << name << "':" << typetostr() << " op:" << op;
+			return ostr.str();
+		}
+	};
+
 	class cpp_treebuilder 
 	{
 	private:
-		cpp_parser &parser;
-
-		cpp_keyword identifyKeyword(const std::string &name)
-		{
-			for (size_t i = 0; i < ckw_none; i++)
-			{
-				if (name == cpp_keywords[i])
-					return (cpp_keyword)i;
-			}
-			return ckw_none;
-		}
+		cpp_token_parser &parser;
 
 		const cpp_type *identifyType(const std::string &name)
 		{
@@ -290,8 +489,30 @@ token_spec_char_end:
 	public:
 
 		cpp_builder_elementtype element_tp;
+		std::vector<cpp_cmd> impl_cmds;
 
-		cpp_treebuilder(cpp_parser &a_parser)
+		std::string toString()
+		{
+			switch (element_tp)
+			{
+			case cbe_function_prototype:
+				return "function prototype";
+			case cbe_function_implementation:
+				{
+					std::ostringstream ostr;
+					ostr << "{" << std::endl;
+					for (size_t i = 0; i < impl_cmds.size(); i++)
+					{
+						ostr << impl_cmds[i].toString() << std::endl;
+					}
+					ostr << "}";
+					return "function implementation: " + ostr.str();
+				}
+			}
+			return "";
+		}
+
+		cpp_treebuilder(cpp_token_parser &a_parser)
 			: parser(a_parser)
 		{
 		}
@@ -364,7 +585,17 @@ token_spec_char_end:
 																break;
 															case '{':
 																element_tp = cbe_function_implementation;
-																// TODO: read function body!
+																{
+																	cpp_command_parser cmdparser(parser);
+																	while (cmdparser.parse())
+																	{
+																		cpp_cmd acmd;
+																		acmd.name = "";
+																		acmd.op = cmdparser.cmd_object;
+																		acmd.tp = cmdparser.cmd_type;
+																		impl_cmds.push_back(acmd);
+																	}
+																}
 																break;
 															case ':': // initialise list TODO
 																break;
@@ -414,4 +645,5 @@ token_spec_char_end:
 			return true;
 		}
 	};
+
 }
