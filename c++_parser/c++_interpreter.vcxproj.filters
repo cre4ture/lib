@@ -24,13 +24,16 @@
     <ClInclude Include="targetver.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="c++_parser.h">
-      <Filter>Quelldateien</Filter>
-    </ClInclude>
     <ClInclude Include="cpphtmlparser\auto_ptr_vector.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="cpphtmlparser\parser.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="auto_ptr_map.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="c++_parser.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

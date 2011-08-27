@@ -76,6 +76,7 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="auto_ptr_map.h" />
     <ClInclude Include="c++_parser.h" />
     <ClInclude Include="cpphtmlparser\auto_ptr_vector.h" />
     <ClInclude Include="cpphtmlparser\parser.h" />
