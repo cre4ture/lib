@@ -12,7 +12,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 		{
 			char *example = "int main(int argc, char* argv[]) { return 0; }";
-			cpp_parser parser(example);
+			cpp_token_parser parser(example);
 
 			while (parser.parse() != ctt_end)
 			{
@@ -22,12 +22,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 		{
 			char *example = "int main(int argc, char* argv[]) { return 0; }";
-			cpp_parser parser(example);
+			cpp_token_parser parser(example);
 			cpp_treebuilder builder(parser);
 
 			while (builder.parse_toplevel())
 			{
-				std::cout << "parse_toplevel():" << std::endl;
+				std::cout << "parse_toplevel(): " << builder.toString() << std::endl;
 			}
 		}
 
