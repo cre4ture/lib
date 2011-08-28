@@ -36,6 +36,9 @@
     <ClInclude Include="cpphtmlparser\html_parser.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="cpp_operator_bib.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
