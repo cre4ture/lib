@@ -33,7 +33,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			}
 		}
 
-		{
+		{/*
 			char *example = "typedef int main_result; main_result main(int argc, char* argv[]) { return 0; }";
 			cpp_token_parser parser(example);
 			cpp_type_bib bib(NULL);
@@ -70,7 +70,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			{
 				std::cout << "parse_toplevel(): " << builder.toString() << std::endl;
 			}
-		}
+		*/}
 
 		{
 			char *example = "typedef int main_result; main_result main(int argc, char* argv[]) { main_result i; char* name; int nummer; float *f; double* d; return i; }";
@@ -87,6 +87,32 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		{
 			char *example = "typedef int main_result; main_result* main(int argc, char* argv[]) { main_result i[]; char* name; int nummer; float *f; double* d; return i; }";
+			cpp_token_parser parser(example);
+			cpp_type_bib bib(NULL);
+			cpp_identifier_bib idBib(NULL);
+			cpp_treebuilder builder(parser, bib, idBib);
+
+			while (builder.parse_toplevel())
+			{
+				std::cout << "parse_toplevel(): " << builder.toString() << std::endl;
+			}
+		}
+
+		{
+			char *example = "bool isZero(int i); typedef int main_result; main_result* main(int argc, char* argv[]) { main_result i[]; char* name; int nummer; float *f; double* d; isZero(nummer); return i; }";
+			cpp_token_parser parser(example);
+			cpp_type_bib bib(NULL);
+			cpp_identifier_bib idBib(NULL);
+			cpp_treebuilder builder(parser, bib, idBib);
+
+			while (builder.parse_toplevel())
+			{
+				std::cout << "parse_toplevel(): " << builder.toString() << std::endl;
+			}
+		}
+
+		{
+			char *example = "bool isZero(int i); int getResultCount(); typedef int main_result; int main(int argc, char* argv[]) { main_result i[]; char* name; int nummer; float *f; double* d; isZero(nummer); return getResultCount(); }";
 			cpp_token_parser parser(example);
 			cpp_type_bib bib(NULL);
 			cpp_identifier_bib idBib(NULL);
