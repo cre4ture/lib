@@ -1,6 +1,6 @@
 #pragma once
 
-#include "parser.h"
+#include "html_parser.h" // for myOStrStream
 #include "auto_ptr_map.h"
 #include "auto_ptr_vector.h"
 
@@ -29,7 +29,14 @@
 
 namespace creax {
 
-	enum cpp_token_type { ctt_start, ctt_special_char, ctt_name, ctt_end };
+	enum cpp_token_type 
+	{ 
+		ctt_start,
+		ctt_special_char,
+		ctt_name,
+		ctt_const,
+		ctt_end
+	};
 
 	class cpp_token_parser
 	{
@@ -64,6 +71,19 @@ token_start:
 				token << *cpos;
 				cpos++;
 				goto token_spec_char_end;
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				token << *cpos;
+				cpos++;
+				return ctt_const; 
 			default:; // nothing
 			}
 
@@ -225,14 +245,7 @@ token_spec_char_end:
 		const cpp_type_bib * const parent;
 		mefu::auto_ptr_map<std::string, cpp_type> types;
 
-		static cpp_type_bib global_type_bib;
-
 	public:
-
-		static cpp_type_bib* getGlobalTypeBib()
-		{
-			return &global_type_bib;
-		}
 
 		cpp_type_bib(cpp_type_bib *a_parent)
 			:parent(a_parent)
@@ -283,17 +296,28 @@ token_spec_char_end:
 		}
 	};
 
+	enum cpp_identifier_type
+	{
+		cit_none,
+		cit_variable,
+		cit_function
+	};
+
 	class cpp_identifier
 	{
 		UNDECLARE_DEFAULT(cpp_identifier);
 	public:
 		cpp_type *tp;
 		std::string name;
+		
+		virtual cpp_identifier_type getType() { return cit_variable; }
 
 		cpp_identifier(cpp_type *a_tp, std::string a_name)
 			: tp(a_tp),
 			  name(a_name)
 		{}
+
+		virtual ~cpp_identifier() {}
 	};
 
 	class cpp_identifier_bib
@@ -326,6 +350,40 @@ token_spec_char_end:
 			// TODO: überprüfen ob schon vorhanden !?
 			ids[id->name] = id;
 		}
+
+		void addConstIdentifier(cpp_identifier *id)
+		{
+			// add const ids to top-level-bib!
+			if (parent == NULL)
+				addIdentifier(id);
+			else
+				parent->addConstIdentifier(id);
+		}
+	};
+
+	class cpp_cmd; // prototyp
+	class cpp_identifier_bib; // prototyp
+
+	class cpp_identifier_function: public cpp_identifier
+	{
+	private:
+		bool defined;
+
+	public:
+		cpp_identifier_bib localBib;
+		mefu::auto_ptr_vector<cpp_cmd> impl_cmds;
+
+		bool isDefined() { return defined; }
+		
+		virtual cpp_identifier_type getType() { return cit_function; }
+
+		void setDefined() { defined = true; }
+
+		cpp_identifier_function(cpp_type *a_tp, std::string a_name, cpp_identifier_bib &parentIdBib)
+			: cpp_identifier(a_tp, a_name),
+			  defined(false),
+			  localBib(&parentIdBib)
+		{}
 	};
 
 	enum cpp_builder_elementtype
@@ -340,22 +398,93 @@ token_spec_char_end:
 	{
 		cct_none,
 		cct_return,
-		cct_decl_without_init
+		cct_decl_without_init,
+		cct_expression
 	};
 
-	const char* cmd_type_list[] = {
+	const char* cmd_type_list[cct_expression+1] = {
 		"none",
 		"return",
-		"decl_without_init"
+		"decl_without_init",
+		"expression"
 	}; 
+
+	enum cpp_expression_type
+	{
+		cet_none,
+		cet_variable,
+		cet_operator_call,
+		cet_function_call
+	};
+
+	class cpp_expression
+	{
+		UNDECLARE_DEFAULT(cpp_expression);
+	public:
+		cpp_type *tp;
+
+		virtual cpp_expression_type getType() = NULL;
+
+		virtual std::string toString() = NULL;
+
+		cpp_expression(cpp_type *a_tp)
+			: tp(a_tp)
+		{}
+
+		virtual ~cpp_expression() {}
+	};
+
+	class cpp_expression_variable: public cpp_expression
+	{
+		UNDECLARE_DEFAULT(cpp_expression_variable);
+	public:
+		cpp_identifier * const id;
+
+		virtual cpp_expression_type getType() { return cet_variable; }
+
+		virtual std::string toString() { return id->name; }
+
+		cpp_expression_variable(cpp_type *a_tp, cpp_identifier *a_id)
+			: cpp_expression(a_tp), 
+			  id(a_id)
+		{}
+	};
+
+	class cpp_expression_function_call: public cpp_expression
+	{
+		UNDECLARE_DEFAULT(cpp_expression_function_call);
+	public:
+		cpp_identifier * const id;
+		mefu::auto_ptr_vector<cpp_expression> params;
+
+		virtual cpp_expression_type getType() { return cet_function_call; }
+
+		virtual std::string toString()
+		{
+			std::ostringstream ostr;
+			ostr << id->name << "(";
+			for (size_t i = 0; i < params.size(); i++)
+			{
+				ostr << "," << params[i]->toString();
+			}
+			ostr << ")";
+			return ostr.str();
+		}
+
+		cpp_expression_function_call(cpp_type *a_tp, cpp_identifier *a_id)
+			: cpp_expression(a_tp), 
+			  id(a_id)
+		{}
+	};
 
 	class cpp_command_parser
 	{
 		UNDECLARE_DEFAULT(cpp_command_parser);
 	private:
 		cpp_token_parser &parser;
-		cpp_identifier_bib local_ids;
+		cpp_identifier_bib &local_ids;
 		cpp_type *returnType;
+		cpp_type_bib &typeBib;
 
 		void parse_cmd_starting_keyword(cpp_keyword kw)
 		{
@@ -363,59 +492,156 @@ token_spec_char_end:
 			{
 			case ckw_return:
 				cmd_type = cct_return;
-				switch (parser.parse())
+				parser.parse();
+				cmd_expression.reset(parse_one_expression());
+
+				if (cmd_expression->tp != returnType)
 				{
-				case ctt_special_char:
-					{
-						switch (parser.token_str[0])
-						{
-						case ';':
-							// return nothing
-							cmd_object = "";
-							break;
-						default:
-							throw std::runtime_error("Unexpected: " + parser.token_str);
-						}
-					}
-					cmd_object = "";
-					break;
-				case ctt_name:
-					// value to be returned TODO: read full cmd
-					{
-						cpp_identifier *i = local_ids.findIdentifier(parser.token_str);
-						if (i != NULL)
-						{
-							cmd_object = i->name;
-							if (i->tp != returnType)
-							{
-								throw std::runtime_error("Return command: wrong type: '" + i->tp->name + "' expected '" + returnType->name + "'");
-							}
-							// TODO: save here the reference not the copy of the name
-						}
-						else
-						{
-							if (parser.token_str == "0")
-							{
-								cmd_object = "0";
-								parser.parse();
-								if (parser.token_str != ";")
-								{
-									throw std::runtime_error("Return with value: Expected ';'");
-								}
-							}
-							else
-							{
-								throw std::runtime_error("Unsupported return value: " + parser.token_str);
-							}
-						}
-					}
-					break;
-				default:
-					throw std::runtime_error("Unexpected: " + parser.token_str);
+					throw std::runtime_error("Return command: wrong type: '" + cmd_expression->tp->name + "' expected '" + returnType->name + "'");
+				}
+
+				// check ;
+				if (parser.token_str != ";")
+				{
+					throw std::runtime_error("Return with value: Expected ';'");
 				}
 				break;
 			default:
 				throw std::runtime_error("Unexpected: " + parser.token_str);
+			}
+		}
+
+		cpp_expression_function_call* parse_cmd_starting_function_call(cpp_identifier_function *fid)
+		{
+			parser.parse(); // "("
+			if (parser.token_str != "(")
+			{
+				throw std::runtime_error("function call: Expected '(' instead of: " + parser.token_str);
+			}
+			else
+			{
+				cpp_expression_function_call *fcall = new cpp_expression_function_call(fid->tp, fid);
+				try
+				{
+					parser.parse(); // parse next expression
+					bool read_params = (parser.token_str != ")"); // skip if ")"
+
+					if (read_params == false)
+					{
+						parser.parse();
+						return fcall;
+					}
+
+					while (read_params)
+					{
+						fcall->params.push_back(
+							parse_one_expression()
+							);
+						switch (parser.token_type)
+						{
+						case ctt_special_char:
+							{
+								switch (parser.token_str[0])
+								{
+								case ',':
+									// read next param in next loop
+									break;
+								case ')':
+									// last param read, -> exit loop
+									read_params = false;
+									break;
+								default:
+									throw std::runtime_error("Function call: Unexpected " + parser.token_str);
+								}
+								// next
+								parser.parse();
+							}
+							break;
+						default:
+							throw std::runtime_error("Function call: Unexpected " + parser.token_str);
+						}
+					}
+					return fcall;
+
+				} catch (...)
+				{
+					// im Fehlerfall den Speicher wieder aufräumen!
+					delete fcall;
+					throw;
+				}
+			}
+		}
+
+		cpp_expression* parse_expression_starting_with_variable(cpp_identifier *id)
+		{
+			parser.parse();
+			switch (parser.token_type)
+			{
+			case ctt_special_char:
+				{
+					switch (parser.token_str[0])
+					{
+					case ',':
+					case ')':
+					case';':
+						{ // expression end -> variable expression!
+							cpp_expression_variable* exp = new cpp_expression_variable(id->tp, id);
+							return exp;
+						}
+						break;
+
+					case '*':
+					case '/':
+					case '>':
+					case '<':
+					case '%':
+						// ....
+						// TODO: implement operators!
+						throw std::runtime_error("Operators not implemented!! ");
+						break;
+					default:
+						throw std::runtime_error("Expression parser: Unexpected " + parser.token_str);
+					}
+				}
+				break;
+			default:
+				throw std::runtime_error("Expression parser: Unexpected " + parser.token_str);
+			}
+		}
+
+		cpp_expression* parse_one_expression()
+		{
+			cpp_identifier *id = local_ids.findIdentifier(parser.token_str);
+			
+			if (id == NULL)
+			{
+				// ists ne noch unbekannte konstante?
+				if (parser.token_type == ctt_const)
+				{
+					cpp_type *tp = typeBib.identifyType("int"); // TODO: other consts: text float chars ...
+					if (tp == NULL) throw std::runtime_error("A Command parser: Internal Error: int not found!" + parser.token_str); 
+					id = new cpp_identifier(tp, parser.token_str);
+					local_ids.addConstIdentifier(id);
+				}
+				else
+				{
+					// was könnte des den sonst noch sein?
+					throw std::runtime_error("B Command parser: Unknown identifier: " + parser.token_str);
+				}
+			}
+			
+			switch (id->getType())
+			{
+			case cit_variable:
+				// assignment or ....
+				return parse_expression_starting_with_variable(id);
+				break;
+			case cit_function:
+				// function call
+				return parse_cmd_starting_function_call((cpp_identifier_function*)id);
+				break;
+			default:
+				throw std::runtime_error("C Command parser: Unknown identifier: " + parser.token_str);
 			}
 		}
 
@@ -494,7 +720,6 @@ token_spec_char_end:
 							cpp_identifier *var = new cpp_identifier(tp, name);
 							local_ids.addIdentifier(var);
 							cmd_type = cct_decl_without_init;
-							cmd_object = name;
 						}
 					}
 					break;
@@ -506,21 +731,27 @@ token_spec_char_end:
 			{
 				// kein typ -> function call, assignment...
 				// TODO
-				throw std::runtime_error("To Be implemented...");
+				cpp_expression *exp = parse_one_expression();
+				if (exp == NULL)
+				{
+					// eigentlich unnötig hier, da im falle von einem Fehler eine Exception geworfen wird 
+					// und nie NULL zurückgegeben werden sollte.
+					throw std::runtime_error("Command Parser: Expression NULL (internal error)");
+				}
+				cmd_expression.reset(exp);
+				cmd_type = cct_expression;
 			}
 		}
-
-		cpp_type_bib &typeBib;
 
 	public:
 		cpp_command_parser(cpp_token_parser &a_parser,
 							cpp_type_bib &bib, 
-							cpp_identifier_bib &identifier_parent,
+							cpp_identifier_bib &local_idBib,
 							cpp_type *a_returnType)
 			: parser(a_parser),
 			  cmd_type(cct_none),
 			  typeBib(bib),
-			  local_ids(&identifier_parent),
+			  local_ids(local_idBib),
 			  returnType(a_returnType)
 		{}
 
@@ -528,7 +759,7 @@ token_spec_char_end:
 		{}
 
 		cpp_command_type cmd_type;
-		std::string cmd_object;
+		std::auto_ptr<cpp_expression> cmd_expression;
 
 		bool parse()
 		{
@@ -580,19 +811,20 @@ token_spec_char_end:
 
 	public:
 		cpp_command_type tp;  // use type? or use different classes?
-		std::string op;
-		std::string name;
+		std::auto_ptr<cpp_expression> exp;
 
 		cpp_cmd(cpp_command_type a_tp)
 			: tp(a_tp)
-		{
-
-		}
+		{}
 
 		std::string toString()
 		{
 			std::ostringstream ostr;
-			ostr << "cmd: '" << name << "':" << typetostr() << " op:" << op;
+			ostr << "cmdtype:" << typetostr();
+			if (exp.get() != NULL)
+			{
+				ostr << ": " << exp->toString();
+			}
 			return ostr.str();
 		}
 	};
@@ -714,6 +946,13 @@ token_spec_char_end:
 						}
 					}
 					break;
+				case ctt_special_char:
+					if (parser.token_str == ")")
+					{
+						// no parameters!
+						return;
+					}
+					// no break -> fallthrough ! same exception!
 				default:
 					throw std::runtime_error("Unexpected " + parser.token_str);
 				}
@@ -817,21 +1056,29 @@ token_spec_char_end:
 											switch (parser.token_str[0])
 											{
 											case ';':
-												element_tp = cbe_function_prototype;
-//												return true;
+												{
+													element_tp = cbe_function_prototype;
+													cpp_identifier_function *id = new cpp_identifier_function(tp, name, idBib);
+													idBib.addIdentifier(id);
+													element_fcall = id;
+												}
 												break;
 											case '{':
 												element_tp = cbe_function_implementation;
 												{
+													cpp_identifier_function *id = new cpp_identifier_function(tp, name, idBib);
+													idBib.addIdentifier(id);
+
 													cpp_command_parser cmdparser(parser, typeBib, idBib, tp);
 													while (cmdparser.parse())
 													{
 														cpp_cmd* acmd = new cpp_cmd(cmdparser.cmd_type);
-														acmd->name = "";
-														acmd->op = cmdparser.cmd_object;
-														//acmd.tp = cmdparser.cmd_type;
-														impl_cmds.push_back(acmd);
+														acmd->exp = cmdparser.cmd_expression; // get expression
+														id->impl_cmds.push_back(acmd);
 													}
+
+													id->setDefined();
+													element_fcall = id;
 												}
 												break;
 											case ':': // initialise list TODO
@@ -872,8 +1119,8 @@ token_spec_char_end:
 	public:
 
 		cpp_builder_elementtype element_tp;
-		mefu::auto_ptr_vector<cpp_cmd> impl_cmds;
 		std::string opname;
+		cpp_identifier_function *element_fcall;
 
 		std::string toString()
 		{
@@ -883,11 +1130,13 @@ token_spec_char_end:
 				return "function prototype";
 			case cbe_function_implementation:
 				{
+					if (!element_fcall) return "<error>";
+
 					std::ostringstream ostr;
 					ostr << "{" << std::endl;
-					for (size_t i = 0; i < impl_cmds.size(); i++)
+					for (size_t i = 0; i < element_fcall->impl_cmds.size(); i++)
 					{
-						ostr << impl_cmds[i]->toString() << std::endl;
+						ostr << element_fcall->impl_cmds[i]->toString() << std::endl;
 					}
 					ostr << "}";
 					return "function implementation: " + ostr.str();
@@ -931,10 +1180,8 @@ token_spec_char_end:
 					case ckw_class:
 						// class definition or prototype!
 						// TODO
+						throw std::runtime_error("Not Implemented: " + parser.token_str);
 						break;
-					case ckw_return:
-						// return keyword is not allowed here!
-						throw std::runtime_error("Return not allowed here!");
 					case ckw_none:
 						// no keyword => so we must have a type!
 						{
@@ -943,7 +1190,7 @@ token_spec_char_end:
 						break;
 					default:
 						// internal error
-						throw std::runtime_error("Internal Error: Unknown keyword: " + parser.token_str);
+						throw std::runtime_error("Unexpected Keyword: " + parser.token_str);
 					}
 				}
 				break;
