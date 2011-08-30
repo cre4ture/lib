@@ -39,6 +39,18 @@
     <ClInclude Include="cpp_operator_bib.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="cpp_treebuilder.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="cpp_command_builder.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="cpp_types.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="cpp_identifier.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

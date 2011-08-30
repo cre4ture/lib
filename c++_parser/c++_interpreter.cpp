@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "c++_parser.h"
+#include "cpp_treebuilder.h"
 
 #include <fstream>
 
@@ -12,7 +12,8 @@ void getFileContent(const std::string filename, std::string &content)
 {
 	const int BUFF_SIZE = 255;
 	char buffer[BUFF_SIZE+1];
-	FILE *fp = fopen(filename.c_str(), "rb");
+	FILE *fp;
+	fopen_s(&fp, filename.c_str(), "rb");
 	if (fp == NULL)
 	{
 		throw std::runtime_error("getFileContent(): Couldn't open file: " + filename);
@@ -241,6 +242,15 @@ int _tmain(int argc, _TCHAR* argv[])
 			while (builder.parse_toplevel())
 			{
 				std::cout << "parse_toplevel(): " << builder.toString() << std::endl;
+				switch (builder.element_tp)
+				{
+				case cbe_preproc_include_lib:
+				case cbe_preproc_include_src:
+					{
+						
+					}
+					break;
+				}
 			}
 		}
 
