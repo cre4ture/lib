@@ -9,8 +9,8 @@ void inc_global(int delta)
 	return;
 }
 
-int main(int argc, char* argv[])
+int* main(int argc, char* argv[])
 {
 	inc_global(5);
-	return global_int;
+	return (&(global_int));
 }
