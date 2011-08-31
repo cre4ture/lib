@@ -289,6 +289,19 @@ namespace creax {
 							return exp;
 						}
 						break;
+					case '(':
+						{
+							// klammer-expression
+							parser.parse();
+							std::auto_ptr<cpp_expression> exp = parse_one_expression();
+							if (parser.token_str != ")")
+							{
+								throw std::runtime_error("Z Command parser: missing ')': found: " + parser.token_str);
+							}
+							parser.parse();
+							return exp;
+						}
+						break;
 					default:
 						throw std::runtime_error("F Command parser: Unexpected operator: " + parser.token_str);
 					}
