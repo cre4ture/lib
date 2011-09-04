@@ -22,7 +22,9 @@
 	case '#':\
 	case '<':\
 	case '>':\
-	case '"'
+	case '"':\
+	case '%':\
+	case '='
 
 /* this macro can be used to disable the default
    constructor, the copy constructor and copy-operator */

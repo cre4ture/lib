@@ -2,6 +2,7 @@
 
 #include "cpp_types.h"
 #include "cpp_identifier.h"
+#include "cpp_operator_bib.h"
 
 namespace creax {
 
@@ -75,9 +76,9 @@ namespace creax {
 			switch (params.size())
 			{
 			case 1:
-				return op_name + params[0]->toString();
+				return "(" + op_name + params[0]->toString() + ")";
 			case 2:
-				return params[0]->toString() + op_name + params[1]->toString();
+				return "(" + params[0]->toString() + op_name + params[1]->toString() + ")";
 			default:
 				return "invalid op: " + op_name;
 			}
@@ -136,6 +137,7 @@ namespace creax {
 		cpp_identifier_bib &local_ids;
 		cpp_type *returnType;
 		cpp_type_bib &typeBib;
+		cpp_operator_bib &op_bib;
 
 		void parse_cmd_starting_keyword(cpp_keyword kw)
 		{
@@ -232,7 +234,7 @@ namespace creax {
 					{
 					case ',':
 					case ')':
-					case';':
+					case ';':
 						{ // expression end -> variable expression!
 							std::auto_ptr<cpp_expression_variable> exp(new cpp_expression_variable(id->tp, id));
 							return exp;
@@ -241,12 +243,31 @@ namespace creax {
 
 					case '*':
 					case '/':
+					case '+':
+					case '-':
+					case '%':
 					case '>':
 					case '<':
-					case '%':
-						// ....
-						// TODO: implement operators!
-						throw std::runtime_error("Operators not implemented!! ");
+					case '=':
+						{
+							cpp_operator *op = op_bib.getOperator(parser.token_str);
+							if (op == NULL)
+							{
+								throw std::runtime_error("Expression parser: Internal Error: Unknown operator: " + parser.token_str);
+							}
+							std::string op_name = parser.token_str;
+							std::auto_ptr<cpp_expression_variable> exp(new cpp_expression_variable(id->tp, id)); // TODO: unsauber, da code-copy
+
+							parser.parse();
+
+							std::auto_ptr<cpp_expression> exp2 = parse_one_expression();
+
+							std::auto_ptr<cpp_expression_operator_call> exp_op( 
+								new cpp_expression_operator_call(exp->tp, op_name));
+							exp_op->addParam((std::auto_ptr<cpp_expression>)exp);
+							exp_op->addParam(exp2);
+							return exp_op;
+						}
 						break;
 					default:
 						throw std::runtime_error("Expression parser: Unexpected " + parser.token_str);
@@ -448,12 +469,14 @@ namespace creax {
 		cpp_command_parser(cpp_token_parser &a_parser,
 							cpp_type_bib &bib, 
 							cpp_identifier_bib &local_idBib,
+							cpp_operator_bib &a_op_bib,
 							cpp_type *a_returnType)
 			: parser(a_parser),
 			  cmd_type(cct_none),
 			  typeBib(bib),
 			  local_ids(local_idBib),
-			  returnType(a_returnType)
+			  returnType(a_returnType),
+			  op_bib(a_op_bib)
 		{}
 
 		~cpp_command_parser()
