@@ -12,6 +12,7 @@ namespace creax {
 		cpp_token_parser &parser;
 		cpp_type_bib &typeBib;
 		cpp_identifier_bib &idBib;
+		cpp_operator_bib &op_bib;
 
 		cpp_type* identifyType(const std::string &name)
 		{
@@ -232,6 +233,20 @@ namespace creax {
 								case '(':
 									// we have a funktion implementation or prototype!
 									readFunctionParameter();
+
+									// add function definition to bib
+									{
+										std::auto_ptr<cpp_identifier_function> new_id(new cpp_identifier_function(tp, name, idBib));
+										function_id = new_id.get();
+										for (size_t i = 0; i < func_params.size(); i++)
+										{
+											std::auto_ptr<cpp_identifier> param_id(
+												new cpp_identifier(func_params[i].tp, func_params[i].name));
+											function_id->addParameter(param_id);
+										}
+										idBib.addIdentifier((std::auto_ptr<cpp_identifier>)new_id);
+									}
+
 									// read if prototype or not:
 									parser.parse();
 									switch (parser.token_type)
@@ -243,19 +258,13 @@ namespace creax {
 											case ';':
 												{
 													element_tp = cbe_function_prototype;
-													std::auto_ptr<cpp_identifier_function> new_id(new cpp_identifier_function(tp, name, idBib));
-													function_id = new_id.get();
-													idBib.addIdentifier((std::auto_ptr<cpp_identifier>)new_id);
 												}
 												break;
 											case '{':
 												element_tp = cbe_function_implementation;
 												{
-													std::auto_ptr<cpp_identifier_function> new_id(new cpp_identifier_function(tp, name, idBib));
-													function_id = new_id.get();
-													idBib.addIdentifier((std::auto_ptr<cpp_identifier>)new_id);
-
-													cpp_command_parser cmdparser(parser, typeBib, idBib, tp);
+													// read implementation of function
+													cpp_command_parser cmdparser(parser, typeBib, function_id->localBib, op_bib, tp);
 													while (cmdparser.parse())
 													{
 														cpp_cmd* acmd = new cpp_cmd(cmdparser.cmd_type);
@@ -264,7 +273,6 @@ namespace creax {
 													}
 
 													function_id->setDefined();
-													
 												}
 												break;
 											case ':': // initialise list TODO
@@ -391,10 +399,12 @@ namespace creax {
 			return "";
 		}
 
-		cpp_treebuilder(cpp_token_parser &a_parser, cpp_type_bib &a_typeBib, cpp_identifier_bib &a_idBib)
+		cpp_treebuilder(cpp_token_parser &a_parser, cpp_type_bib &a_typeBib,
+			cpp_identifier_bib &a_idBib, cpp_operator_bib &a_op_bib)
 			: parser(a_parser),
 			  typeBib(a_typeBib),
-			  idBib(a_idBib)
+			  idBib(a_idBib),
+			  op_bib(a_op_bib)
 		{
 		}
 

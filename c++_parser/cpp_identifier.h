@@ -81,12 +81,19 @@ namespace creax {
 	public:
 		cpp_identifier_bib localBib;
 		mefu::auto_ptr_vector<cpp_cmd> impl_cmds;
+		std::vector<cpp_identifier*> parameters;
 
 		bool isDefined() { return defined; }
 		
 		virtual cpp_identifier_type getType() { return cit_function; }
 
 		void setDefined() { defined = true; }
+
+		void addParameter(std::auto_ptr<cpp_identifier> id)
+		{
+			parameters.push_back(id.get());
+			localBib.addIdentifier(id);
+		}
 
 		cpp_identifier_function(cpp_type *a_tp, std::string a_name, cpp_identifier_bib &parentIdBib)
 			: cpp_identifier(a_tp, a_name),
