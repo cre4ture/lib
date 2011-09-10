@@ -79,8 +79,10 @@ namespace creax {
 											switch (parser.token_str[0]) 
 											{
 											case '[':
-												// pointer type TODO
+												// pointer type
 												{
+													param.tp = typeBib.getPtrTypeOf(param.tp);
+
 													parser.parse();
 													if (parser.token_type != ctt_special_char || 
 														parser.token_str[0] != ']')
@@ -378,7 +380,13 @@ namespace creax {
 					if (!function_id) return "<error>";
 
 					std::ostringstream ostr;
-					ostr << "{" << std::endl;
+					ostr << function_id->name << "(";
+					for (size_t i = 0; i < function_id->parameters.size(); i++)
+					{
+						ostr << ", " << function_id->parameters[i]->tp->name
+							<< " " << function_id->parameters[i]->name;
+					}
+					ostr << ") {" << std::endl;
 					for (size_t i = 0; i < function_id->impl_cmds.size(); i++)
 					{
 						ostr << function_id->impl_cmds[i]->toString() << std::endl;

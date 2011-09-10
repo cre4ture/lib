@@ -223,9 +223,8 @@ namespace creax {
 			}
 		}
 
-		std::auto_ptr<cpp_expression> parse_expression_starting_with_variable(cpp_identifier *id)
+		std::auto_ptr<cpp_expression> parse_expression_continue(std::auto_ptr<cpp_expression> &first_exp)
 		{
-			parser.parse();
 			switch (parser.token_type)
 			{
 			case ctt_special_char:
@@ -235,16 +234,15 @@ namespace creax {
 					case ',':
 					case ')':
 					case ';':
-						{ // expression end -> variable expression!
-							std::auto_ptr<cpp_expression_variable> exp(new cpp_expression_variable(id->tp, id));
-							return exp;
+						{ // expression end
+							return first_exp;
 						}
 						break;
 
-					case '*':
-					case '/':
 					case '+':
 					case '-':
+					case '*':
+					case '/':
 					case '%':
 					case '>':
 					case '<':
@@ -256,15 +254,13 @@ namespace creax {
 								throw std::runtime_error("Expression parser: Internal Error: Unknown operator: " + parser.token_str);
 							}
 							std::string op_name = parser.token_str;
-							std::auto_ptr<cpp_expression_variable> exp(new cpp_expression_variable(id->tp, id)); // TODO: unsauber, da code-copy
-
 							parser.parse();
 
 							std::auto_ptr<cpp_expression> exp2 = parse_one_expression();
 
 							std::auto_ptr<cpp_expression_operator_call> exp_op( 
-								new cpp_expression_operator_call(exp->tp, op_name));
-							exp_op->addParam((std::auto_ptr<cpp_expression>)exp);
+								new cpp_expression_operator_call(first_exp->tp, op_name));
+							exp_op->addParam((std::auto_ptr<cpp_expression>)first_exp);
 							exp_op->addParam(exp2);
 							return exp_op;
 						}
@@ -277,6 +273,13 @@ namespace creax {
 			default:
 				throw std::runtime_error("Expression parser: Unexpected " + parser.token_str);
 			}
+		}
+
+		std::auto_ptr<cpp_expression> parse_expression_starting_with_variable(cpp_identifier *id)
+		{
+			parser.parse();
+			std::auto_ptr<cpp_expression> exp(new cpp_expression_variable(id->tp, id));
+			return parse_expression_continue(exp);
 		}
 
 		std::auto_ptr<cpp_expression> parse_one_expression()
@@ -320,7 +323,7 @@ namespace creax {
 								throw std::runtime_error("Z Command parser: missing ')': found: " + parser.token_str);
 							}
 							parser.parse();
-							return exp;
+							return parse_expression_continue(exp);
 						}
 						break;
 					default:
