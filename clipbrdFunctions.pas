@@ -14,7 +14,7 @@ type
   PClipbrdCopyFormat = ^TClipbrdCopyFormat;
   TClipbrdCopyFormat = record
     ID: Word;
-    Name: String;
+    Name: AnsiString;
     Size: Cardinal;
     Data: pointer;
   end;
@@ -22,7 +22,7 @@ type
   private
     FFormatList: TList;
     FFilename: String;
-    function AddFormat(ID: Word; Name: String;
+    function AddFormat(ID: Word; Name: AnsiString;
       var Data; Size: Cardinal): Integer;
     procedure DeleteFormat(nr: Integer);
     procedure Warning(Text: String);
@@ -39,14 +39,25 @@ type
 
 procedure SaveClipboardtoFile(Filename, Description, PlugInName,
   ogame_domain: String; UserUniName: String);
-function ReadClipboardHtml: String;
-function ReadClipboardHtml_Ex: WideString;
+function ReadClipboardHtml: string;
+function ReadClipboardHtmlUTF8: AnsiString;
 function GetHtmlFormat: Integer;
-function GetClipboardText: String;
+function GetClipboardTextAnsi: AnsiString;
+function GetClipboardTextWide: WideString;
+function GetClipBoardText: String;
 function ReadClipboardText: string;
 function FindClipbrdFormat(name: String): Integer;
 
 implementation
+
+function conv_UTF8(const s: AnsiString): string;
+begin
+{$ifdef UNICODE}
+  Result := UTF8ToWideString(s);
+{$else}
+  Result := s;
+{$endif}
+end;
 
 function FindClipbrdFormat(name: String): Integer;
 var i: integer;
@@ -71,13 +82,37 @@ begin
   Result := FindClipbrdFormat('HTML');
 end;
 
-function GetClipboardText: String;
+function GetClipboardText: string;
+begin
+{$ifdef UNICODE}
+  Result := GetClipBoardTextWide;
+{$else}
+  Result := GetClipBoardTextAnsi;
+{$endif}
+end;
+
+function GetClipboardTextAnsi: AnsiString;
 var Data: THandle;
 begin
   Data := Clipboard.GetAsHandle(CF_TEXT);
   try
     if Data <> 0 then
-      Result := PChar(GlobalLock(Data)) else
+      Result := PAnsiChar(GlobalLock(Data))
+    else
+      Result := '';
+  finally
+    if Data <> 0 then GlobalUnlock(Data);
+  end;
+end;
+
+function GetClipboardTextWide: WideString;
+var Data: THandle;
+begin
+  Data := Clipboard.GetAsHandle(CF_UNICODETEXT);
+  try
+    if Data <> 0 then
+      Result := PWideChar(GlobalLock(Data))
+    else
       Result := '';
   finally
     if Data <> 0 then GlobalUnlock(Data);
@@ -89,10 +124,10 @@ begin
   Result := GetClipboardText;
 end;
 
-function ReadClipboardHtmlString(CutFormatHeader: Boolean = False): String;
+function ReadClipboardHtmlString(CutFormatHeader: Boolean = False): AnsiString;
 var
   MyHandle: THandle;
-  TextPtr: PChar;
+  TextPtr: PAnsiChar;
   CF_HTML: Word;
 begin
   CF_HTML := GetHtmlFormat;
@@ -101,65 +136,45 @@ begin
   try
     MyHandle := Clipboard.GetAsHandle(CF_HTML);
     TextPtr := GlobalLock(MyHandle);
-    Result := Utf8ToAnsi(TextPtr);
+    Result := TextPtr;
     GlobalUnlock(MyHandle);
   finally
     Clipboard.Close;
   end;
 end;
 
-function ReadClipboardHtml_Ex: WideString;
+function ReadClipboardHtmlUTF8: AnsiString;
 var
   MyHandle: THandle;
   ptr: pointer;
   size: integer;
   CF_HTML: Word;
   sig: Word;
-  UTF8: UTF8string;
 begin
+  Result := '';
+
   CF_HTML := GetHtmlFormat;
   ClipBoard.Open;
   try
-    MyHandle := Clipboard.GetAsHandle(CF_HTML);
-    size := GlobalSize(MyHandle);
-    ptr := GlobalLock(MyHandle);
-    if size > sizeof(sig) then
-      Move(ptr^,sig,sizeof(sig))
-    else sig := 0;
+    if Clipboard.HasFormat(CF_HTML) then
+    begin
+      MyHandle := Clipboard.GetAsHandle(CF_HTML);
+      size := GlobalSize(MyHandle);
+      ptr := GlobalLock(MyHandle);
+      if size > sizeof(sig) then
+        Move(ptr^,sig,sizeof(sig))
+      else sig := 0;
 
-    case sig of
-    $feff: //WideString
-      begin
-        SetLength(Result,size);
-        CopyMemory(PWideChar(Result),ptr,size);
+      case sig of
+      $feff: //WideString
+        begin
+          Result := UTF8Encode(PWideChar(ptr));
+        end;
+      else //UTF8
+        Result := PAnsiChar(ptr);
       end;
-    else //UTF8
-      SetLength(UTF8,size);
-      CopyMemory(PChar(UTF8),ptr,size);
-      Result := UTF8Decode(UTF8);
+      GlobalUnlock(MyHandle);
     end;
-    GlobalUnlock(MyHandle);
-  finally
-    Clipboard.Close;
-  end;
-end;
-
-function ReadClipboardHtmlWideString: Widestring;
-var
-  MyHandle: THandle;
-  ptr: pointer;
-  size: integer;
-  CF_HTML: Word;
-begin
-  CF_HTML := GetHtmlFormat;
-  ClipBoard.Open;
-  try
-    MyHandle := Clipboard.GetAsHandle(CF_HTML);
-    size := GlobalSize(MyHandle);
-    ptr := GlobalLock(MyHandle);
-    SetLength(Result,size);
-    CopyMemory(PWideChar(Result),ptr,size);
-    GlobalUnlock(MyHandle);
   finally
     Clipboard.Close;
   end;
@@ -167,27 +182,28 @@ end;
 
 function ReadClipboardHtml: String;
 begin
-  Result := ReadClipboardHtml_Ex;
-  {if widehtml then
-    Result := ReadClipboardHtmlWideString()
-  else
-  begin
-    Result := ReadClipboardHtmlString();
-    if (length(Result) > 2)and(Result[1] = #$FF)and(Result[2] = #$FE) then
-      Result := ReadClipboardHtmlWideString;
-  end; }
+{$ifdef UNICODE}
+  Result :=  UTF8ToWideString(ReadClipboardHtmlUTF8);
+{$else}
+  Result := ReadClipboardHtmlUTF8;
+{$endif}
 end;
 
 
 procedure SaveClipboardtoFile(Filename, Description, PlugInName, ogame_domain: String;
   UserUniName: String);
 
-  procedure WriteStringToStream(s: string; stream: TStream);
+  procedure WriteStringToStream(s: AnsiString; stream: TStream); overload;
   var i: integer; {4Byte ~ 2^31 Zeichen}
   begin
     i := length(s);
     stream.WriteBuffer(i,sizeof(i));
-    stream.WriteBuffer(PChar(s)^,i);
+    stream.WriteBuffer(PAnsiChar(s)^,i);
+  end;
+
+  procedure WriteStringToStream(s: WideString; stream: TStream); overload;
+  begin
+    WriteStringToStream(UTF8Encode((s)), stream);
   end;
 
   procedure WriteClipboardFormatToStream(Format: Word; stream: TStream);
@@ -228,7 +244,7 @@ begin
   stream.Free;
 end;
 
-function TClipbrdCopy.AddFormat(ID: Word; Name: String;
+function TClipbrdCopy.AddFormat(ID: Word; Name: AnsiString;
   var Data; Size: Cardinal): Integer;
 var Format: PClipbrdCopyFormat;
 begin
@@ -271,16 +287,16 @@ end;
 
 function TClipbrdCopy.LoadFromStream(AStream: TStream): Boolean;
 
-  function ReadStringFromStream(stream: TStream): String;
+  function ReadStringFromStream(stream: TStream): AnsiString;
   var i: integer;
   begin
     stream.ReadBuffer(i,SizeOf(i));
     SetLength(Result,i);
-    stream.ReadBuffer(PChar(Result)^,i);
+    stream.ReadBuffer(PAnsiChar(Result)^,i);
   end;
 
 var ID: Word;
-    Name: String;
+    Name: AnsiString;
     Size: Cardinal;
     Data: pointer;
 begin
@@ -300,7 +316,7 @@ end;
 
 procedure TClipbrdCopy.ReadClipbrd;
 var i, ID, size: integer;
-    s: array[byte] of Char;
+    s: array[byte] of AnsiChar;
     hndl: THandle;
     data: pointer;
 begin
@@ -328,12 +344,12 @@ end;
 
 procedure TClipbrdCopy.SaveToStream(AStream: TStream);
 
-  procedure WriteStringToStream(s: string; stream: TStream);
+  procedure WriteStringToStream(s: AnsiString; stream: TStream);
   var i: integer; {4Byte ~ 2^31 Zeichen}
   begin
     i := length(s);
     stream.WriteBuffer(i,sizeof(i));
-    stream.WriteBuffer(PChar(s)^,i);
+    stream.WriteBuffer(PAnsiChar(s)^,i);
   end;
 
 var
@@ -365,10 +381,14 @@ begin
     for i := 0 to FFormatList.Count-1 do
     with TClipbrdCopyFormat(FFormatList[i]^) do
     begin
+{$ifdef UNICODE}
+      nID := RegisterClipboardFormat(PWideChar(UTF8ToWideString(Name)));
+{$else}
       nID := RegisterClipboardFormat(PChar(Name));
+{$endif}
       if (nID <> 0)and(nID <> ID) then
       begin
-        Warning('New ID of ' + Name + ': ' + IntToStr(nID) +
+        Warning('New ID of ' + conv_UTF8(Name) + ': ' + IntToStr(nID) +
           '. The old was: ' + IntToStr(ID) + '.');
         ID := nID;
       end;

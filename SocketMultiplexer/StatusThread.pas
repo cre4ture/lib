@@ -73,11 +73,17 @@ var
   ThreadStatusActive: Boolean;
 
 procedure Register;
+function get_gThreadID: Cardinal;
+
+implementation
 
 threadvar
   gThreadID: Cardinal;
 
-implementation
+function get_gThreadID: Cardinal;
+begin
+  Result := gThreadID;
+end;
 
 {$ifdef nodebugstrings}
 procedure OutputDebugString(lpOutputString: PChar);

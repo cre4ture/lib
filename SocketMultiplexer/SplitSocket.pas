@@ -191,7 +191,11 @@ begin
   inherited Create(True);
   FMaster := AMaster;
   Socket := ASocket;
+{$ifdef UNICODE}
+  Name := 'SMux(' + WideString(RemoteHost.IP) + ':' + IntToStr(RemoteHost.Port) + ')';
+{$else}
   Name := 'SMux(' + RemoteHost.IP + ':' + IntToStr(RemoteHost.Port) + ')';
+{$endif}
   FTunnel := TThreadList.Create;
   CanWrite := TEvent.Create(nil,False,True,'');
   ThreadStopp := TEvent.Create(nil,True,False,'');

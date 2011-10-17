@@ -61,12 +61,12 @@ type
   TXDocType = (xdt_html, xdt_xml);
   THTMLAttribute = class{$ifdef memcheck}(TMemCheckObj){$endif}
   public
-    Name: WideString;
-    Value: WideString;
-    constructor Create(const aName: WideString = ''; const aValue: WideString = '');
+    Name: string;
+    Value: string;
+    constructor Create(const aName: string = ''; const aValue: string = '');
     function AsInteger: Integer; overload;
     function AsInteger(default: integer): Integer; overload;
-    function ToString: WideString;
+    function ToString: string;
   end;
   THTMLElement = class; //Vorabdeklaration
   TFindTagCheckFunction = function
@@ -79,23 +79,23 @@ type
     dummyAttr: THTMLAttribute;
     docType: TXDocType;
     function html_isemptytag(tagname: string): Boolean;
-    function GetAttributeValueByName(Name: WideString): WideString;
-    procedure SetAttributeValueByName(Name: WideString; value: WideString);
+    function GetAttributeValueByName(Name: string): string;
+    procedure SetAttributeValueByName(Name: string; value: string);
     function GetAttributeByIndex(Index: Integer): THTMLAttribute;
     function GetChildTag(Index: Integer): THTMLElement;
     function ParseChilds(p: TParserInterface): Integer;
-    function GetAttrByName(const name: WideString): THTMLAttribute;
-    function GetAttrByNameDef(const name: WideString): THTMLAttribute;
+    function GetAttrByName(const name: string): THTMLAttribute;
+    function GetAttrByNameDef(const name: string): THTMLAttribute;
   public
     Content: String;
     TagNameNr: Integer;
     TagType: THTMLParserTagType;
     ParentElement: THTMLElement;
     property TagName: String read FTagName write FTagName;
-    property AttributeValue[Name: WideString]: WideString
+    property AttributeValue[Name: string]: string
        read GetAttributeValueByName
        write SetAttributeValueByName; default;
-    property AttributesByName[const Name: WideString]: THTMLAttribute read GetAttrByNameDef;
+    property AttributesByName[const Name: string]: THTMLAttribute read GetAttrByNameDef;
     property Attributes[Index: Integer]: THTMLAttribute read GetAttributeByIndex;
     property ChildElements[Index: Integer]: THTMLElement read GetChildTag;
     /// Create
@@ -126,7 +126,9 @@ type
     function ChildCount: Integer;
     function AddChildElement(child: THTMLElement): Integer;
     function FullHTML: string;
-    procedure ParseHTMLCode(const s: String);
+    procedure ParseHTMLCode(const s: string);
+    procedure ParseHTMLCodeWide(const s: WideString);
+    procedure ParseHTMLCodeUTF8(const s: AnsiString);
     function FindTagRoutine(
       checkfunction: TFindTagCheckFunction; Data: pointer): THTMLElement;
     function ChildNameCount(const aTagName: String): Integer;
@@ -196,7 +198,7 @@ type
     function addCondition(cond: THTMLFindRoutingEx_FindCondition): integer;
     function routine(CurElement: THTMLElement; Data: pointer): Boolean;
     constructor Create;
-    destructor Destroy;
+    destructor Destroy; override;
     function searchFor(root_tag: THTMLElement): THTMLElement;
   end;
   //For HTMLGenerateHumanReadableText:
@@ -223,6 +225,15 @@ function HTMLFindRoutine_NameAttribute_Within(root_tag: THTMLElement; ftag_name,
 function HTMLGenerateHumanReadableText(node: THTMLElement): string;
 
 implementation
+
+function conv_UTF8(const s: AnsiString): string;
+begin
+{$ifdef UNICODE}
+  Result := UTF8ToWideString(s);
+{$else}
+  Result := s;
+{$endif}
+end;
 
 function HTMLGenerateHumanReadableText(node: THTMLElement): string;
 var iterator: THTMLGenerateHumanReadableText_dataobj;
@@ -277,7 +288,21 @@ begin
   Result := s;
 end;
 
-procedure THTMLElement.ParseHTMLCode(const s: String);
+procedure THTMLElement.ParseHTMLCodeWide(const s: WideString);
+var p: TParserInterface;
+begin
+  //RootElement ist das Element selbst!
+  p := TParserInterface.Create(UTF8Encode(s));
+  try
+    repeat
+      ParseChilds(p);
+    until p.Ready;
+  finally
+    p.Free;
+  end;
+end;
+
+procedure THTMLElement.ParseHTMLCodeUTF8(const s: AnsiString);
 var p: TParserInterface;
 begin
   //RootElement ist das Element selbst!
@@ -291,6 +316,15 @@ begin
   end;
 end;
 
+procedure THTMLElement.ParseHTMLCode(const s: string);
+begin
+{$ifdef UNICODE}
+  ParseHTMLCodeWide(s);
+{$else}
+  ParseHTMLCodeUTF8(s);
+{$endif}
+end;
+
 function THTMLAttribute.AsInteger: Integer;
 begin
   Result := StrToInt(Value);
@@ -301,7 +335,7 @@ begin
   Result := StrToIntDef(Value, default);
 end;
 
-constructor THTMLAttribute.Create(const aName: WideString = ''; const aValue: WideString = '');
+constructor THTMLAttribute.Create(const aName: string = ''; const aValue: string = '');
 begin
   inherited Create;
   
@@ -328,7 +362,7 @@ begin
   Result := THTMLAttribute(attrs[Index]);
 end;
 
-function THTMLElement.GetAttributeValueByName(Name: WideString): WideString;
+function THTMLElement.GetAttributeValueByName(Name: string): string;
 var attr: THTMLAttribute;
 begin
   Result := '';
@@ -517,7 +551,7 @@ begin
   end;
 end;
 
-function THTMLAttribute.ToString: WideString;
+function THTMLAttribute.ToString: string;
 begin
   if pos('"',Value) = 0 then
     Result := Name + '="' + Value + '"'
@@ -548,7 +582,7 @@ var child: THTMLElement;
       tname: string;
       tmp_attr: THTMLParser_Attribute;
   begin
-    tname := p.CurName;
+    tname := conv_UTF8(p.CurName);
     if tname = 'table' then
       child := THTMLTable.Create(Self, tname)
     else
@@ -564,7 +598,7 @@ var child: THTMLElement;
     for i := 0 to p.AttrCount-1 do
     begin
       tmp_attr := p.CurrAttr[i];
-      child.AttributeAdd(tmp_attr.Name,tmp_attr.Value);
+      child.AttributeAdd(conv_UTF8(tmp_attr.Name),conv_UTF8(tmp_attr.Value));
     end;
 
     if (p.CurTagType <> pttEmptyTag)and(not html_isemptytag(tname)) then
@@ -574,20 +608,20 @@ var child: THTMLElement;
 
   procedure DoEndTag;
   begin
-    ende := SameTagNames(TagName, p.CurName);
+    ende := SameTagNames(TagName, conv_UTF8(p.CurName));
     if not ende then  // workaround for common syntax errors in htmlcode
     begin
       if (ParentElement <> nil)and
-         (SameTagNames(ParentElement.TagName, p.CurName)) then
+         (SameTagNames(ParentElement.TagName, conv_UTF8(p.CurName))) then
       begin
-        child := THTMLElement.Create(Self,'<-/'+p.CurName, docType);
+        child := THTMLElement.Create(Self,'<-/'+conv_UTF8(p.CurName), docType);
         child.TagType := pttNone;
         ende := true;
         // activate workaround:
         Result := (Result+1) *-1;
       end else
       begin
-        child := THTMLElement.Create(Self,'x/'+p.CurName, docType);
+        child := THTMLElement.Create(Self,'x/'+conv_UTF8(p.CurName), docType);
         child.TagType := pttNone;
       end;
     end;
@@ -597,13 +631,13 @@ var child: THTMLElement;
   begin
     child := THTMLElement.Create(Self, '><',docType);
     child.TagType := pttContent;
-    child.Content := p.CurContent;
+    child.Content := conv_UTF8(p.CurContent);
   end;
 
   procedure DoComment;
   begin
     child := THTMLElement.Create(Self,'<!--',docType);
-    child.Content := p.CurContent;
+    child.Content := conv_UTF8(p.CurContent);
     child.TagType := p.CurTagType;
   end;
 
@@ -762,8 +796,8 @@ begin
   end;
 end;
 
-procedure THTMLElement.SetAttributeValueByName(Name: WideString;
-  value: WideString);
+procedure THTMLElement.SetAttributeValueByName(Name: string;
+  value: string);
 var attr: THTMLAttribute;
 begin
   attr := GetAttrByName(Name);
@@ -778,7 +812,7 @@ begin
   end;
 end;
 
-function THTMLElement.GetAttrByName(const name: WideString): THTMLAttribute;
+function THTMLElement.GetAttrByName(const name: string): THTMLAttribute;
 var i: Integer;
 begin
   Result := nil;
@@ -792,7 +826,7 @@ begin
   end;
 end;
 
-function THTMLElement.GetAttrByNameDef(const name: WideString): THTMLAttribute;
+function THTMLElement.GetAttrByNameDef(const name: string): THTMLAttribute;
 begin
   Result := GetAttrByName(name);
   if Result = nil then
