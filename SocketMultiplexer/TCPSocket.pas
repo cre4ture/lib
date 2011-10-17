@@ -22,7 +22,7 @@ uses
 type
   TSocket = winsock.TSocket;
   TTCPHost = record
-    IP: String;
+    IP: AnsiString;
     Port: Word;
   end;
   TSimpleTCPSocket = class
@@ -42,7 +42,7 @@ type
 
     function Accept: TSocket;
     procedure Bind(Port: Word);
-    function Connect(IP: String; Port: Word): boolean;
+    function Connect(IP: AnsiString; Port: Word): boolean;
     function RemoteHost: TTCPHost;
     procedure Listen;
     function Connected: Boolean;
@@ -109,7 +109,7 @@ type
 var
   WSAData: TWSAData;
 
-function GetHostByName(Host: String): in_addr;
+function GetHostByName(Host: AnsiString): in_addr;
 procedure Register;
 
 implementation
@@ -145,13 +145,13 @@ begin
   closesocket(FSocket);
 end;
 
-function TSimpleTCPSocket.Connect(IP: String; Port: Word): boolean;
+function TSimpleTCPSocket.Connect(IP: AnsiString; Port: Word): boolean;
 var
   sockaddr: sockaddr_in;
 begin
   sockaddr.sin_family := AF_INET;
   sockaddr.sin_port := htons(Port);
-  sockaddr.sin_addr.S_addr := inet_addr(PChar(IP));
+  sockaddr.sin_addr.S_addr := inet_addr(PAnsiChar(IP));
 
   if sockaddr.sin_addr.S_addr = -1 then
     sockaddr.sin_addr := getHostByName(IP);
@@ -263,10 +263,10 @@ begin
   if Result = SOCKET_ERROR then Error('SendBuf');
 end;
 
-function GetHostByName(Host: String): in_addr;
+function GetHostByName(Host: AnsiString): in_addr;
 var hostaddr: PHostEnt;
 begin
-  hostaddr := winsock.gethostbyname(Pchar(Host));
+  hostaddr := winsock.gethostbyname(PAnsiChar(Host));
   if hostaddr <> nil then
     Result := PInAddr(hostaddr^.h_addr^)^
   else Result.S_addr := -1;
