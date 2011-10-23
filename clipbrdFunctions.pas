@@ -42,7 +42,7 @@ procedure SaveClipboardtoFile(Filename, Description, PlugInName,
 function ReadClipboardHtml: string;
 function ReadClipboardHtmlUTF8: AnsiString;
 function GetHtmlFormat: Integer;
-function GetClipboardTextAnsi: AnsiString;
+function GetClipboardTextUTF8: AnsiString;
 function GetClipboardTextWide: WideString;
 function GetClipBoardText: String;
 function ReadClipboardText: string;
@@ -87,11 +87,11 @@ begin
 {$ifdef UNICODE}
   Result := GetClipBoardTextWide;
 {$else}
-  Result := GetClipBoardTextAnsi;
+  Result := GetClipBoardTextUTF8;
 {$endif}
 end;
 
-function GetClipboardTextAnsi: AnsiString;
+function GetClipboardTextUTF8: AnsiString;
 var Data: THandle;
 begin
   Data := Clipboard.GetAsHandle(CF_TEXT);
@@ -183,7 +183,7 @@ end;
 function ReadClipboardHtml: String;
 begin
 {$ifdef UNICODE}
-  Result :=  UTF8ToWideString(ReadClipboardHtmlUTF8);
+  Result := UTF8ToWideString(ReadClipboardHtmlUTF8);
 {$else}
   Result := ReadClipboardHtmlUTF8;
 {$endif}
