@@ -125,7 +125,7 @@ type
     {$ifndef Lazarus}OnException: TExceptionEvent;{$endif}
     Server: TSimpleServer;
     constructor Create;
-    procedure Connect(IP: String; Port: Integer);
+    procedure Connect(IP: AnsiString; Port: Integer);
     procedure AddNoThreadDataProc(ProcIndex: Word; Proc: TClientThreadHost_noThDa);
     procedure SendBuf(var buf; Size, ProcID: Word; DontSendAt: TClientThread; Filter: TFilterFunction; note: string);
     destructor Destroy; override;
@@ -181,7 +181,7 @@ begin
   Data := nil;
   inherited Create(CreateSuspended);
   FreeOnTerminate := True;
-  Name := Name + ' ' + ASocket.RemoteHost.IP + ':' + IntToStr(ASocket.RemoteHost.Port);
+  Name := Name + ' ' + string(ASocket.RemoteHost.IP) + ':' + IntToStr(ASocket.RemoteHost.Port);
 end;
 
 procedure TClientThread.Execute;
@@ -250,7 +250,7 @@ begin //braucht schon verbundenen Socket!
   ThreadLimit := High(ThreadLimit);
   FreeOnTerminate := False;
   inherited Create(false);
-  Name := Name + ' ' + ASocket.RemoteHost.IP + ':' + IntToStr(ASocket.RemoteHost.Port);
+  Name := Name + ' ' + string(ASocket.RemoteHost.IP) + :' + IntToStr(ASocket.RemoteHost.Port);
 end;
 
 destructor TDeMultiplexer.Destroy;
@@ -422,12 +422,12 @@ begin
   OnNoneThreadData(Self,SyncData^,NextLayer.Size,NextLayer.ProzessIndex);
 end;
 
-procedure TClientThreadHost.Connect(IP: String; Port: Integer);
+procedure TClientThreadHost.Connect(IP: AnsiString; Port: Integer);
 var i: integer;
     sock: TTCPSocket;
 begin
   sock := TTCPSocket.Create(-1);
-  Status := 'Verbinde mit "' + IP + ':' + IntToStr(Port) + '" ...';
+  Status := 'Verbinde mit "' + string(IP) + ':' + IntToStr(Port) + '" ...';
   if sock.Connect(IP,Port) then
   begin
     Status := 'Verbunden! Erstelle Clientthread ...';
@@ -654,7 +654,7 @@ end;
 constructor TEventEx.Create(EventAttributes: PSecurityAttributes; AManualReset,
       InitialState: Boolean; const Name: string);
 begin
-  inherited;
+  inherited Create(EventAttributes, AManualReset, InitialState, Name);
   FThreadsWaiting := 0;
 end;
 

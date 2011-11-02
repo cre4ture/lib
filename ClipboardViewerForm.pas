@@ -26,7 +26,9 @@ type
     function OpenClipboard: Boolean;
     procedure CloseClipboard;
     function GetClipboardHtml: String;
+    function GetClipboardHtml_utf8: AnsiString;
     function ClipboardHasText: Boolean;
+    function GetClipboardText_utf8: AnsiString;
   end;
 
 implementation
@@ -106,6 +108,11 @@ begin
   Result := clipbrdfunctions.GetClipboardText;
 end;
 
+function TClipboardViewer.GetClipboardText_utf8: AnsiString;
+begin
+  Result := clipbrdfunctions.GetClipboardTextUTF8;
+end;
+
 function TClipboardViewer.OpenClipboard: Boolean;
 begin
   Result := True;
@@ -124,6 +131,11 @@ end;
 function TClipboardViewer.GetClipboardHtml: String;
 begin
   Result := clipbrdfunctions.ReadClipboardHtml;
+end;
+
+function TClipboardViewer.GetClipboardHtml_utf8: AnsiString;
+begin
+  Result := clipbrdfunctions.ReadClipboardHtmlUTF8;
 end;
 
 function TClipboardViewer.ClipboardHasText: Boolean;
