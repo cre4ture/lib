@@ -66,7 +66,7 @@ type
     constructor Create(const aName: string = ''; const aValue: string = '');
     function AsInteger: Integer; overload;
     function AsInteger(default: integer): Integer; overload;
-    function ToString: string;
+    function ToString: string; override;
   end;
   THTMLElement = class; //Vorabdeklaration
   TFindTagCheckFunction = function
