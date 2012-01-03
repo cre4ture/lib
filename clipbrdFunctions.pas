@@ -6,6 +6,9 @@ uses
   Classes, clipbrd, windows, SysUtils;
 
 type
+{$ifndef UNICODE}
+  RawByteString = AnsiString;
+{$endif}
   TClipboardEx = class(TClipboard)
   public
     procedure SetBuffer(Format: Word; var Buffer; Size: Integer);
@@ -42,7 +45,8 @@ procedure SaveClipboardtoFile(Filename, Description, PlugInName,
 function ReadClipboardHtml: string;
 function ReadClipboardHtmlUTF8: AnsiString;
 function GetHtmlFormat: Integer;
-function GetClipboardTextUTF8: AnsiString;
+function getClipboardTextANSI: AnsiString;
+function GetClipboardTextUTF8: RawByteString;
 function GetClipboardTextWide: WideString;
 function GetClipBoardText: String;
 function ReadClipboardText: string;
@@ -91,7 +95,7 @@ begin
 {$endif}
 end;
 
-function GetClipboardTextUTF8: AnsiString;
+function getClipboardTextANSI: AnsiString;
 var Data: THandle;
 begin
   Data := Clipboard.GetAsHandle(CF_TEXT);
@@ -102,6 +106,18 @@ begin
       Result := '';
   finally
     if Data <> 0 then GlobalUnlock(Data);
+  end;
+end;
+
+function GetClipboardTextUTF8: RawByteString;
+begin
+  if (Clipboard.HasFormat(CF_UNICODETEXT)) then
+  begin
+    Result := UTF8Encode(GetClipboardTextWide);
+  end
+  else
+  begin
+    Result := UTF8Encode(RawByteString(getClipboardTextANSI));
   end;
 end;
 
