@@ -250,7 +250,7 @@ begin //braucht schon verbundenen Socket!
   ThreadLimit := High(ThreadLimit);
   FreeOnTerminate := False;
   inherited Create(false);
-  Name := Name + ' ' + string(ASocket.RemoteHost.IP) + :' + IntToStr(ASocket.RemoteHost.Port);
+  Name := Name + ' ' + string(ASocket.RemoteHost.IP) + ':' + IntToStr(ASocket.RemoteHost.Port);
 end;
 
 destructor TDeMultiplexer.Destroy;

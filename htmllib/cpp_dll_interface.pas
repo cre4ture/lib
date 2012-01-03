@@ -12,11 +12,13 @@ interface
 
 uses parser_types, Classes;
 
+const MaxListSize = MaxInt div 16;
+
 type
   ppAnsiChar = ^PAnsiChar;
   pParserHandle = ^Integer;
   pTagType = ^THTMLParserTagType;
-  PAnsiCharList = packed array[0..MaxListSize] of PAnsiChar;
+  PAnsiCharList = packed array[0..MaxListSize-1] of PAnsiChar;
   pPAnsiCharList = ^PAnsiCharList;
   ppPAnsiCharList = ^pPAnsiCharList;
   TCPPHTMLParser = class
