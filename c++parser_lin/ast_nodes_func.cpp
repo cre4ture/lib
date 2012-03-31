@@ -1,7 +1,8 @@
 #include "ast_nodes_func.hpp"
 #include "ast_internal.hpp"
+#include "ast_node_global_def_include.h"
 
-ast_node_declaration_var::ast_node_declaration_var(const char* _name, SymbolType* _type, ast_node_constIntList* a_initValue, ast_node* parent)
+ast_node_declaration_var::ast_node_declaration_var(const std::string& _name, SymbolType* _type, ast_node_constIntList* a_initValue, ast_node* parent)
     : ast_node(parent, annt_buildintypedecl), name(_name), type(_type)
 {
     int elements = getSizeOfType(convHicoVecType(type));
@@ -18,7 +19,7 @@ ast_node_declaration_var::ast_node_declaration_var(const char* _name, SymbolType
         initValue = a_initValue;
     }
 
-    addChild(initValue);
+    //addChild(initValue);
 }
 
 void ast_node_declaration_var::compile_decl(bool isGlobal)
@@ -151,8 +152,10 @@ void ast_node_functioncall::compile_value()
 
 void ast_node_parlist::compile_value()
 {
-    if (parlist != NULL) parlist->compile_value();
-    if (vardef != NULL) vardef->compile_decl(false);
+    for (size_t i = 0; i < child_nodes.size(); i++)
+    {
+        (static_cast<ast_node_declaration_var*>(child_nodes[i]))->compile_decl(false);
+    }
 }
 
 void ast_node_exprlist::compile_value()

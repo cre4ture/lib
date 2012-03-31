@@ -79,6 +79,23 @@ protected:
     {
         writer.addAttribute("type", "if");
     }
+
+    virtual void writeChildTags(xmlwriter& writer)
+    {
+        writer.beginTag("condition");
+        condition->writeToXML(writer);
+        writer.endTag("condition");
+        writer.beginTag("if_body");
+        if_body->writeToXML(writer);
+        writer.endTag("if_body");
+        if (else_body != NULL)
+        {
+            writer.beginTag("else_body");
+            else_body->writeToXML(writer);
+            writer.endTag("else_body");
+        }
+    }
+
 public:
     virtual void compile();
     ast_node_if_else(ast_node_value_expr* a_condition, ast_node_statement* a_if_body, ast_node_statement* a_else_body, ast_node* parent)
@@ -86,7 +103,10 @@ public:
     {
         addChild(a_condition);
         addChild(a_if_body);
-        addChild(a_else_body);
+        if (a_else_body != NULL)
+        {
+            addChild(a_else_body);
+        }
     }
 };
 

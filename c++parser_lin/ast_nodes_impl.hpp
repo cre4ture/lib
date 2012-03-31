@@ -3,6 +3,7 @@
 #include <string>
 #include <stdexcept>
 #include "ast_node_types.hpp"
+#include "xmlparser/html_parser.h"
 
 class ast_node_declaration_var;
 
@@ -20,32 +21,6 @@ public:
     ast_node_global_def_var_def(ast_node_declaration_var* a_varDef, ast_node* parent);
 };
 
-class ast_node_global_def_include: public ast_node_global_def
-{
-private:
-    std::string filename;
-    bool lib;
-
-protected:
-    virtual void writeAttributes(xmlwriter& writer)
-    {
-        writer.addAttribute("type", "globaldef_include");
-        writer.addAttribute("filename", filename);
-        writer.addAttribute("lib", lib);
-    }
-public:
-    virtual void compile() {
-        // TODO
-    }
-
-    ast_node_global_def_include(const std::string a_filename, ast_node* parent)
-        : ast_node_global_def(parent)
-    {
-        filename = a_filename.substr(1,a_filename.size()-2);
-        lib = (a_filename[0] == '<');
-    }
-};
-
 class ast_node_stmtBlock: public ast_node_statement
 {
 private:
@@ -53,7 +28,7 @@ private:
 protected:
     virtual void writeAttributes(xmlwriter& writer)
     {
-        writer.addAttribute("type", "stmtBlock");
+        writer.addAttribute("type", "stmtblock");
     }
 public:
     virtual void compile();
@@ -156,11 +131,12 @@ protected:
     {
         writer.addAttribute("type", "declaration_var");
         writer.addAttribute("name", name);
-        writer.addAttribute("vartype", type->getName());
+        writer.addAttribute("vartype", type->pointerBaseType()->getName());
+        writer.addAttribute("pointerlevel", type->pointerLevel());
     }
 public:
     void compile_decl(bool isGlobal);
-    ast_node_declaration_var(const char* _name, SymbolType* _type, ast_node_constIntList* a_initValue, ast_node* parent);
+    ast_node_declaration_var(const std::string& _name, SymbolType* _type, ast_node_constIntList* a_initValue, ast_node* parent);
 };
 
 class ast_node_array_declaration: public ast_node_declaration_var
@@ -286,31 +262,6 @@ public:
     {
         addChild(a_dest);
         addChild(a_src);
-    }
-};
-
-class ast_node_global_defList: public ast_node
-{
-protected:
-    virtual void writeAttributes(xmlwriter& writer)
-    {
-        writer.addAttribute("type", "global_defList");
-    }
-
-public:
-    void compile_member();
-    ast_node_global_defList(ast_node* parent)
-        : ast_node(parent, annt_buildintypedecl)
-    {}
-
-    size_t addChild(ast_node_global_def* gdef)
-    {
-        return ast_node::addChild(gdef);
-    }
-
-    int count_members()
-    {
-        return child_nodes.size();
     }
 };
 

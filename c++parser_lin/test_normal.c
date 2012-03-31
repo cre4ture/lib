@@ -1,6 +1,4 @@
 
-#include "test.h"
-
 int x;
 
 int add(int a, int b) 

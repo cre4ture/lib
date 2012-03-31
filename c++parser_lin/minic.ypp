@@ -8,11 +8,13 @@ YACC-Quelle fuer vereinfachtes C
 #include "Global.h"
 #include "Symbols.h"
 
+#include "ast_node_global_def_include.h"
 #include "ast_node_types.hpp"
 #include "ast_nodes_impl.hpp"
 #include "ast_nodes_flow.hpp"
 #include "ast_nodes_func.hpp"
 #include "ast_nodes_ops.hpp"
+#include "factory_ast_node_global_def.h"
 
 extern char *yytext;
 
@@ -101,9 +103,11 @@ gDefList:  	gDefList gDef       { $1->addChild($2); $$ = $1; }
 			;
 
 gDef:
-            varDef ';'      { $$ = new ast_node_global_def_var_def($1, NULL) }
+            varDef ';'          { $$ = new ast_node_global_def_var_def($1, NULL) }
             | funcDef           { $$ = $1; }
-            | PP_INCLUDE        { $$ = new ast_node_global_def_include(*$1, NULL); }
+            | PP_INCLUDE        { std::string filename = (*$1).substr(1,(*$1).size()-2);
+                                  bool lib = ((*$1)[0] == '<');
+                                  $$ = new ast_node_global_def_include(filename, lib, NULL); }
             ;
 
 varDef:		atype UNKNOWN_NAME {
@@ -136,9 +140,11 @@ funcDef:	atype UNKNOWN_NAME '(' {
 					}
 			;
 
-paramList:	paramList ',' varDef    { $$ = new ast_node_parlist($1, $3); }
-            | varDef                { $$ = new ast_node_parlist(NULL, $1); }
-            |                       { $$ = NULL; };
+paramList:	paramList ',' varDef    { $$ = $1;
+                                      $$->addChild($3); }
+            | varDef                { $$ = new ast_node_parlist(NULL);
+                                      $$->addChild($1); }
+            |                       { $$ = new ast_node_parlist(NULL); };
 			;
 
 
@@ -163,7 +169,7 @@ ctrlStmt:
               | FOR '(' stmt ';' exprA ';' stmtExpr ')' stmt  { $$ = new ast_node_for($3, $5, $7, $9, NULL); }
               | IF '(' exprA ')' stmt ELSE stmt               { $$ = new ast_node_if_else($3, $5, $7, NULL); }
               | IF '(' exprA ')' stmt %prec L_THEN            { $$ = new ast_node_if_else($3, $5, NULL, NULL); }
-              | KW_RETURN exprA ';'                              { $$ = new ast_node_return($2, NULL); }
+              | KW_RETURN exprA ';'                           { $$ = new ast_node_return($2, NULL); }
               | blockBegin stmtList blockEnd                  { $$ = new ast_node_stmtBlock($2, NULL); }
             ;
 

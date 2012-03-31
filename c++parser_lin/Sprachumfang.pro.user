@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by Qt Creator 2.4.1, 2012-03-31T16:18:37. -->
+<!-- Written by Qt Creator 2.4.1, 2012-03-31T21:52:30. -->
 <qtcreator>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -292,7 +292,7 @@
      <value type="int">13</value>
      <value type="int">14</value>
     </valuelist>
-    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Arguments">test_normal.c</value>
+    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Arguments">test.c</value>
     <value type="int" key="ProjectExplorer.CustomExecutableRunConfiguration.BaseEnvironmentBase">2</value>
     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">%{buildDir}/compiler</value>
     <value type="bool" key="ProjectExplorer.CustomExecutableRunConfiguration.UseTerminal">false</value>
