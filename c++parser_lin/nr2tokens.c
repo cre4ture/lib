@@ -1,0 +1,53 @@
+char* nr2token (int nr){
+  switch (nr) {
+    case 258 : return "ZAHL";
+    case 259 : return "GIDENT";
+    case 260 : return "GVECIDENT";
+    case 261 : return "VIDENT";
+    case 262 : return "VVECIDENT";
+    case 263 : return "FIDENT";
+    case 264 : return "NAME";
+    case 265 : return "ELEMENTS";
+    case 266 : return "ADD";
+    case 267 : return "SUB";
+    case 268 : return "MUL";
+    case 269 : return "DIV";
+    case 270 : return "END";
+    case 271 : return "CMPL";
+    case 272 : return "CMPG";
+    case 273 : return "CMPLE";
+    case 274 : return "CMPGE";
+    case 275 : return "CMPEQ";
+    case 276 : return "CMPNE";
+    case 277 : return "ASSIGNOP";
+    case 278 : return "ASSIGNOPG";
+    case 279 : return "PRINT";
+    case 280 : return "WHILE";
+    case 281 : return "IF";
+    case 282 : return "ELSE";
+    case 283 : return "DO";
+    case 284 : return "INTDEF";
+    case 285 : return "INTVECDEF";
+    case 286 : return "RETURN";
+    case 287 : return "FUNCTIONDEF";
+    case 288 : return "FUNCTIONCALL";
+    case 289 : return "PARLIST";
+    case 290 : return "PAR";
+    case 291 : return "PRGM";
+    case 292 : return "STMTLIST";
+    case 293 : return "STMT";
+    case 294 : return "EXPR";
+    case 295 : return "BLOCK";
+    case 296 : return "TERM";
+    case 297 : return "FAKT";
+    case 298 : return "KLAMMER";
+    case 299 : return "DEFLIST";
+    case 300 : return "EXPRLIST";
+    case 301 : return "ASM";
+    case 302 : return "PUSH";
+    case 303 : return "POP";
+    case 304 : return "IMUL";
+    case 305 : return "L_THEN";
+  }
+ return "unknown symbol";
+}

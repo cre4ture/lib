@@ -1,0 +1,233 @@
+/****************************************************
+Datei: minic.y
+YACC-Quelle fuer vereinfachtes C
+****************************************************/
+
+%{
+#include <stdio.h>
+#include "Global.h"
+#include "Symbols.h"
+
+#include "ast_node_types.hpp"
+#include "ast_nodes_impl.hpp"
+#include "ast_nodes_flow.hpp"
+#include "ast_nodes_func.hpp"
+#include "ast_nodes_ops.hpp"
+
+extern char *yytext;
+
+int elements = 0;
+int zeile = 1;
+int fdefnr;
+
+#define DEBUG(t,x) printf("%s:%d\n", t, x);
+#define PRINT(x) fprintf(ausgabe, "\t%s\n", x);
+
+extern ast_node_wurzel *wurzel;
+//struct knoten *generiere_knoten(int operation, int wert, struct knoten *erster, struct knoten *zweiter, struct knoten *dritter, char * txt=(char *)0); 
+
+int yylex();
+//int compile();
+//int compile(knoten*);
+
+%}
+
+%error-verbose
+
+%union {
+    int i;
+    std::string *txt;
+    ast_node_global_def* gDef;
+    ast_node_global_defList *gDefList;
+    ast_node_statement *stmt;
+    ast_node_statement_value_expr* stmtExpr;
+    ast_node_statementlist *stmtList;
+    ast_node_value_expr *valExpr;
+    ast_node_lvalue_expr *lvalExpr;
+    ast_node_exprlist *exprL;
+    ast_node_parlist *parL;
+	ast_node_declaration_var *varDecl;
+    ast_node_constIntList *constL;
+	SymbolType* typeSym;
+	SymbolVar* varSym;
+	SymbolFunc* funcSym;
+}
+
+%token <i> ZAHL
+%token <txt> UNKNOWN_NAME PP_INCLUDE
+%token <typeSym> TYPESYMBOL
+%token <varSym> VARSYMBOL
+%token <funcSym> FUNCSYMBOL
+
+// Andi
+%token ADD SUB MUL DIV END 
+%token CMPL CMPG CMPLE CMPGE CMPEQ CMPNE ASSIGNOP ASSIGNOPG ASSIGNOPP ASSIGNOPPG /* ASSIGN OP(ERATOR) P(OINTER) G(LOBAL) */
+
+// Benny asm_nodes_control_structures
+%token WHILE FOR IF ELSE DO VOIDDEF INTDEF INTPDEF INTVECDEF INTVECPDEF INTVECARRDEF KW_RETURN KW_UNSIGNED KW_LONG KW_INT KW_CHAR
+
+// Ewald
+%token FUNCTIONDEF FUNCTIONCALL PARLIST PAR PRGM STMTLIST STMT BLOCK TERM FAKT KLAMMER DEFLIST EXPR EXPRLIST
+%token ASM PUSH POP IMUL
+
+
+%nonassoc L_THEN
+%nonassoc ELSE
+
+%type <gDefList> gDefList
+%type <gDef> gDef funcDef
+
+%type <varDecl> varDef
+
+%type <stmtList> stmtList
+%type <stmt> stmt ctrlStmt
+
+%type <valExpr> exprA exprB exprC exprD funcCall assignment
+%type <exprL> exprList
+%type <parL> paramList
+%type <typeSym> atype
+%type <lvalExpr> lvalue
+%type <stmtExpr> stmtExpr
+
+%%
+
+
+
+programm:	gDefList            { wurzel = new ast_node_wurzel($1, NULL); }
+			;
+
+gDefList:  	gDefList gDef       { $1->addChild($2); $$ = $1; }
+            |                   { $$ = new ast_node_global_defList(NULL); }
+			;
+
+gDef:
+            varDef ';'      { $$ = new ast_node_global_def_var_def($1, NULL) }
+            | funcDef           { $$ = $1; }
+            | PP_INCLUDE        { $$ = new ast_node_global_def_include(*$1, NULL); }
+            ;
+
+varDef:		atype UNKNOWN_NAME {
+                SymbolVar* var = new SymbolVar(*$2, $1, symbContext->getParent() == NULL);
+                symbContext->addSymbol(var);
+                $$ = new ast_node_declaration_var($2->c_str(), $1, NULL, NULL);
+            }
+/*            | atype UNKNOWN_NAME '=' exprB {
+                SymbolVar* var = new SymbolVar(*$2, $1, symbContext->getParent() == NULL);
+                symbContext->addSymbol(var);
+                $$ = new ast_node_declaration_var($2->c_str(), $1, $4, NULL);
+            }*/
+            ;
+
+// Ausdruck der einen Typ beschreibt
+atype:		TYPESYMBOL          { $$ = $1; }
+            | TYPESYMBOL '*'    { $$ = new SymbolTypePtr($1); }
+            ;
+
+funcDef:	atype UNKNOWN_NAME '(' {
+                    symbContext->addSymbol(new SymbolFunc(*$2, $1));
+                    beginNewSymbContext();
+                    }
+				paramList ')' {
+                    // add params to func-symbol
+                    }
+                '{' stmtList '}' {
+                    $$ = new ast_node_function_def(*$2, $1, $5, $9, NULL);
+					endSymbContext();
+					}
+			;
+
+paramList:	paramList ',' varDef    { $$ = new ast_node_parlist($1, $3); }
+            | varDef                { $$ = new ast_node_parlist(NULL, $1); }
+            |                       { $$ = NULL; };
+			;
+
+
+stmtList: 	stmtList stmt       { $1->addChild($2); $$ = $1; }
+            |                   { $$ = new ast_node_statementlist(NULL); }
+			;
+
+
+// Statements werden in einer Funktion aufgerufen.
+stmt:
+              varDef ';'   { $$ = new ast_node_statement_var_def($1, NULL); }
+              | ctrlStmt   { $$ = $1; }
+              | stmtExpr   { $$ = $1; }
+              ;
+
+stmtExpr:     exprA ';'        { $$ = new ast_node_statement_value_expr($1, NULL); }
+              ;
+
+ctrlStmt:
+              WHILE '(' exprA ')' stmt                        { $$ = new ast_node_while($3, $5, NULL); }
+              | DO stmt WHILE '(' exprB ')' ';'               { $$ = new ast_node_do($5, $2, NULL); }
+              | FOR '(' stmt ';' exprA ';' stmtExpr ')' stmt  { $$ = new ast_node_for($3, $5, $7, $9, NULL); }
+              | IF '(' exprA ')' stmt ELSE stmt               { $$ = new ast_node_if_else($3, $5, $7, NULL); }
+              | IF '(' exprA ')' stmt %prec L_THEN            { $$ = new ast_node_if_else($3, $5, NULL, NULL); }
+              | KW_RETURN exprA ';'                              { $$ = new ast_node_return($2, NULL); }
+              | blockBegin stmtList blockEnd                  { $$ = new ast_node_stmtBlock($2, NULL); }
+            ;
+
+blockBegin: 	'{'             { beginNewSymbContext(); }
+                ;
+
+blockEnd:   	'}'             { endSymbContext(); }
+                ;
+
+exprA:
+            assignment          { $$ = $1; }
+            | exprB             { $$ = $1; }
+			;
+
+assignment:
+            lvalue '=' exprA    { $$ = new ast_node_assignment($1, $3, NULL); }
+            ;
+
+lvalue:
+            VARSYMBOL           { $$ = new ast_node_identifier($1, NULL); }
+            | '*' exprB         { $$ = new ast_node_deref_op($2, NULL); }
+            ;
+
+exprB:      exprB CMPL exprC        { $$ = new ast_node_op("<", $1, $3, NULL); }
+            | exprB CMPG exprC      { $$ = new ast_node_op(">", $1, $3, NULL); }
+            | exprB CMPLE exprC     { $$ = new ast_node_op("<=", $1, $3, NULL); }
+            | exprB CMPGE exprC     { $$ = new ast_node_op(">=", $1, $3, NULL); }
+            | exprB CMPEQ exprC     { $$ = new ast_node_op("==", $1, $3, NULL); }
+            | exprB CMPNE exprC     { $$ = new ast_node_op("!=", $1, $3, NULL); }
+            | exprB '+' exprC       { $$ = new ast_node_op("+", $1, $3, NULL); }
+            | exprB '-' exprC       { $$ = new ast_node_op("-", $1, $3, NULL); }
+            | exprC                 { $$ = $1; }
+            ;
+
+exprC:
+            exprC '*' exprD         { $$ = new ast_node_op("*", $1, $3, NULL); }
+            | exprC '/' exprD       { $$ = new ast_node_op("/", $1, $3, NULL); }
+            | exprD                 { $$ = $1; }
+            ;
+
+exprD:		'(' exprA ')'       { $$ = $2; }
+            | ZAHL              { $$ = new ast_node_constant_int($1, NULL); }
+            | lvalue            { $$ = $1; }
+            | '&' lvalue        { $$ = new ast_node_addr_op($2, NULL); }
+            | funcCall          { $$ = $1; }
+			;
+
+funcCall:	FUNCSYMBOL '(' exprList ')'     { $$ = new ast_node_functioncall($1, $3, NULL); }
+            ;
+
+exprList:	exprList ',' exprA              { $1->addChild(new ast_node_expression($3, NULL)); $$ = $1; }
+            | exprA                         { $$ = new ast_node_exprlist(NULL);
+                                              $$->addChild(new ast_node_expression($1, NULL)) }
+			;
+
+%%
+
+int yyerror(const char * msg) {
+    fprintf(stderr,"Syntaxfehler in Zeile %d, (yytext: \"%s\"): %s\n",zeile, yytext, msg);
+    return 0;
+}
+
+void startParser()
+{
+    yyparse();
+}
+
