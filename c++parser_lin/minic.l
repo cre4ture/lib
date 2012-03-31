@@ -9,6 +9,8 @@
 #include "ast_nodes_ops.hpp"
 #include "ast_nodes_func.hpp"
 #include "Symbols.h"
+#include "factory_ast_node_global_def.h"
+#include "ast_node_global_def_include.h"
 #include "minic.tab.hpp"
 
 extern int zeile;

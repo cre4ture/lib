@@ -1,5 +1,6 @@
 #include "ast_nodes_impl.hpp"
 #include "ast_internal.hpp"
+#include "factory_ast_node_global_def.h"
 
 void ast_node_statement_value_expr::compile()
 {

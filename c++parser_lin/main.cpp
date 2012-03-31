@@ -11,6 +11,8 @@
 #include "ast_nodes_flow.hpp"
 #include "ast_nodes_func.hpp"
 #include "ast_nodes_ops.hpp"
+#include "factory_ast_node_global_def.h"
+#include "ast_node_global_def_include.h"
 
 
 ast_node_wurzel *wurzel;

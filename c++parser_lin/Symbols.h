@@ -36,15 +36,26 @@ public:
 class SymbolType: public Symbol
 {
 public:
-    virtual bool isPointer()
+    bool isPointer()
     {
-        return false;
+        return (pointerLevel() != 0);
+    }
+
+    virtual int pointerLevel()
+    {
+        return 0;
+    }
+
+    virtual SymbolType* pointerBaseType()
+    {
+        return this;
     }
 
     virtual TypeOfSymbol getSymbolType(void)
 	{
 		return st_type;
 	}
+
     SymbolType(const std::string a_name)
         : Symbol(a_name)
     {
@@ -58,9 +69,14 @@ private:
 
 public:
 
-    virtual bool isPointer()
+    virtual int pointerLevel()
     {
-        return true;
+        return origType->pointerLevel()+1;
+    }
+
+    virtual SymbolType* pointerBaseType()
+    {
+        return origType->pointerBaseType();
     }
 
     virtual TypeOfSymbol getSymbolType(void)

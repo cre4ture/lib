@@ -30,10 +30,7 @@ protected:
 
     mefu::auto_ptr_vector<ast_node> child_nodes;
 
-    virtual void writeAttributes(xmlwriter& writer)
-    {
-        // TODO
-    }
+    virtual void writeAttributes(xmlwriter& writer) = 0;
 
     virtual void writeChildTags(xmlwriter& writer)
     {
@@ -66,8 +63,9 @@ public:
     size_t addChild(ast_node* const a_child_node)  // child node has to be created with parent=NULL
     {
         size_t index = child_nodes.size();
-        if (a_child_node != NULL)
-            a_child_node->setParent(this);
+        if (a_child_node == NULL)
+            throw std::runtime_error("can not add NULL child!");
+        a_child_node->setParent(this);
         child_nodes.push_back(a_child_node);
         return index;
     }

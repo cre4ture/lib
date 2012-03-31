@@ -26,7 +26,10 @@ SOURCES += ../Codeerzeugung/ast_nodes_asm_func.cpp \
     xmlnode.cpp \
     xmlwriter.cpp \
     ../Codeerzeugung/main.cpp \
-    main.cpp
+    main.cpp \
+    ast_node_global_def_include.cpp \
+    factory_ast_node_global_def.cpp \
+    factory_ast_node.cpp
 HEADERS += \
     ast_internal.hpp \
     Symbols.h \
@@ -40,7 +43,11 @@ HEADERS += \
     ast_node.h \
     auto_ptr_vector.h \
     xmlnode.h \
-    xmlwriter.h
+    xmlwriter.h \
+    xmlparser/html_parser.h \
+    ast_node_global_def_include.h \
+    factory_ast_node_global_def.h \
+    factory_ast_node.h
 OTHER_FILES += minic.ypp \
     minic.l \
     Makefile
