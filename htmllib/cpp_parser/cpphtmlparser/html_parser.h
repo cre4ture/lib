@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <cstring>
 #include "auto_ptr_vector.h"
 
 namespace creax {
@@ -31,12 +32,16 @@ namespace creax {
 		size_t pos;
 		std::string *ostr;
 
-		void flushToStream() const
+        void flushToStream() const
 		{
-			if (ostr == NULL) ((std::string*)(ostr)) = new std::string();
+            if (ostr == NULL)
+            {
+                std::string** ptr = (std::string**)&ostr;
+                *ptr = new std::string();
+            }
 			
 			*(char*)(&text[pos]) = 0;
-			(*(std::string*)(ostr)) += text;
+            (*(std::string*)(ostr)) += text;
 			*(size_t*)(&pos) = 0;
 		}
 
@@ -60,7 +65,7 @@ namespace creax {
 			return *this;
 		}
 
-		std::string str() const
+        std::string str() const
 		{
 			if (ostr == NULL) {
 				*(char*)(&text[pos]) = 0;
@@ -348,7 +353,7 @@ namespace creax {
 			cpos(ahtmlcode)
 		{}
 
-		bool initpAttrs()
+        bool initpAttrs() // DLL-API
 		{
 			size_t acount = curTagAttributes.size();
 			pAttrNames.resize(acount);
@@ -359,6 +364,46 @@ namespace creax {
 			}
 			return (acount != 0);
 		}
+
+        const std::string getAttribute(const std::string& name) // C++API
+        {
+            for (size_t i = 0; i < curTagAttributes.size(); i++)
+            {
+                if (curTagAttributes[i]->name == name)
+                    return curTagAttributes[i]->value;
+            }
+            return "";
+        }
+
+        const int getAttributeInt(const std::string& name) // C++API
+        {
+            return atoi(getAttribute(name).c_str());
+        }
+
+        bool parseToNextTag() // C++API
+        {
+            do if(!parse()) return false; while (curTagType == tt_Content);
+            return true;
+        }
+
+/*        bool parseToEndTag() // C++API
+        {
+            if (curTagType == tt_EmptyTag)
+                return true;
+
+            int i = 1;
+            do
+            {
+                if(!parse()) return false;
+                if (curTagType == tt_StartTag)
+                    i++;
+                else
+                if (curTagType == tt_EndTag)
+                    i--;
+            }
+            while (!((curTagType == tt_EndTag) && (i == 0)));
+            return true;
+        }*/
 
 		bool parse()
 		{
