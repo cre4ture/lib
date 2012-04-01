@@ -4,6 +4,10 @@ int x;
 int add(int a, int b) 
 {
 	int c;
+    while (a+c)
+    {
+        c = c + 1;
+    }
 	c = a + b;
 	return c;
 }
