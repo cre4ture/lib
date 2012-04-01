@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <stdio.h>
+#include <fstream>
 #include "Global.h"
 #include "Symbols.h"
 #include "xmlwriter.h"
@@ -20,17 +21,30 @@ ast_node_wurzel *wurzel;
 FILE *ausgabe;
 extern FILE *yyin;
 FILE* compile_output;
+std::ostream* new_output;
 
 int main(int argc, char *argv [])
 {
     int result = 0;
 
-    if (argc != 2) {
-        fprintf(stderr, "usage: %s <inputfile> \n", argv[0]);
+    for (int i = 0; i < argc; i++)
+    {
+        std::cout << "[" << i << "]: " << argv[i] << std::endl;
+    }
+
+    if ((argc <= 1)||(argc > 3)) {
+        fprintf(stderr, "usage: %s <inputfile> [<outputfile>]\n", argv[0]);
         return 1;
     }
 
-    compile_output = stdout; // use stdout as destination file, change this later to write to file!
+    if (argc == 3)
+    {
+        new_output = new std::ofstream(argv[2]);
+    }
+    else
+    {
+        new_output = &std::cout; // use stdout as destination file, change this later to write to file!
+    }
 
     symbContext->addSymbol(new SymbolType("*")); // pointer
     SymbolType* sym_int = new SymbolType("int");
@@ -48,7 +62,7 @@ int main(int argc, char *argv [])
     yyin = fopen(argv[1], "r");
     ausgabe = fopen("zcode", "w");
     if (yyin == NULL || ausgabe == NULL) {
-        fprintf(stderr, "Could not open file\n");
+        std::cerr << "Could not open file: " << argv[1] << std::endl;
         exit(1);
     }
 
@@ -62,7 +76,7 @@ int main(int argc, char *argv [])
     if (result == 0)
     {
         try {
-            xmlwriter writer(std::cout);
+            xmlwriter writer(*new_output);
             writer.beginTag("root");
             if (wurzel != NULL) wurzel->writeToXML(writer);
             writer.endTag("root");

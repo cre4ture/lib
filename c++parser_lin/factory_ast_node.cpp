@@ -35,31 +35,6 @@ static ast_node* creatorFuncAN_declaration_var(creax::htmlparser& xml)
     return var;
 }
 
-static ast_node* creatorFuncAN_assignment(creax::htmlparser& xml)
-{
-    if (xml.curTagType != creax::tt_StartTag)
-        THROW_RUNTIME_ERROR("start tag expected!");
-
-    xml.parseToNextTag();
-    ast_node_lvalue_expr* lvalue =
-            dynamic_cast<ast_node_lvalue_expr*>(factory_ast_node::createFromXML(xml));
-
-    xml.parseToNextTag();
-    ast_node_value_expr* value =
-            dynamic_cast<ast_node_value_expr*>(factory_ast_node::createFromXML(xml));
-
-    if (lvalue == NULL)
-        THROW_RUNTIME_ERROR("failed to cast lvalue!");
-    if (value == NULL)
-        THROW_RUNTIME_ERROR("failed to cast value!");
-
-    xml.parseToNextTag();
-    if (xml.curTagType != creax::tt_EndTag)
-        THROW_RUNTIME_ERROR("expected end tag!");
-
-    return new ast_node_assignment(lvalue, value, NULL);
-}
-
 static ast_node* creatorFuncAN_identifier(creax::htmlparser& xml)
 {
     if (xml.curTagType != creax::tt_EmptyTag)
@@ -121,6 +96,32 @@ static ast_node* creatorFuncAN_templateChild1(creax::htmlparser& xml)
     return new resultT(child, NULL);
 }
 
+template<class resT, class childT1, class childT2>
+static ast_node* creatorFuncAN_templateChild2(creax::htmlparser& xml)
+{
+    if (xml.curTagType != creax::tt_StartTag)
+        THROW_RUNTIME_ERROR("start tag expected!");
+
+    xml.parseToNextTag();
+    childT1* op1 =
+            dynamic_cast<childT1*>(factory_ast_node::createFromXML(xml));
+
+    xml.parseToNextTag();
+    childT2* op2 =
+            dynamic_cast<childT2*>(factory_ast_node::createFromXML(xml));
+
+    if (op1 == NULL)
+        THROW_RUNTIME_ERROR("failed to cast child1!");
+    if (op2 == NULL)
+        THROW_RUNTIME_ERROR("failed to cast child2!");
+
+    xml.parseToNextTag();
+    if (xml.curTagType != creax::tt_EndTag)
+        THROW_RUNTIME_ERROR("expected end tag!");
+
+    return new resT(op1, op2, NULL);
+}
+
 static ast_node* creatorFuncAN_if(creax::htmlparser& xml)
 {
     if (xml.curTagType != creax::tt_StartTag)
@@ -155,25 +156,6 @@ static ast_node* creatorFuncAN_if(creax::htmlparser& xml)
     return new ast_node_if_else(condition, if_body, else_body, NULL);
 }
 
-static ast_node* creatorFuncAN_stmtblock(creax::htmlparser& xml)
-{
-    if (xml.curTagType != creax::tt_StartTag)
-        THROW_RUNTIME_ERROR("start tag expected!");
-
-    xml.parseToNextTag();
-    ast_node_statement* stmt =
-            dynamic_cast<ast_node_statement*>(factory_ast_node::createFromXML(xml));
-
-    if (stmt == NULL)
-        THROW_RUNTIME_ERROR("failed to cast returnvalue!");
-
-    xml.parseToNextTag();
-    if (xml.curTagType != creax::tt_EndTag)
-        THROW_RUNTIME_ERROR("expected end tag!");
-
-    return new ast_node_stmtBlock(stmt, NULL);
-}
-
 static ast_node* creatorFuncAN_constant_int(creax::htmlparser& xml)
 {
     if (xml.curTagType != creax::tt_EmptyTag)
@@ -182,25 +164,6 @@ static ast_node* creatorFuncAN_constant_int(creax::htmlparser& xml)
     int value = xml.getAttributeInt("value");
 
     return new ast_node_constant_int(value, NULL);
-}
-
-static ast_node* creatorFuncAN_deref_op(creax::htmlparser& xml)
-{
-    if (xml.curTagType != creax::tt_StartTag)
-        THROW_RUNTIME_ERROR("start tag expected!");
-
-    xml.parseToNextTag();
-    ast_node_value_expr* pointer =
-            dynamic_cast<ast_node_value_expr*>(factory_ast_node::createFromXML(xml));
-
-    if (pointer == NULL)
-        THROW_RUNTIME_ERROR("failed to cast child!");
-
-    xml.parseToNextTag();
-    if (xml.curTagType != creax::tt_EndTag)
-        THROW_RUNTIME_ERROR("expected end tag!");
-
-    return new ast_node_deref_op(pointer, NULL);
 }
 
 static ast_node* creatorFuncAN_functioncall(creax::htmlparser& xml)
@@ -225,6 +188,42 @@ static ast_node* creatorFuncAN_functioncall(creax::htmlparser& xml)
         THROW_RUNTIME_ERROR("expected end tag!");
 
     return new ast_node_functioncall(sf, exprlist, NULL);
+}
+
+static ast_node* creatorFuncAN_for(creax::htmlparser& xml)
+{
+    if (xml.curTagType != creax::tt_StartTag)
+        THROW_RUNTIME_ERROR("start tag expected!");
+
+    xml.parseToNextTag();
+    ast_node_statement* initial =
+            dynamic_cast<ast_node_statement*>(factory_ast_node::createFromXML(xml));
+    if (initial == NULL)
+        THROW_RUNTIME_ERROR("failed to cast initial tag!");
+
+    xml.parseToNextTag();
+    ast_node_value_expr* condition =
+            dynamic_cast<ast_node_value_expr*>(factory_ast_node::createFromXML(xml));
+    if (initial == NULL)
+        THROW_RUNTIME_ERROR("failed to cast condition tag!");
+
+    xml.parseToNextTag();
+    ast_node_statement_value_expr* assign =
+            dynamic_cast<ast_node_statement_value_expr*>(factory_ast_node::createFromXML(xml));
+    if (initial == NULL)
+        THROW_RUNTIME_ERROR("failed to cast assign tag!");
+
+    xml.parseToNextTag();
+    ast_node_statement* body =
+            dynamic_cast<ast_node_statement*>(factory_ast_node::createFromXML(xml));
+    if (initial == NULL)
+        THROW_RUNTIME_ERROR("failed to cast body tag!");
+
+    xml.parseToNextTag();
+    if (xml.curTagType != creax::tt_EndTag)
+        THROW_RUNTIME_ERROR("expected end tag!");
+
+    return new ast_node_for(initial, condition, assign, body, NULL);
 }
 
 template<class listT, class elemT>
@@ -268,18 +267,21 @@ ast_node* factory_ast_node::createFromXML(creax::htmlparser& xml)
         lookupTable["statementlist"] = &creatorFuncAN_templatelist<ast_node_statementlist, ast_node_statement>;
         lookupTable["statement_var_def"] = &creatorFuncAN_templateChild1<ast_node_statement_var_def, ast_node_declaration_var>;
         lookupTable["statement_value_expr"] = &creatorFuncAN_templateChild1<ast_node_statement_value_expr, ast_node_value_expr>;
-        lookupTable["assignment"] = &creatorFuncAN_assignment;
+        lookupTable["assignment"] = &creatorFuncAN_templateChild2<ast_node_assignment, ast_node_lvalue_expr, ast_node_value_expr>;
         lookupTable["identifier"] = &creatorFuncAN_identifier;
         lookupTable["op2"] = &creatorFuncAN_op2;
         lookupTable["return"] = &creatorFuncAN_templateChild1<ast_node_return, ast_node_value_expr>;
         lookupTable["addr_op"] = &creatorFuncAN_templateChild1<ast_node_addr_op, ast_node_lvalue_expr>;
         lookupTable["if"] = &creatorFuncAN_if;
-        lookupTable["stmtblock"] = &creatorFuncAN_stmtblock;
+        lookupTable["stmtblock"] = &creatorFuncAN_templateChild1<ast_node_stmtBlock, ast_node_statement>;
         lookupTable["constant_int"] = &creatorFuncAN_constant_int;
-        lookupTable["deref_op"] = &creatorFuncAN_deref_op;
+        lookupTable["deref_op"] = &creatorFuncAN_templateChild1<ast_node_deref_op, ast_node_value_expr>;
         lookupTable["functioncall"] = &creatorFuncAN_functioncall;
         lookupTable["exprlist"] = &creatorFuncAN_templatelist<ast_node_exprlist, ast_node_expression>;
         lookupTable["expression"] = &creatorFuncAN_templateChild1<ast_node_expression, ast_node_value_expr>;
+        lookupTable["while"] = &creatorFuncAN_templateChild2<ast_node_while, ast_node_value_expr, ast_node_statement>;
+        lookupTable["for"] = &creatorFuncAN_for;
+        lookupTable["do"] = &creatorFuncAN_templateChild2<ast_node_do, ast_node_value_expr, ast_node_statement>;
     }
 
     std::string type = xml.getAttribute("type");

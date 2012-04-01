@@ -155,18 +155,19 @@ stmtList: 	stmtList stmt       { $1->addChild($2); $$ = $1; }
 
 // Statements werden in einer Funktion aufgerufen.
 stmt:
-              varDef ';'   { $$ = new ast_node_statement_var_def($1, NULL); }
-              | ctrlStmt   { $$ = $1; }
-              | stmtExpr   { $$ = $1; }
+              varDef ';'       { $$ = new ast_node_statement_var_def($1, NULL); }
+              | ctrlStmt       { $$ = $1; }
+              | stmtExpr ';'   { $$ = $1; }
+              | ';'            { $$ = new ast_node_statementlist(NULL); }
               ;
 
-stmtExpr:     exprA ';'        { $$ = new ast_node_statement_value_expr($1, NULL); }
+stmtExpr:     exprA        { $$ = new ast_node_statement_value_expr($1, NULL); }
               ;
 
 ctrlStmt:
               WHILE '(' exprA ')' stmt                        { $$ = new ast_node_while($3, $5, NULL); }
               | DO stmt WHILE '(' exprB ')' ';'               { $$ = new ast_node_do($5, $2, NULL); }
-              | FOR '(' stmt ';' exprA ';' stmtExpr ')' stmt  { $$ = new ast_node_for($3, $5, $7, $9, NULL); }
+              | FOR '(' stmt exprA ';' stmtExpr ')' stmt      { $$ = new ast_node_for($3, $4, $6, $8, NULL); }
               | IF '(' exprA ')' stmt ELSE stmt               { $$ = new ast_node_if_else($3, $5, $7, NULL); }
               | IF '(' exprA ')' stmt %prec L_THEN            { $$ = new ast_node_if_else($3, $5, NULL, NULL); }
               | KW_RETURN exprA ';'                           { $$ = new ast_node_return($2, NULL); }
