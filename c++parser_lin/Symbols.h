@@ -228,25 +228,62 @@ public:
         symbols[newSymbol->getName()] = newSymbol;
 	}
 
+    SymbolType* getBuildInType(std::string name)
+    {
+        Symbol* sym = this->find(name);
+        if (sym == NULL)
+        {
+            throw std::runtime_error("'" + name + "' is not a defined symbol!");
+        }
+        if (sym->getSymbolType() != st_type)
+        {
+            throw std::runtime_error("'" + name + "' is not a defined type!");
+        }
+        return (SymbolType*)sym;
+    }
+
 };
 
-extern Symbols* symbContext;
-
-void beginNewSymbContext();
-void endSymbContext();
-
-inline SymbolType* getBuildInType(std::string name)
+class definelist
 {
-    Symbol* sym = symbContext->find(name);
-    if (sym == NULL)
+private:
+    std::map<std::string, std::string> defines;
+    std::map<std::string, int> depends;
+
+public:
+
+    void addDependency(const std::string& define)
     {
-        throw std::runtime_error("'" + name + "' is not a defined symbol!");
+        depends[define]++;
     }
-    if (sym->getSymbolType() != st_type)
+
+    void setDefine(const std::string& name, const std::string& value)
     {
-        throw std::runtime_error("'" + name + "' is not a defined type!");
+        defines[name] = value;
     }
-    return (SymbolType*)sym;
-}
+
+    void unsetDefine(const std::string& name)
+    {
+        defines.erase(name);
+    }
+
+    bool getValue(const std::string name, std::string& value)
+    {
+        std::map<std::string, std::string>::iterator i = defines.find(name);
+        if (i != defines.end())
+        {
+            value = i->second;
+            return true;
+        }
+        return false;
+    }
+
+    bool isSet(const std::string name)
+    {
+        std::string value;
+        return getValue(name, value);
+    }
+
+};
 
 #endif

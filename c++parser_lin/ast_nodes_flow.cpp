@@ -2,6 +2,8 @@
 #include "ast_nodes_flow.hpp"
 #include "ast_internal.hpp"
 
+static FILE* compile_output;
+
 void ast_node_while::compile()
 {
     std::string l_start = newLabel("start");

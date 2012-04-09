@@ -6,8 +6,6 @@
 #include "Symbols.h"
 #include "ast_node.h"
 
-extern FILE* compile_output; // default output file
-
 class ast_node_global_def: public ast_node
 {
 public:

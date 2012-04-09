@@ -2,6 +2,8 @@
 #include "ast_internal.hpp"
 #include "ast_node_global_def_include.h"
 
+static FILE* compile_output;
+
 ast_node_declaration_var::ast_node_declaration_var(const std::string& _name, SymbolType* _type, ast_node_constIntList* a_initValue, ast_node* parent)
     : ast_node(parent, annt_buildintypedecl), name(_name), type(_type)
 {
@@ -36,9 +38,9 @@ void ast_node_declaration_var::compile_decl(bool isGlobal)
 
 void ast_node_wurzel::compile()
 {
-    globals = new global_vars();
+    /*globals = new global_vars();
     functions = new func_list();
-    functions->addFunction("main", new function("main", getBuildInType("int"), NULL));
+    functions->addFunction("main", new function("main", new SymbolType("int"), NULL));
 
     Symbol* myMain = symbContext->find("main");
     if (myMain == NULL)
@@ -64,7 +66,7 @@ void ast_node_wurzel::compile()
     fprintf(compile_output, "\t.end\n");
 
     delete functions;
-    functions = NULL;
+    functions = NULL;*/
 }
 
 void ast_node_return::compile()

@@ -1,12 +1,8 @@
-# -------------------------------------------------
-# Project created by QtCreator 2012-02-08T19:07:46
-# -------------------------------------------------
-QT -= core \
-    gui
-TARGET = Sprachumfang
-CONFIG += console
-CONFIG -= app_bundle
+
 TEMPLATE = app
+CONFIG += console
+CONFIG -= qt
+
 SOURCES += ../Codeerzeugung/ast_nodes_asm_func.cpp \
     ../Codeerzeugung/ast_nodes_asm_flow.cpp \
     ../Codeerzeugung/ast_nodes_asm.cpp \
@@ -29,7 +25,10 @@ SOURCES += ../Codeerzeugung/ast_nodes_asm_func.cpp \
     main.cpp \
     ast_node_global_def_include.cpp \
     factory_ast_node_global_def.cpp \
-    factory_ast_node.cpp
+    factory_ast_node.cpp \
+    threadfifo.cpp \
+    creax_mutex.cpp \
+    creax_thread.cpp
 HEADERS += \
     ast_internal.hpp \
     Symbols.h \
@@ -47,7 +46,17 @@ HEADERS += \
     xmlparser/html_parser.h \
     ast_node_global_def_include.h \
     factory_ast_node_global_def.h \
-    factory_ast_node.h
+    factory_ast_node.h \
+    LanCD_Context.h \
+    LanCD.l \
+    LanAB_Context.h \
+    LanAB.l \
+    threadfifo.h \
+    creax_mutex.h \
+    creax_thread.h
 OTHER_FILES += minic.ypp \
     minic.l \
-    Makefile
+    Makefile \
+    Makefile_ \
+    LanAB.y \
+    LanCD.y
