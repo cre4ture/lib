@@ -2,6 +2,8 @@
 #include "ast_internal.hpp"
 #include "factory_ast_node_global_def.h"
 
+FILE* compile_output;
+
 void ast_node_statement_value_expr::compile()
 {
     expr->compile_value();
@@ -37,7 +39,7 @@ void ast_node_identifier::compile_value()
     // get address
     this->compile_address();
     // load value
-    fprintf(compile_output, "\tLD A, [ 0 + A ]\t\t; A = %s\n", var->getName().c_str());
+    //fprintf(compile_output, "\tLD A, [ 0 + A ]\t\t; A = %s\n", var->getName().c_str());
 }
 
 void ast_node_identifier::compile_address()
@@ -75,11 +77,11 @@ void ast_node_deref_op::compile_value()
     {
     case HT_INT:
         // load address from stack
-        fprintf(compile_output, "\tLD A, [ 0 + A ]\t; load from address in A\n");
+        //fprintf(compile_output, "\tLD A, [ 0 + A ]\t; load from address in A\n");
         break;
     case HT_VECTOR:
         // load address from stack
-        fprintf(compile_output, "\tVLD R0, [ 0 + A ]\t; load from address in A\n");
+        //fprintf(compile_output, "\tVLD R0, [ 0 + A ]\t; load from address in A\n");
         break;
     default:
         throw std::runtime_error("deref: Unknown Type!");
@@ -90,7 +92,7 @@ void ast_node_constant_int::compile_value()
 {
     if (const_value > 65535)
     {
-        fprintf(compile_output, "\tOR X, 0, %d\t\t; set factor to %d\n", 0x8000, 0x8000);
+        /*fprintf(compile_output, "\tOR X, 0, %d\t\t; set factor to %d\n", 0x8000, 0x8000);
         // set value to A
         fprintf(compile_output, "\tOR A, 0, %d\t\t; A = %d\n", const_value >> 16, const_value >> 16);
         fprintf(compile_output, "\tMUL A, A, X\t\t; A = 2^15*X\n");
@@ -98,10 +100,11 @@ void ast_node_constant_int::compile_value()
 
         fprintf(compile_output, "\tOR X, 0, %d\t\t; X = %d\n", const_value & 0xffff, const_value & 0xffff);
         fprintf(compile_output, "\tADD A, A, X\n");
+        */
     }
     else
     {
-        fprintf(compile_output, "\tOR A, 0, %d\t\t; A = %d\n", const_value, const_value);
+        //fprintf(compile_output, "\tOR A, 0, %d\t\t; A = %d\n", const_value, const_value);
     }
 }
 

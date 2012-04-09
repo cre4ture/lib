@@ -236,7 +236,7 @@ protected:
 public:
     virtual void compile_value();
     ast_node_constant_int(int a_value, ast_node* parent)
-        : ast_node_value_expr(getBuildInType("int"), parent), const_value(a_value)
+        : ast_node_value_expr(new SymbolType("int"), parent), const_value(a_value)
     {
     }
 };

@@ -100,7 +100,7 @@ public:
 		if (node == NULL)
             throw std::runtime_error("global variable not defined!");
         // set A to address
-		fprintf(compile_output, "\tOR  A, 0, GVAR_%s\t\t; A = &%s\n", name.c_str(), name.c_str());
+        //fprintf(compile_output, "\tOR  A, 0, GVAR_%s\t\t; A = &%s\n", name.c_str(), name.c_str());
     }
 
     void defineGlobals()
@@ -108,7 +108,7 @@ public:
         for (std::map<std::string, ast_node_constIntList*>::const_iterator i = globals.begin(); i != globals.end(); i++)
         {
 			std::string name = i->first;
-			fprintf(compile_output, "GVAR_%s:\t\t\t; global var %s \n", name.c_str(), name.c_str());
+            //fprintf(compile_output, "GVAR_%s:\t\t\t; global var %s \n", name.c_str(), name.c_str());
 			i->second->compile_value();
         }
     }
@@ -124,12 +124,12 @@ private:
 
     void incStack()
     {
-        fprintf(compile_output, "\tADD Y, Y, %d\t\t; increment stack\n", getSize());
+        //fprintf(compile_output, "\tADD Y, Y, %d\t\t; increment stack\n", getSize());
     }
 
     void decStack()
     {
-        fprintf(compile_output, "\tSUB Y, Y, %d\t\t; decrement stack\n", getSize());
+        //fprintf(compile_output, "\tSUB Y, Y, %d\t\t; decrement stack\n", getSize());
     }
 
 public:
@@ -211,8 +211,8 @@ public:
     virtual void compile_address(std::string name)
     {
         // get address
-        int offset = this->getOffsetOf(name);
-		fprintf(compile_output, "\tADD A, Y, %d\t\t; A = &%s\n", offset, name.c_str());
+        //int offset = this->getOffsetOf(name);
+        //fprintf(compile_output, "\tADD A, Y, %d\t\t; A = &%s\n", offset, name.c_str());
     }
 };
 
@@ -309,6 +309,10 @@ inline hicovec_type convHicoVecType(SymbolType* typ)
     {
         return HT_VOID;
     }
+    if (typname == "char")
+    {
+        return HT_INT;
+    }
 
     throw std::runtime_error("Unknown Type!");
 }
@@ -326,5 +330,6 @@ inline int getSizeOfType(hicovec_type typ)
     }
     throw std::runtime_error("Unknown Type!");
 }
+
 
 #endif
