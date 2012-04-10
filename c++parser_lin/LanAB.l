@@ -35,7 +35,7 @@ identifier      [a-zA-Z_][a-zA-Z0-9_]+
 %%
 
 "#"                 CREAD("START CMD"); yymore(); BEGIN(CMD);
-\n                  CREAD("NEWLINE"); yylval->cptr = yytext; yyextra->cdcontext.zeile++; return TEXT;
+\n                  CREAD("NEWLINE"); yylval->text = new std::string(yytext); return TEXT;
 .                   CREAD("yymore()"); yymore();
 
 <CMD>"ifdef"        CREAD("IFDEF");  return IFDEF;
@@ -47,7 +47,7 @@ identifier      [a-zA-Z_][a-zA-Z0-9_]+
 <CMD>" "            /* ignore whitespace */
 <CMD>"\t"           /* ignore whitespace */
 <CMD>"\n"           CREAD("CMD END"); BEGIN(INITIAL); return ENDLINE;
-<CMD>{identifier}   CREAD("NAME"); yylval->cptr = yytext; return NAME;
+<CMD>{identifier}   CREAD("NAME"); yylval->text = new std::string(yytext); return NAME;
 %%
 
 void LanAB_Context::init_scanner()

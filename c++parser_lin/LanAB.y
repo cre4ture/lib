@@ -1,3 +1,7 @@
+%{
+#include <string>
+%}
+
 %pure-parser
 %name-prefix="LanAB_"
 %locations
@@ -9,10 +13,10 @@
 %union
 {
 	int integer;
-	char* cptr;
+	std::string* text;
 }
 
-%token <cptr> TEXT NAME
+%token <text> TEXT NAME
 %token ERR
 %token IFDEF IFNDEF INCLUDE ENDLINE ENDIF ELSE DEFINE
 
@@ -47,15 +51,18 @@ line:
 	  TEXT
 		{
 		    if (context->level_off == 0)
-			context->codefifo.push_data(std::string($1));
+			context->codefifo.push_data(*$1); // TODO: add line number to text
+		    delete $1;
 		}
 	| IFDEF NAME ENDLINE
 		{
-		    context->if_def($2);
+		    context->if_def(*$2);
+		    delete $2;
 		}
 	| IFNDEF NAME ENDLINE
 		{
-		    context->if_n_def($2);
+		    context->if_n_def(*$2);
+		    delete $2;
 		}
 	| ELSE ENDLINE
 		{
@@ -67,10 +74,13 @@ line:
 		}
 	| DEFINE NAME ENDLINE
 	    {
-		context->defines.setDefine($2, "");
+		context->defines.setDefine(*$2, "");
+		delete $2;
 	    }
 	| DEFINE NAME NAME ENDLINE
 	    {
-		context->defines.setDefine($2, $3);
+		context->defines.setDefine(*$2, *$3);
+		delete $2;
+		delete $3;
 	    }
 	;
