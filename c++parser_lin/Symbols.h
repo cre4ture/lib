@@ -36,6 +36,12 @@ public:
 class SymbolType: public Symbol
 {
 public:
+
+    static SymbolType* errInstance(const std::string& name)
+    {
+        return new SymbolType(name);
+    }
+
     bool isPointer()
     {
         return (pointerLevel() != 0);
@@ -100,6 +106,13 @@ class SymbolWithType: public Symbol
 private:
     SymbolType* type;
 
+protected:
+    SymbolWithType(const std::string& name)
+        : Symbol(name)
+    {
+        type = new SymbolType("[unknown]");
+    }
+
 public:
     SymbolType* getType()
     {
@@ -121,7 +134,17 @@ class SymbolVar: public SymbolWithType
 private:
     bool global;
 
+    SymbolVar(const std::string& name)
+        : SymbolWithType(name), global(false)
+    {}
+
 public:
+
+    static SymbolVar* errInstance(const std::string& name)
+    {
+        return new SymbolVar(name);
+    }
+
     void setIsGlobal(bool value)
     {
         global = value;
@@ -140,11 +163,23 @@ public:
 
 class SymbolFunc: public SymbolWithType
 {
+private:
+    SymbolFunc(const std::string& a_name)
+        : SymbolWithType(a_name)
+    {}
+
 public:
+
+    static SymbolFunc* errInstance(const std::string& name)
+    {
+        return new SymbolFunc(name);
+    }
+
     virtual TypeOfSymbol getSymbolType(void)
 	{
 		return st_func;
 	}
+
     SymbolFunc(const std::string a_name, SymbolType* a_type)
         : SymbolWithType(a_name, a_type)
     {
@@ -218,6 +253,17 @@ public:
         return sym;
 	}
 
+    template<class SymbolT>
+    SymbolT* findSymbolT(const std::string& name)
+    {
+        SymbolT* result = dynamic_cast<SymbolT*>(find(name));
+        if (result == NULL)
+        {
+            result = SymbolT::errInstance(name);
+        }
+        return result;
+    }
+
     void addSymbol(Symbol* const newSymbol)
 	{
         Symbol* symb = symbols[newSymbol->getName()];
@@ -240,48 +286,6 @@ public:
             throw std::runtime_error("'" + name + "' is not a defined type!");
         }
         return (SymbolType*)sym;
-    }
-
-};
-
-class definelist
-{
-private:
-    std::map<std::string, std::string> defines;
-    std::map<std::string, int> depends;
-
-public:
-
-    void addDependency(const std::string& define)
-    {
-        depends[define]++;
-    }
-
-    void setDefine(const std::string& name, const std::string& value)
-    {
-        defines[name] = value;
-    }
-
-    void unsetDefine(const std::string& name)
-    {
-        defines.erase(name);
-    }
-
-    bool getValue(const std::string name, std::string& value)
-    {
-        std::map<std::string, std::string>::iterator i = defines.find(name);
-        if (i != defines.end())
-        {
-            value = i->second;
-            return true;
-        }
-        return false;
-    }
-
-    bool isSet(const std::string name)
-    {
-        std::string value;
-        return getValue(name, value);
     }
 
 };

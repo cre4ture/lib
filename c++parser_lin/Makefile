@@ -60,7 +60,7 @@ LanCD.tab.o: LanCD.tab.c
 	@${CC} ${CFLAGS} -c -o LanCD.tab.o LanCD.tab.c
 
 LanCD.tab.c LanCD.tab.h: LanCD.y
-	bison LanCD.y
+	bison LanCD.y --report=solved --report-file=bison_report
 
 .PHONY: clean
 clean:

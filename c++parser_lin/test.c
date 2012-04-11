@@ -3,6 +3,10 @@ void abcd(int c)
 {
 }
 
+#include "test_uli.c"
+
+#include "test_normal.c"
+
 #define HALLO adas
 
 #ifdef HALLO
@@ -15,6 +19,17 @@ void gjrkgj()
 {
 
 }
+#endif
+
+#define TEST xxxx
+
+#ifndef HALLO
+
+
+#ifdef TEST
+asdsadajfpaidj
+#endif
+
 #endif
 
 

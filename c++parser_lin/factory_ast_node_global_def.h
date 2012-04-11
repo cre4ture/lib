@@ -18,7 +18,7 @@ class ast_node_global_defList: public ast_node
 protected:
     virtual void writeAttributes(xmlwriter& writer)
     {
-        writer.addAttribute("type", "global_defList");
+        writer.addAttribute("type", "global_deflist");
     }
 
 public:
