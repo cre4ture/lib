@@ -5,6 +5,32 @@
 #include "ast_node_types.hpp"
 #include "xmlparser/html_parser.h"
 
+class ast_node_type: public ast_node
+{
+private:
+    std::string name;
+    int pointerLevel;
+
+protected:
+    virtual void writeAttributes(xmlwriter& writer)
+    {
+        writer.addAttribute("type", "type");
+        writer.addAttribute("name", name);
+        writer.addAttribute("pointerlevel", pointerLevel);
+    }
+
+public:
+    ast_node_type(const std::string& a_name, const int a_pointerLevel, ast_node* parent)
+        : ast_node(parent, annt_buildintypedecl), name(a_name), pointerLevel(a_pointerLevel)
+    {}
+
+    ast_node_type(SymbolType* a_type, ast_node* parent)
+        : ast_node(parent, annt_buildintypedecl),
+          name(a_type->pointerBaseType()->getName()),
+          pointerLevel(a_type->pointerLevel())
+    {}
+};
+
 class ast_node_declaration_var;
 
 class ast_node_global_def_var_def: public ast_node_global_def
@@ -124,19 +150,17 @@ class ast_node_declaration_var: public ast_node
 {
 private:
     std::string name;
-    SymbolType* type;
+    ast_node_type* type;
     ast_node_constIntList* initValue;
 protected:
     virtual void writeAttributes(xmlwriter& writer)
     {
         writer.addAttribute("type", "declaration_var");
         writer.addAttribute("name", name);
-        writer.addAttribute("vartype", type->pointerBaseType()->getName());
-        writer.addAttribute("pointerlevel", type->pointerLevel());
     }
 public:
     void compile_decl(bool isGlobal);
-    ast_node_declaration_var(const std::string& _name, SymbolType* _type, ast_node_constIntList* a_initValue, ast_node* parent);
+    ast_node_declaration_var(const std::string& _name, ast_node_type* _type, ast_node_constIntList* a_initValue, ast_node* parent);
 };
 
 class ast_node_array_declaration: public ast_node_declaration_var
@@ -150,7 +174,7 @@ protected:
     }
 public:
     virtual void compile_value();
-    ast_node_array_declaration(const char* _name, SymbolType* _type, int _size, ast_node* parent)
+    ast_node_array_declaration(const char* _name, ast_node_type* _type, int _size, ast_node* parent)
         : ast_node_declaration_var(_name, _type, NULL, parent)
     {
         size = _size;
@@ -161,6 +185,7 @@ class ast_node_identifier: public ast_node_lvalue_expr
 {
 private:
     SymbolVar* var;
+
 protected:
     virtual void writeAttributes(xmlwriter& writer)
     {
@@ -171,7 +196,7 @@ public:
     virtual void compile_value();
     virtual void compile_address();
     ast_node_identifier(SymbolVar* a_var, ast_node* parent)
-        : ast_node_lvalue_expr(a_var->getType(), parent), var(a_var)
+        : ast_node_lvalue_expr(parent), var(a_var)
     {
         // addChild(a_var);
     }
@@ -198,7 +223,7 @@ public:
     virtual void compile_value();
     virtual void compile_address();
     ast_node_deref_op(ast_node_value_expr* a_pointerExpr, ast_node* parent)
-        : ast_node_lvalue_expr(getTargetPointer(a_pointerExpr->getTypeOf()), parent), pointerExpr(a_pointerExpr)
+        : ast_node_lvalue_expr(parent), pointerExpr(a_pointerExpr)
     {
         addChild(a_pointerExpr);
     }
@@ -217,7 +242,7 @@ protected:
 public:
     virtual void compile_value();
     ast_node_addr_op(ast_node_lvalue_expr* a_lvalue, ast_node* parent)
-        : ast_node_value_expr(new SymbolTypePtr(a_lvalue->getTypeOf()), parent), lvalue(a_lvalue)
+        : ast_node_value_expr(parent), lvalue(a_lvalue)
     {
         addChild(a_lvalue);
     }
@@ -236,7 +261,7 @@ protected:
 public:
     virtual void compile_value();
     ast_node_constant_int(int a_value, ast_node* parent)
-        : ast_node_value_expr(new SymbolType("int"), parent), const_value(a_value)
+        : ast_node_value_expr(parent), const_value(a_value)
     {
     }
 };
@@ -258,7 +283,7 @@ protected:
 public:
     virtual void compile_value();
     ast_node_assignment(ast_node_lvalue_expr* a_dest, ast_node_value_expr* a_src, ast_node* parent)
-        : ast_node_value_expr(a_dest->getTypeOf(), parent), dest(a_dest), src(a_src)
+        : ast_node_value_expr(parent), dest(a_dest), src(a_src)
     {
         addChild(a_dest);
         addChild(a_src);

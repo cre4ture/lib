@@ -88,6 +88,9 @@ int main(int argc, char *argv [])
     lanCDcont.symbContext->registerNewOperator2Function("*", sym_int, sym_int, buildInOp2);
     lanCDcont.symbContext->registerNewOperator2Function("/", sym_int, sym_int, buildInOp2);
 
+    lanCDcont.dependencies = new ast_node_define_depencies(NULL);
+    context.defines.saveDependencies(lanCDcont.dependencies);
+
 //#define USE_THREADS
 
 #ifdef USE_THREADS

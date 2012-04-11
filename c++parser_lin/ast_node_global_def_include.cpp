@@ -7,6 +7,7 @@
 #include "ast_node_global_def_include.h"
 #include "ast_nodes_func.hpp"
 #include "xmlparser/html_parser.h"
+#include "factory_ast_node.h"
 
 class mmap_file
 {
@@ -33,31 +34,20 @@ public:
     }
 };
 
-static void parseCXML(int fd, size_t size, ast_node_global_def_include& self)
+static ast_node_wurzel* parseCXML(int fd, size_t size)
 {
     mmap_file fmap(fd, size);
     creax::htmlparser xml((const char*)fmap.getAddr());
 
-    if (!xml.parseToNextTag())
-        throw std::runtime_error("empty file!");
-
-    if ((xml.curTagType != creax::tt_StartTag) &&
-            (xml.curTagName != "root"))
-        throw std::runtime_error("root tag missing!");
-
     xml.parseToNextTag();
+    ast_node_wurzel* result = dynamic_cast<ast_node_wurzel*>(factory_ast_node::createFromXML(xml));
 
-    ast_node_global_defList* gdefList = new ast_node_global_defList(NULL);
-    gdefList->parseXML(xml);
+    if (result == NULL)
+    {
+        throw std::runtime_error("Error parsing file: invalid root tag!");
+    }
 
-    if (!xml.parseToNextTag())
-        throw std::runtime_error("last tag missing!");
-
-    if ((xml.curTagType != creax::tt_EndTag) &&
-            (xml.curTagName != "root"))
-        throw std::runtime_error("closing root tag missing!");
-
-    self.addChild(gdefList);
+    return result;
 }
 
 static bool tryUpdateCXML(std::string origfile, std::string cxmlfile)
@@ -141,7 +131,8 @@ ast_node_global_def_include::ast_node_global_def_include(const std::string a_fil
         if (fstat (fdcxml,&statbufcxml) < 0)
             throw std::runtime_error("fstat error");
 
-        parseCXML(fdcxml, statbufcxml.st_size, *this);
+        ast_node_wurzel* root = parseCXML(fdcxml, statbufcxml.st_size);
+        addChild(root);
     }
 
     close(fdcxml);

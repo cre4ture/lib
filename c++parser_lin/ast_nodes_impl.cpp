@@ -61,7 +61,7 @@ void ast_node_deref_op::compile_address()
 
 void ast_node_deref_op::compile_value()
 {
-    this->pointerExpr->compile_value();
+    /*this->pointerExpr->compile_value();
 
     SymbolType* styp = pointerExpr->getTypeOf();
     if (styp->isPointer() == false)
@@ -85,7 +85,7 @@ void ast_node_deref_op::compile_value()
         break;
     default:
         throw std::runtime_error("deref: Unknown Type!");
-    }
+    }*/
 }
 
 void ast_node_constant_int::compile_value()
@@ -110,7 +110,7 @@ void ast_node_constant_int::compile_value()
 
 void ast_node_assignment::compile_value()
 {
-    switch (convHicoVecType(this->getTypeOf()))
+    /*switch (convHicoVecType(this->getTypeOf()))
     {
     case HT_INT:
         compile_value_int();
@@ -121,7 +121,7 @@ void ast_node_assignment::compile_value()
     default:
         throw std::runtime_error("unsupported type!");
         break;
-    }
+    }*/
 }
 
 void ast_node_assignment::compile_value_int()

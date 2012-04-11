@@ -99,26 +99,8 @@ pp_define_comp      {pp_define_name}[ ][^\n]*$
 "do"        	{ return(DO); }
 "return"     	{ return(KW_RETURN); }
 {identifier} 	{
-                    Symbol* symb = yyextra->symbContext->find(yytext);
-                    TypeOfSymbol t;
-                    if (symb != NULL)
-                        t = symb->getSymbolType();
-                    else
-                        t = st_none;
-                    switch (t) {
-                    case st_none:
-                        yylval->txt = new std::string(yytext);
-                        return UNKNOWN_NAME;
-                    case st_type:
-                        yylval->typeSym = (SymbolType*)symb;
-                        return TYPESYMBOL;
-                    case st_var:
-                        yylval->varSym = (SymbolVar*)symb;
-                        return VARSYMBOL;
-                    case st_func:
-                        yylval->funcSym = (SymbolFunc*)symb;
-                        return FUNCSYMBOL;
-                    }
+                    yylval->txt = new std::string(yytext);
+                    return NAME;
                 }
 "/*"         	{ BEGIN comm; }
 <comm>"*/"   	{ BEGIN INITIAL; }
@@ -129,6 +111,11 @@ pp_define_comp      {pp_define_name}[ ][^\n]*$
 std::string LanCD_Context::getYYtext()
 {
     return yyget_text(scanner);
+}
+
+int LanCD_Context::getLineNo()
+{
+    return yyget_lineno(scanner);
 }
 
 void LanCD_Context::init_scanner()

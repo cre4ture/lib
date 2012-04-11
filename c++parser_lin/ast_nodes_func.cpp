@@ -2,12 +2,10 @@
 #include "ast_internal.hpp"
 #include "ast_node_global_def_include.h"
 
-static FILE* compile_output;
-
-ast_node_declaration_var::ast_node_declaration_var(const std::string& _name, SymbolType* _type, ast_node_constIntList* a_initValue, ast_node* parent)
+ast_node_declaration_var::ast_node_declaration_var(const std::string& _name, ast_node_type* _type, ast_node_constIntList* a_initValue, ast_node* parent)
     : ast_node(parent, annt_buildintypedecl), name(_name), type(_type)
 {
-    int elements = getSizeOfType(convHicoVecType(type));
+    /*int elements = getSizeOfType(convHicoVecType(type));
     if (a_initValue == NULL)
     {
         initValue = NULL;
@@ -19,21 +17,21 @@ ast_node_declaration_var::ast_node_declaration_var(const std::string& _name, Sym
         if (elements != a_initValue->count_members())
             throw std::runtime_error("Anzahl Vectorelemente in Initialisierungsliste falsch!");
         initValue = a_initValue;
-    }
+    }*/
 
-    //addChild(initValue);
+    addChild(_type);
 }
 
 void ast_node_declaration_var::compile_decl(bool isGlobal)
 {
-    if (isGlobal)
+    /*if (isGlobal)
     {
         globals->addGlobal(this->name, this->initValue);
     }
     else
     {
         locals->push_variable(this->name, getSizeOfType(convHicoVecType(this->type)));
-    }
+    }*/
 }
 
 void ast_node_wurzel::compile()
@@ -71,7 +69,7 @@ void ast_node_wurzel::compile()
 
 void ast_node_return::compile()
 {
-    expression->compile_value();
+    /*expression->compile_value();
     hicovec_type type = convHicoVecType(expression->getTypeOf());
 
     int offset_result = locals->getOffsetOf("0_result");
@@ -87,11 +85,12 @@ void ast_node_return::compile()
         break;
     default:
         break;
-    }
+    }*/
 }
 
 void ast_node_function_def::compile()
 {
+    /*
     locals = new context(NULL, "Y");
 
     // assume calling code to push params to stack:
@@ -118,10 +117,12 @@ void ast_node_function_def::compile()
     locals = NULL;
 
     functions->addFunction(name, new function(name, this->type, NULL));
+    */
 }
 
 void ast_node_functioncall::compile_value()
 {
+    /*
     int offset;
 
     beginNewContext();
@@ -150,6 +151,7 @@ void ast_node_functioncall::compile_value()
     }
     locals->pop_variable("0_result");
     endContext(); // delete params from Stack
+    */
 }
 
 void ast_node_parlist::compile_value()
@@ -170,7 +172,7 @@ void ast_node_exprlist::compile_value()
 
 void ast_node_expression::compile_value()
 {
-    this->term->compile_value();
+    /*this->term->compile_value();
 
     hicovec_type htyp = convHicoVecType(this->getTypeOf());
     int rsize = getSizeOfType(htyp);
@@ -186,5 +188,5 @@ void ast_node_expression::compile_value()
         break;
     default: // VOID
         break;
-    }
+    }*/
 }

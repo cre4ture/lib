@@ -21,7 +21,7 @@ protected:
 public:
     virtual void compile_value();
     ast_node_op(std::string a_name, ast_node_value_expr* a_op1, ast_node_value_expr* a_op2, ast_node* parent)
-        : ast_node_value_expr(a_op1->getTypeOf(), parent), name(a_name), op1(a_op1), op2(a_op2)
+        : ast_node_value_expr(parent), name(a_name), op1(a_op1), op2(a_op2)
     {
         addChild(a_op1);
         addChild(a_op2);

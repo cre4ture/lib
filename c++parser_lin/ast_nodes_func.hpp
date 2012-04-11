@@ -87,7 +87,7 @@ protected:
 public:
     virtual void compile_value();
     ast_node_expression(ast_node_value_expr* a_term, ast_node* parent)
-        : ast_node_value_expr(a_term->getTypeOf(), parent), term(a_term)
+        : ast_node_value_expr(parent), term(a_term)
     {
         addChild(a_term);
     }
@@ -140,7 +140,7 @@ public:
 };
 
 inline ast_node_functioncall::ast_node_functioncall(SymbolFunc* a_func, ast_node_exprlist* a_exprlist, ast_node* parent)
-    : ast_node_value_expr(a_func->getType(), parent), func(a_func), exprlist(a_exprlist)
+    : ast_node_value_expr(parent), func(a_func), exprlist(a_exprlist)
 {
     addChild(a_exprlist);
 }

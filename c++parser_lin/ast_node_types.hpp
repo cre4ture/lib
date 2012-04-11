@@ -27,19 +27,14 @@ public:
 
 class ast_node_value_expr: public ast_node
 {
-private:
-    SymbolType* const type;
 public:
     // legt den Rückgabewert ins Register A bzw. R0
     virtual void compile_value() = 0;
 
-    SymbolType* getTypeOf()
-    {
-        return type;
-    }
+    // virtual SymbolType* getTypeOf() = 0;
 
-    ast_node_value_expr(SymbolType* a_type, ast_node* parent)
-        : ast_node(parent, annt_expression), type(a_type)
+    ast_node_value_expr(ast_node* parent)
+        : ast_node(parent, annt_expression)
     {}
 };
 
@@ -48,8 +43,8 @@ class ast_node_lvalue_expr: public ast_node_value_expr
 	public:
 		// legt die Addresse der lvalue ins Register A
 		virtual void compile_address() = 0;
-        ast_node_lvalue_expr(SymbolType* a_type, ast_node* parent)
-            : ast_node_value_expr(a_type, parent) {}
+        ast_node_lvalue_expr(ast_node* parent)
+            : ast_node_value_expr(parent) {}
 };
 
 #endif

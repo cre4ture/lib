@@ -32,18 +32,15 @@
     ast_node_lvalue_expr *lvalExpr;
     ast_node_exprlist *exprL;
     ast_node_parlist *parL;
-	ast_node_declaration_var *varDecl;
+    ast_node_declaration_var *varDecl;
     ast_node_constIntList *constL;
-	SymbolType* typeSym;
-	SymbolVar* varSym;
-	SymbolFunc* funcSym;
+    SymbolType* typeSym;
+    SymbolVar* varSym;
+    SymbolFunc* funcSym;
 }
 
 %token <i> ZAHL
-%token <txt> UNKNOWN_NAME PP_INCLUDE
-%token <typeSym> TYPESYMBOL
-%token <varSym> VARSYMBOL
-%token <funcSym> FUNCSYMBOL
+%token <txt> NAME PP_INCLUDE
 
 // Andi
 %token ADD SUB MUL DIV END
@@ -87,7 +84,7 @@
 
     void LanCD_error(YYLTYPE* locp, LanCD_Context* context, const char* err)
     {
-	    cerr << "line:" << context->zeile
+	    cerr << "line:" << context->getLineNo()
 	      << ",\"" << context->getYYtext()
 		 << "\", msg: " << err << endl;
     }
@@ -97,7 +94,7 @@
 
 %%
 
-programm:   gDefList            { context->wurzel = new ast_node_wurzel($1, NULL); }
+programm:   gDefList            { context->wurzel = new ast_node_wurzel(context->dependencies,$1,NULL); }
 			;
 
 gDefList:   gDefList gDef       { $1->addChild($2); $$ = $1; }
@@ -112,12 +109,12 @@ gDef:
 				  $$ = new ast_node_global_def_include(filename, lib, NULL); }
 	    ;
 
-varDef:		atype UNKNOWN_NAME {
+varDef:		atype NAME {
 		SymbolVar* var = new SymbolVar(*$2, $1, context->symbContext->getParent() == NULL);
 		context->symbContext->addSymbol(var);
-		$$ = new ast_node_declaration_var($2->c_str(), $1, NULL, NULL);
+		$$ = new ast_node_declaration_var($2->c_str(), new ast_node_type($1, NULL), NULL, NULL);
 	    }
-/*            | atype UNKNOWN_NAME '=' exprB {
+/*            | atype NAME '=' exprB {
 		SymbolVar* var = new SymbolVar(*$2, $1, symbContext->getParent() == NULL);
 		symbContext->addSymbol(var);
 		$$ = new ast_node_declaration_var($2->c_str(), $1, $4, NULL);
@@ -125,11 +122,12 @@ varDef:		atype UNKNOWN_NAME {
 	    ;
 
 // Ausdruck der einen Typ beschreibt
-atype:		TYPESYMBOL          { $$ = $1; }
-	    | TYPESYMBOL '*'    { $$ = new SymbolTypePtr($1); }
+atype:	    NAME		{ $$ = context->symbContext->findSymbolT<SymbolType>(*$1);
+				  delete $1; }
+	    | atype '*'    { $$ = new SymbolTypePtr($1); }
 	    ;
 
-funcDef:	atype UNKNOWN_NAME '(' {
+funcDef:	atype NAME '(' {
 		    context->symbContext->addSymbol(new SymbolFunc(*$2, $1));
 		    context->beginNewSymbContext();
 		    }
@@ -192,7 +190,10 @@ assignment:
 	    ;
 
 lvalue:
-	    VARSYMBOL           { $$ = new ast_node_identifier($1, NULL); }
+	    NAME                { $$ = new ast_node_identifier(
+					    context->symbContext->findSymbolT<SymbolVar>(*$1),
+					    NULL);
+				  delete $1; }
 	    | '*' exprB         { $$ = new ast_node_deref_op($2, NULL); }
 	    ;
 
@@ -220,10 +221,13 @@ exprD:		'(' exprA ')'       { $$ = $2; }
 	    | funcCall          { $$ = $1; }
 			;
 
-funcCall:	FUNCSYMBOL '(' exprList ')'     { $$ = new ast_node_functioncall($1, $3, NULL); }
+funcCall:   NAME '(' exprList ')'     { $$ = new ast_node_functioncall(
+						    context->symbContext->findSymbolT<SymbolFunc>(*$1),
+						    $3, NULL);
+					delete $1; }
 	    ;
 
-exprList:	exprList ',' exprA              { $1->addChild(new ast_node_expression($3, NULL)); $$ = $1; }
+exprList:   exprList ',' exprA              { $1->addChild(new ast_node_expression($3, NULL)); $$ = $1; }
 	    | exprA                         { $$ = new ast_node_exprlist(NULL);
 					      $$->addChild(new ast_node_expression($1, NULL)) }
 			;

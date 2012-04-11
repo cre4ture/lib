@@ -1,6 +1,8 @@
 
 int x;
 
+dummies bla;
+
 int add(int a, int b) 
 {
 	int c;
@@ -25,9 +27,13 @@ int main()
 	int b;
     int c;
 
+
+
     int* ptr;
+    int** pptr;
 
     ptr = &a;
+    pptr = &ptr;
 
     if (a == b)
     {

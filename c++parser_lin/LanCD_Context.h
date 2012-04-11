@@ -13,6 +13,7 @@ public:
     void* scanner;
     std::istringstream* is;
     ast_node_wurzel *wurzel;
+    ast_node_define_depencies* dependencies;
     int zeile;
     Symbols* symbContext;
     creax::threadfifo<std::string>& fifo;
@@ -59,6 +60,8 @@ public:
 
     // Defined in LanCD.l
     std::string getYYtext();
+    // Defined in LanCD.l
+    int getLineNo();
 
 
 protected:
