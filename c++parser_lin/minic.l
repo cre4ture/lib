@@ -1,3 +1,10 @@
+%option reentrant
+%option prefix="LanCD_"
+%option bison-bridge
+%option bison-locations
+%option noyywrap
+%option yylineno
+
 %{
 /***************************************************
   Datei   minic.l
@@ -14,6 +21,7 @@
 #include "minic.tab.hpp"
 
 extern int zeile;
+
 %}
 
 delim       [ \t]
@@ -23,16 +31,24 @@ identifier  [a-zA-Z_][a-zA-Z_0-9]{0,98}
 pp_include  #include
 pp_filename ["<][^">]*[">]$
 
+pp_define           #define
+pp_define_name      [a-zA-Z_][a-zA-Z_0-9]{0,98}
+pp_define_comp      {pp_define_name}[ ][^\n]*$
 
-%x comm inline pp_incl
+%x comm inline pp_incl pp_def
 %%
 
 {pp_include}    { BEGIN pp_incl; }
 <pp_incl>{pp_filename}      {
-                            yylval.txt = new std::string(yytext);
-                            BEGIN INITIAL;
-                            return PP_INCLUDE;
+                                yylval.txt = new std::string(yytext);
+                                BEGIN INITIAL;
+                                return PP_INCLUDE;
                             }
+
+{pp_define}     { BEGIN pp_def; }
+<pp_def>{pp_define_name}    { defines->setDefine(yytext, ""); }
+<pp_def>{pp_define_name} {pp_define_value}   { defines->setDefine(yytext, ""); }
+<pp_def>"\n"                { BEGIN INITIAL; }
 {delim}      	{}
 "\n"         	{ zeile++;}
 {zahl}       	{ yylval.i = atoi(yytext); return (ZAHL);}

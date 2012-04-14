@@ -20,6 +20,44 @@
 #include "LanCD_Context.h"
 
 #include "creax_thread.h"
+#include "ParamParser.h"
+
+void parseDefines(std::map<std::string, std::string>& defines, mefu::ParamParser& parser)
+{
+    std::string value = parser.getStringVal("defines","");
+    std::vector<std::string> definelist;
+    mefu::readStringListFromString(value,definelist,';');
+
+    for (size_t i = 0; i < definelist.size(); i++)
+    {
+        std::vector<std::string> name_value;
+        mefu::readStringListFromString(definelist[i],name_value,'=');
+        switch (name_value.size())
+        {
+        case 1:
+            defines[name_value[0]] = "";
+            break;
+        case 2:
+            defines[name_value[0]] = name_value[1];
+            break;
+        default:
+            throw std::runtime_error("invalid definelist parameter!");
+        }
+    }
+}
+
+int* commentFilterThreadRoutine(LanComment_Context* param)
+{
+    try {
+        LanComment_parse(param);
+        param->result = 0;
+    } catch (std::runtime_error& err) {
+        fprintf(stderr,"comment filter error: %s\n", err.what());
+        param->result = -1;
+    }
+    param->fifo.close_fifo();
+    return NULL;
+}
 
 int* preprocessorThreadRoutine(LanAB_Context* param)
 {
@@ -30,7 +68,7 @@ int* preprocessorThreadRoutine(LanAB_Context* param)
         fprintf(stderr,"preprocessor error: %s\n", err.what());
         param->preprocessor_result = -1;
     }
-    param->codefifo.close_fifo();
+    param->output_fifo.close_fifo();
     return NULL;
 }
 
@@ -48,33 +86,47 @@ int* parserThreadRoutine(LanCD_Context* param)
 
 int main(int argc, char *argv [])
 {
+    mefu::ParamParser parser(argc, argv);
     std::ostream* new_output;
-    std::istream* new_input;
+    std::ifstream* new_input;
     int result = 0;
 
-    for (int i = 0; i < argc; i++)
-    {
-        std::cout << "[" << i << "]: " << argv[i] << std::endl;
-    }
+    std::string in_file  = parser.getStringVal("in","");
+    std::string out_file = parser.getStringVal("out","");
 
-    if ((argc <= 1)||(argc > 3)) {
-        fprintf(stderr, "usage: %s <inputfile> [<outputfile>]\n", argv[0]);
+    if (in_file == "") {
+        fprintf(stderr, "usage: %s in=\"<inputfile>\" [out=\"<outputfile>\"] [defines=\"<define>[=<value>][;<define2>...]\"]\n", argv[0]);
         return 1;
     }
 
-    if (argc == 3)
-    {
-        new_output = new std::ofstream(argv[2]);
-    }
+    if (out_file != "")
+        new_output = new std::ofstream(out_file.c_str());
     else
+        new_output = &std::cout;
+
+    std::map<std::string,std::string> defines;
+    parseDefines(defines, parser);
+
+    new_input = new std::ifstream(in_file.c_str());
+
+    if (!new_input->is_open())
     {
-        new_output = &std::cout; // use stdout as destination file, change this later to write to file!
+        std::cerr << "could not open file: " << in_file << std::endl;
+        return -1;
     }
 
-    new_input = new std::ifstream(argv[1]);
+    creax::threadfifo<text_type> stage1_2;
+    creax::threadfifo<std::string> stage2_3;
 
-    LanAB_Context context(new_input);
-    LanCD_Context& lanCDcont = context.cdcontext;
+    // stage 1
+    LanComment_Context lanComment_context(*new_input, stage1_2);
+    // stage 2
+    LanAB_Context lanAB_context(stage1_2, stage2_3);
+    // stage 3
+    LanCD_Context lanCDcont(stage2_3);
+
+    lanAB_context.setCDContext(&lanCDcont);
+    lanAB_context.defines.loadDefines(defines);
 
     SymbolType* sym_int = new SymbolType("int");
     lanCDcont.symbContext->addSymbol(sym_int);
@@ -89,18 +141,21 @@ int main(int argc, char *argv [])
     lanCDcont.symbContext->registerNewOperator2Function("/", sym_int, sym_int, buildInOp2);
 
     lanCDcont.dependencies = new ast_node_define_depencies(NULL);
-    context.defines.saveDependencies(lanCDcont.dependencies);
+    lanAB_context.defines.saveDependencies(lanCDcont.dependencies);
 
 //#define USE_THREADS
 
 #ifdef USE_THREADS
-    creax::thread<LanAB_Context, int> preprocessorThread(&preprocessorThreadRoutine, &context);
+    creax::thread<LanComment_Context, int> commentFilterThread(&preprocessorThreadRoutine, &lanComment_context);
+    creax::thread<LanAB_Context, int> preprocessorThread(&preprocessorThreadRoutine, &lanAB_context);
     creax::thread<LanCD_Context, int> parserThread(&parserThreadRoutine, &lanCDcont);
 
+    commentFilterThread.join();
     preprocessorThread.join();
     parserThread.join();
 #else
-    preprocessorThreadRoutine(&context);
+    commentFilterThreadRoutine(&lanComment_context);
+    preprocessorThreadRoutine(&lanAB_context);
     parserThreadRoutine(&lanCDcont);
 #endif
 

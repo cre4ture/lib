@@ -7,21 +7,42 @@
 
 %{
 	#include "LanAB_Context.h"
-	#include "LanAB.tab.h"
+    #include "LanAB.tab.hpp"
 
 	#define YY_EXTRA_TYPE LanAB_Context*
 	#define YY_USER_ACTION yylloc->first_line = yylineno;
 
-    void ab_input(char* const  buf, int& result, const int max_size, LanAB_Context* const context)
+    void ab_input(char* const  buf, int& result, const int max_size, LanAB_Context& context)
     {
-        if(context->is->eof())
-            result = YY_NULL;
-        else {
-            result = context->is->readsome(buf, max_size);
+        bool done = false;
+        while (!done)
+        {
+            if (context.is == NULL)
+            {
+                text_type buffer;
+                do {
+                    if (! context.input_fifo.pop_data(buffer))
+                    {
+                        result = YY_NULL; // EOF
+                        return;
+                    }
+                } while (buffer.type != LanComment_Context::TTCODE);
+
+                context.is = new std::istringstream(buffer.text);
+            }
+
+            result = context.is->readsome(buf, max_size);
+            done = (result != 0);
+
+            if (!done)
+            {
+                delete context.is;
+                context.is = NULL;
+            }
         }
     }
 
-    #define YY_INPUT(buf,result,max_size) ab_input(buf, result, max_size, yyextra)
+    #define YY_INPUT(buf,result,max_size) ab_input(buf, result, max_size, *yyextra)
 
     //#define CREAD(TEXT) std::cout << TEXT << std::endl
     #define CREAD(TEXT)

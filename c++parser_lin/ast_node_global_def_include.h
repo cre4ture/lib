@@ -27,7 +27,8 @@ public:
     ast_node_define_depencie(std::string a_name, std::string a_value, bool a_isSet)
         : ast_node(NULL, annt_buildintypedecl),
           name(a_name),
-          value(a_value)
+          value(a_value),
+          isset(a_isSet)
     {}
 };
 
@@ -92,5 +93,8 @@ public:
 
     ast_node_global_def_include(const std::string a_filename, const bool a_lib, ast_node* parent);
 };
+
+ast_node_wurzel* parseCXML(const std::string& filename);
+ast_node_wurzel* parseCXML(int fd, size_t size);
 
 #endif // AST_NODE_GLOBAL_DEF_INCLUDE_H

@@ -8,6 +8,7 @@
 #include "ast_nodes_func.hpp"
 #include "xmlparser/html_parser.h"
 #include "factory_ast_node.h"
+#include "creax_fd.h"
 
 class mmap_file
 {
@@ -34,7 +35,17 @@ public:
     }
 };
 
-static ast_node_wurzel* parseCXML(int fd, size_t size)
+ast_node_wurzel* parseCXML(const std::string& filename)
+{
+    creax::fd fd(filename);  // automatic close at and of function
+
+    struct stat statbuf;
+    fd.getStat(statbuf);
+
+    return parseCXML(fd.getFd(), statbuf.st_size);
+}
+
+ast_node_wurzel* parseCXML(int fd, size_t size)
 {
     mmap_file fmap(fd, size);
     creax::htmlparser xml((const char*)fmap.getAddr());

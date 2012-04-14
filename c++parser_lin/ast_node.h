@@ -85,6 +85,16 @@ public:
         writeAttributes(writer);
         writeChildTags(writer);
     }
+
+    size_t childCount()
+    {
+        return child_nodes.size();
+    }
+
+    ast_node* getChild(size_t index)
+    {
+        return child_nodes[index];
+    }
 };
 
 #endif // AST_NODE_H
