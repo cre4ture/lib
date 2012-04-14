@@ -12,37 +12,7 @@
 	#define YY_EXTRA_TYPE LanAB_Context*
 	#define YY_USER_ACTION yylloc->first_line = yylineno;
 
-    void ab_input(char* const  buf, int& result, const int max_size, LanAB_Context& context)
-    {
-        bool done = false;
-        while (!done)
-        {
-            if (context.is == NULL)
-            {
-                text_type buffer;
-                do {
-                    if (! context.input_fifo.pop_data(buffer))
-                    {
-                        result = YY_NULL; // EOF
-                        return;
-                    }
-                } while (buffer.type != LanComment_Context::TTCODE);
-
-                context.is = new std::istringstream(buffer.text);
-            }
-
-            result = context.is->readsome(buf, max_size);
-            done = (result != 0);
-
-            if (!done)
-            {
-                delete context.is;
-                context.is = NULL;
-            }
-        }
-    }
-
-    #define YY_INPUT(buf,result,max_size) ab_input(buf, result, max_size, *yyextra)
+    #define YY_INPUT(buf,result,max_size) yyextra->yy_input(buf, result, max_size, YY_NULL)
 
     //#define CREAD(TEXT) std::cout << TEXT << std::endl
     #define CREAD(TEXT)
@@ -80,4 +50,9 @@ void LanAB_Context::init_scanner()
 void LanAB_Context::destroy_scanner()
 {
 	yylex_destroy(scanner);
+}
+
+int LanAB_Context::getLineNo()
+{
+    return yyget_lineno(scanner);
 }

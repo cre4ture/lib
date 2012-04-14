@@ -60,3 +60,8 @@ void LanComment_Context::destroy_scanner()
 {
 	yylex_destroy(scanner);
 }
+
+int LanComment_Context::getLineNo()
+{
+    return yyget_lineno(scanner);
+}

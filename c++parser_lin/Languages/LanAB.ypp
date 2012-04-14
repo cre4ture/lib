@@ -50,8 +50,7 @@ code:	code line
 line:
 	  TEXT
 		{
-		    if (context->level_off == 0)
-            context->output_fifo.push_data(*$1); // TODO: add line number to text
+            context->text(*$1);
 		    delete $1;
 		}
 	| IFDEF NAME ENDLINE

@@ -9,6 +9,8 @@
 
 #include "LanCD_Context.h"
 
+#include "basic_types.h"
+
 class definelist
 {
 private:
@@ -83,18 +85,21 @@ public:
     int level_on;
     int level_off;
 
+    int line;
+
     creax::threadfifo<text_type>& input_fifo;
-    creax::threadfifo<std::string>& output_fifo;
+    creax::threadfifo<code_piece>& output_fifo;
 
     LanCD_Context* cdcontext;
 
 public:
-    LanAB_Context(creax::threadfifo<text_type>& a_input_fifo, creax::threadfifo<std::string>& a_output_fifo)
+    LanAB_Context(creax::threadfifo<text_type>& a_input_fifo, creax::threadfifo<code_piece>& a_output_fifo)
         : is(NULL), input_fifo(a_input_fifo), output_fifo(a_output_fifo), cdcontext(NULL)
 	{
 		init_scanner();
         level_on = 0;
         level_off = 0;
+        line = 0;
 	}
 
     void setCDContext(LanCD_Context* a_context)
@@ -106,6 +111,12 @@ public:
 	{
 		destroy_scanner();
 	}
+
+    void text(const std::string& code)
+    {
+        if (level_off == 0)
+            output_fifo.push_data(code_piece(code, line + getLineNo()));
+    }
 
     void if_def(const std::string& name, bool not_def = false)
     {
@@ -164,6 +175,40 @@ public:
             level_on--;
         }
     }
+
+    void yy_input(char* const  buf, int& result, const int max_size, const int eof_result)
+    {
+        bool done = false;
+        while (!done)
+        {
+            if (is == NULL)
+            {
+                text_type buffer;
+                do {
+                    if (! input_fifo.pop_data(buffer))
+                    {
+                        result = eof_result; // EOF
+                        return;
+                    }
+                } while (buffer.type != LanComment_Context::TTCODE);
+
+                is = new std::istringstream(buffer.text);
+                line = buffer.line - getLineNo();
+            }
+
+            result = is->readsome(buf, max_size);
+            done = (result != 0);
+
+            if (!done)
+            {
+                delete is;
+                is = NULL;
+            }
+        }
+    }
+
+    // Defined in LanCD.l
+    int getLineNo();
 
 // Defined in LanAB.l
 protected:

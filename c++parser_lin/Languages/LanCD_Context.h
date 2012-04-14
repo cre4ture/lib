@@ -14,7 +14,7 @@ public:
     std::istringstream* is;
     ast_node_wurzel *wurzel;
     ast_node_define_depencies* dependencies;
-    int zeile;
+    int line;
     Symbols* symbContext;
     creax::threadfifo<std::string>& fifo;
     int parser_result;
@@ -37,7 +37,7 @@ public:
         : fifo(a_fifo)
 	{
 		init_scanner();
-        zeile = 1;
+        line = 0;
         wurzel = NULL;
         is = NULL;
         symbContext = NULL;
@@ -57,6 +57,45 @@ public:
 
 		destroy_scanner();
 	}
+
+    void yy_error(const char* err)
+    {
+        std::cerr << "line:" << line + getLineNo()
+          << ",\"" << getYYtext()
+         << "\", msg: " << err << std::endl;
+    }
+
+    void yy_input(char* const buf, int& result, int max_size, const int eof_result)
+    {
+        bool done = false;
+        while (!done)
+        {
+            if (is == NULL)
+            {
+                std::string buffer;
+                if (fifo.pop_data(buffer))
+                {
+                    is = new std::istringstream(buffer);
+                }
+                else
+                {
+                    result = eof_result; // EOF
+                    return;
+                }
+            }
+
+            result = is->readsome(buf, max_size);
+            done = (result != 0);
+
+            if (!done)
+            {
+                delete is;
+                is = NULL;
+            }
+        }
+    }
+
+
 
     // Defined in LanCD.l
     std::string getYYtext();

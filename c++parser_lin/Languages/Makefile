@@ -1,11 +1,14 @@
 
 all: lex.LanAB_.cpp \
      lex.LanCD_.cpp \
+     lex.LanCF_.cpp \
      lex.LanComment_.cpp \
      LanAB.tab.cpp \
      LanAB.tab.hpp \
      LanCD.tab.cpp \
      LanCD.tab.hpp \
+     LanCF.tab.cpp \
+     LanCF.tab.hpp \
      LanComment.tab.cpp \
      LanComment.tab.hpp
 

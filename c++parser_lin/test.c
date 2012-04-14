@@ -1,13 +1,23 @@
 
 
-/* TESTCOMMENT * **/
-
-// TESTZ\EILE \
-xxxxx
 
 void abcd(int c)
 {
 }
+
+namespace creax {
+
+class er: adsada asdasd adsasd
+{
+
+};
+
+}
+
+class ich: public du
+{
+
+};
 
 //#include "test_uli.c"
 

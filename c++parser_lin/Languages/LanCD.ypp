@@ -84,9 +84,7 @@
 
     void LanCD_error(YYLTYPE* locp, LanCD_Context* context, const char* err)
     {
-	    cerr << "line:" << context->getLineNo()
-	      << ",\"" << context->getYYtext()
-		 << "\", msg: " << err << endl;
+        context->yy_error(err);
     }
 
     #define scanner context->scanner
