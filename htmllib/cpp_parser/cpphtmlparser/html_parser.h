@@ -375,7 +375,7 @@ namespace creax {
             return "";
         }
 
-        const int getAttributeInt(const std::string& name) // C++API
+        int getAttributeInt(const std::string& name) // C++API
         {
             return atoi(getAttribute(name).c_str());
         }

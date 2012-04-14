@@ -195,6 +195,12 @@ protected:
 public:
     virtual void compile_value();
     virtual void compile_address();
+
+    std::string getName()
+    {
+        return var->getName();
+    }
+
     ast_node_identifier(SymbolVar* a_var, ast_node* parent)
         : ast_node_lvalue_expr(parent), var(a_var)
     {
@@ -260,6 +266,12 @@ protected:
     }
 public:
     virtual void compile_value();
+
+    int getIntValue()
+    {
+        return const_value;
+    }
+
     ast_node_constant_int(int a_value, ast_node* parent)
         : ast_node_value_expr(parent), const_value(a_value)
     {

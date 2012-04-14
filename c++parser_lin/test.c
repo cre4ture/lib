@@ -1,11 +1,17 @@
 
+
+/* TESTCOMMENT * **/
+
+// TESTZ\EILE \
+xxxxx
+
 void abcd(int c)
 {
 }
 
-#include "test_uli.c"
+//#include "test_uli.c"
 
-#include "test_normal.c"
+//#include "test_normal.c"
 
 #define HALLO adas
 
@@ -45,3 +51,4 @@ int main(int argc, char* argv)
 #endif
                 );
 }
+// EOF

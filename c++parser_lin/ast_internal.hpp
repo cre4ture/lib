@@ -208,7 +208,7 @@ public:
         return size;
     }
 
-    virtual void compile_address(std::string name)
+    virtual void compile_address(std::string)
     {
         // get address
         //int offset = this->getOffsetOf(name);

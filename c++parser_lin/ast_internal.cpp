@@ -9,11 +9,11 @@ int config_vec_elements = 0;
 
 std::string newLabel(std::string name)
 {
-        static int label_count = 0;
-        std::ostringstream ostr;
-        ostr << "LA" << label_count << "_" << name;
-        label_count++;
-        return ostr.str();
+    static int label_count = 0;
+    std::ostringstream ostr;
+    ostr << "LA" << label_count << "_" << name;
+    label_count++;
+    return ostr.str();
 }
 
 void beginNewContext()

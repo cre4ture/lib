@@ -1,0 +1,29 @@
+
+all: lex.LanAB_.c lex.LanCD_.c LanAB.tab.cpp LanAB.tab.hpp LanCD.tab.cpp LanCD.tab.hpp LanComment.tab.cpp LanComment.tab.hpp lex.LanComment_.c
+
+lex.LanAB_.c: LanAB.l
+	flex LanAB.l
+
+LanAB.tab.cpp LanAB.tab.hpp: LanAB.ypp
+	bison LanAB.ypp
+
+lex.LanComment_.c: LanComment.l
+	flex LanComment.l
+
+LanComment.tab.cpp LanComment.tab.hpp: LanComment.ypp
+	bison LanComment.ypp
+
+lex.LanCD_.c: LanCD.l
+	flex LanCD.l
+
+LanCD.tab.cpp LanCD.tab.hpp: LanCD.ypp
+	bison LanCD.ypp --report=solved --report-file=bison_report
+
+.PHONY: clean
+clean:
+	rm -f LanComment.tab.cpp LanComment.tab.hpp
+	rm -f lex.LanComment_.c
+	rm -f LanAB.tab.cpp LanAB.tab.hpp
+	rm -f lex.LanAB_.c
+	rm -f LanCD.tab.cpp LanCD.tab.hpp
+	rm -f lex.LanCD_.c

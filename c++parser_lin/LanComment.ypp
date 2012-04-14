@@ -1,0 +1,62 @@
+%{
+#include <string>
+%}
+
+%pure-parser
+%name-prefix="LanComment_"
+%locations
+%defines
+%error-verbose
+%parse-param { LanComment_Context* context }
+%lex-param { void* scanner  }
+
+%union
+{
+	int integer;
+	std::string* text;
+}
+
+%token <text> TEXT LINECOMMENT BLOCKCOMMENT
+%token ERR
+
+%{
+    #include <iostream>
+    #include <sstream>
+    #include "LanComment_Context.h"
+
+    int LanComment_lex(YYSTYPE* lvalp, YYLTYPE* llocp, void* scanner);
+
+    void LanComment_error(YYLTYPE* locp, LanComment_Context* context, const char* err)
+    {
+        std::cout << locp->first_line << ":" << err << std::endl;
+    }
+
+    #define scanner context->scanner
+%}
+
+%%
+
+start:	code
+	;
+
+code:	code line
+	|
+	;
+
+line:
+	  TEXT
+		{
+            context->text(*$1); // TODO: add line number to text
+		    delete $1;
+		}
+    | LINECOMMENT
+		{
+            context->linecomment(*$1);
+            delete $1;
+		}
+    | BLOCKCOMMENT
+		{
+            context->blockcomment(*$1);
+            delete $1;
+		}
+    ;

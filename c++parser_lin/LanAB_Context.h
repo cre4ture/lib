@@ -4,6 +4,9 @@
 #include <iostream>
 #include "ast_nodes_func.hpp"
 #include "ast_nodes_impl.hpp"
+
+#include "LanComment_Context.h"
+
 #include "LanCD_Context.h"
 
 class definelist
@@ -60,6 +63,11 @@ public:
         return getValue(name, value);
     }
 
+    void loadDefines(std::map<std::string, std::string> map)
+    {
+        defines.insert(map.begin(), map.end());
+    }
+
 };
 
 class LanAB_Context
@@ -67,26 +75,32 @@ class LanAB_Context
 public:
 	void* scanner;
 	int result;
-    std::istream* is;
 	int esc_depth;
     int preprocessor_result;
+    std::istringstream* is;
 
     definelist defines;
     int level_on;
     int level_off;
-    creax::threadfifo<std::string> codefifo;
 
-    LanCD_Context cdcontext;
+    creax::threadfifo<text_type>& input_fifo;
+    creax::threadfifo<std::string>& output_fifo;
+
+    LanCD_Context* cdcontext;
 
 public:
-    LanAB_Context(std::istream* is)
-        : cdcontext(codefifo)
+    LanAB_Context(creax::threadfifo<text_type>& a_input_fifo, creax::threadfifo<std::string>& a_output_fifo)
+        : is(NULL), input_fifo(a_input_fifo), output_fifo(a_output_fifo), cdcontext(NULL)
 	{
 		init_scanner();
-		this->is = is;
         level_on = 0;
         level_off = 0;
 	}
+
+    void setCDContext(LanCD_Context* a_context)
+    {
+        cdcontext = a_context;
+    }
 
 	virtual ~LanAB_Context()
 	{

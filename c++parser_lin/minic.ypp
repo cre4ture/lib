@@ -35,6 +35,13 @@ int yylex();
 %}
 
 %error-verbose
+%pure-parser
+%name-prefix="LanCD_"
+%locations
+%defines
+%error-verbose
+%parse-param { LanCD_Context* context }
+%lex-param { void* scanner  }
 
 %union {
     int i;

@@ -20,7 +20,7 @@
 
 
     #include "LanCD_Context.h"
-    #include "LanCD.tab.h"
+    #include "LanCD.tab.hpp"
 
     #define YY_EXTRA_TYPE LanCD_Context*
     #define YY_USER_ACTION yylloc->first_line = yylineno;

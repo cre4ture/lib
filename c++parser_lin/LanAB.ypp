@@ -51,7 +51,7 @@ line:
 	  TEXT
 		{
 		    if (context->level_off == 0)
-			context->codefifo.push_data(*$1); // TODO: add line number to text
+            context->output_fifo.push_data(*$1); // TODO: add line number to text
 		    delete $1;
 		}
 	| IFDEF NAME ENDLINE
