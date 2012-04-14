@@ -17,7 +17,7 @@
 
 #include <iostream>
 #include "Languages/LanAB_Context.h"
-#include "Languages/LanCD_Context.h"
+#include "Languages/LanCF_Context.h"
 
 #include "creax_thread.h"
 #include "ParamParser.h"
@@ -84,6 +84,18 @@ int* parserThreadRoutine(LanCD_Context* param)
     return NULL;
 }
 
+int* blockParserThreadRoutine(LanCF_Context* param)
+{
+    try {
+        LanCF_parse(param);
+        param->parser_result = 0;
+    } catch (std::runtime_error& err) {
+        fprintf(stderr,"block parser error: %s\n", err.what());
+        param->parser_result = -1;
+    }
+    return NULL;
+}
+
 int main(int argc, char *argv [])
 {
     mefu::ParamParser parser(argc, argv);
@@ -116,32 +128,20 @@ int main(int argc, char *argv [])
     }
 
     creax::threadfifo<text_type> stage1_2;
-    creax::threadfifo<std::string> stage2_3;
+    creax::threadfifo<code_piece> stage2_3;
 
     // stage 1
     LanComment_Context lanComment_context(*new_input, stage1_2);
     // stage 2
     LanAB_Context lanAB_context(stage1_2, stage2_3);
     // stage 3
-    LanCD_Context lanCDcont(stage2_3);
+    LanCF_Context lanCFcont(stage2_3);
 
-    lanAB_context.setCDContext(&lanCDcont);
+    //lanAB_context.setCDContext(&lanCDcont);
     lanAB_context.defines.loadDefines(defines);
 
-    SymbolType* sym_int = new SymbolType("int");
-    lanCDcont.symbContext->addSymbol(sym_int);
-    SymbolFunc* buildInOp2 = new SymbolFunc("##buildInOp2", sym_int);
-    lanCDcont.symbContext->addSymbol(buildInOp2);
-    lanCDcont.symbContext->addSymbol(new SymbolType("void"));
-    lanCDcont.symbContext->addSymbol(new SymbolType("char"));
-
-    lanCDcont.symbContext->registerNewOperator2Function("+", sym_int, sym_int, buildInOp2);
-    lanCDcont.symbContext->registerNewOperator2Function("-", sym_int, sym_int, buildInOp2);
-    lanCDcont.symbContext->registerNewOperator2Function("*", sym_int, sym_int, buildInOp2);
-    lanCDcont.symbContext->registerNewOperator2Function("/", sym_int, sym_int, buildInOp2);
-
-    lanCDcont.dependencies = new ast_node_define_depencies(NULL);
-    lanAB_context.defines.saveDependencies(lanCDcont.dependencies);
+    lanCFcont.dependencies = new ast_node_define_depencies(NULL);
+    lanAB_context.defines.saveDependencies(lanCFcont.dependencies);
 
 //#define USE_THREADS
 
@@ -156,7 +156,8 @@ int main(int argc, char *argv [])
 #else
     commentFilterThreadRoutine(&lanComment_context);
     preprocessorThreadRoutine(&lanAB_context);
-    parserThreadRoutine(&lanCDcont);
+    //parserThreadRoutine(&lanCDcont);
+    blockParserThreadRoutine(&lanCFcont);
 #endif
 
     /*std::string text;
@@ -168,7 +169,7 @@ int main(int argc, char *argv [])
     try {
         xmlwriter writer(*new_output);
         writer.beginTag("root");
-        if (lanCDcont.wurzel != NULL) lanCDcont.wurzel->writeToXML(writer);
+        //if (lanCDcont.wurzel != NULL) lanCDcont.wurzel->writeToXML(writer);
         writer.endTag("root");
     } catch (std::runtime_error err) {
         fprintf(stderr,"Compilerfehler: %s\n", err.what());

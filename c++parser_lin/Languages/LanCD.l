@@ -25,37 +25,7 @@
     #define YY_EXTRA_TYPE LanCD_Context*
     #define YY_USER_ACTION yylloc->first_line = yylineno;
 
-    void cd_input(char* const buf, int& result, int max_size, LanCD_Context& context)
-    {        
-        bool done = false;
-        while (!done)
-        {
-            if (context.is == NULL)
-            {
-                std::string buffer;
-                if (context.fifo.pop_data(buffer))
-                {
-                    context.is = new std::istringstream(buffer);
-                }
-                else
-                {
-                    result = YY_NULL; // EOF
-                    return;
-                }
-            }
-
-            result = context.is->readsome(buf, max_size);
-            done = (result != 0);
-
-            if (!done)
-            {
-                delete context.is;
-                context.is = NULL;
-            }
-        }
-    }
-
-    #define YY_INPUT(buf,result,max_size) cd_input(buf, result, max_size, *yyextra)
+    #define YY_INPUT(buf,result,max_size) yyextra->yy_input(buf, result, max_size, YY_NULL)
 
     extern int zeile;
 %}
@@ -84,7 +54,7 @@ pp_define_comp      {pp_define_name}[ ][^\n]*$
 {pp_define}     { BEGIN pp_def; }
 <pp_def>"\n"                { BEGIN INITIAL; }
 {delim}      	{}
-"\n"         	{ yyextra->zeile++;}
+"\n"         	{ }
 {zahl}       	{ yylval->i = atoi(yytext); return (ZAHL);}
 "<"          	{ return(CMPL); }
 ">"          	{ return(CMPG); }

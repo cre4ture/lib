@@ -4,22 +4,7 @@
 #include <iostream>
 #include "threadfifo.h"
 
-class text_type
-{
-public:
-    std::string text;
-    int type;
-
-    text_type() {}
-
-    text_type(const std::string& a_text, int a_type)
-        : text(a_text), type(a_type)
-    {}
-
-    text_type(const text_type& a)
-        : text(a.text), type(a.type)
-    {}
-};
+#include "basic_types.h"
 
 class LanComment_Context
 {
@@ -49,22 +34,23 @@ public:
 
     void text(const std::string& a_text)
     {
-        fifo.push_data(text_type(a_text, TTCODE));
+        fifo.push_data(text_type(a_text, TTCODE, getLineNo()));
     }
 
     void linecomment(const std::string& a_text)
     {
-        fifo.push_data(text_type(a_text, TTLINECOMMENT));
+        fifo.push_data(text_type(a_text, TTLINECOMMENT, getLineNo()));
     }
 
     void blockcomment(const std::string& a_text)
     {
-        fifo.push_data(text_type(a_text, TTBLOCKCOMMENT));
+        fifo.push_data(text_type(a_text, TTBLOCKCOMMENT, getLineNo()));
     }
 
 // Defined in LanComment.l
 protected:
-	void init_scanner();	
+    int getLineNo();
+    void init_scanner();
 	void destroy_scanner();
 };
 

@@ -1,5 +1,5 @@
-#ifndef LANCD_CONTEXT
-#define LANCD_CONTEXT
+#ifndef LANCF_CONTEXT
+#define LANCF_CONTEXT
 
 #include <iostream>
 #include <sstream>
@@ -7,17 +7,19 @@
 #include "Symbols.h"
 #include "threadfifo.h"
 
-class LanCD_Context
+#include "basic_types.h"
+
+class LanCF_Context;
+int LanCF_parse(LanCF_Context*);
+
+class LanCF_Context
 {
-public:
-    void* scanner;
+private:
     std::istringstream* is;
     ast_node_wurzel *wurzel;
-    ast_node_define_depencies* dependencies;
-    int zeile;
+    int line;
     Symbols* symbContext;
-    creax::threadfifo<std::string>& fifo;
-    int parser_result;
+    creax::threadfifo<code_piece>& fifo;
 
     void beginNewSymbContext()
     {
@@ -33,18 +35,23 @@ public:
     }
 
 public:
-    LanCD_Context(creax::threadfifo<std::string>& a_fifo)
+    void* scanner;
+    ast_node_define_depencies* dependencies;
+    int parser_result;
+    int level;
+
+    LanCF_Context(creax::threadfifo<code_piece>& a_fifo)
         : fifo(a_fifo)
 	{
 		init_scanner();
-        zeile = 1;
+        line = 0;
         wurzel = NULL;
         is = NULL;
         symbContext = NULL;
         beginNewSymbContext();
 	}
 
-	virtual ~LanCD_Context()
+    virtual ~LanCF_Context()
 	{
         endSymbContext();
         while (symbContext != NULL)
@@ -58,19 +65,64 @@ public:
 		destroy_scanner();
 	}
 
-    // Defined in LanCD.l
+    void yy_error(const char* err)
+    {
+        std::cerr << "CF: line:" << line + getLineNo()
+          << ",\"" << getYYtext()
+         << "\", msg: " << err << std::endl;
+    }
+
+    void yy_input(char* const buf, int& result, int max_size, const int eof_result)
+    {
+        bool done = false;
+        while (!done)
+        {
+            if (is == NULL)
+            {
+                code_piece buffer;
+                if (fifo.pop_data(buffer))
+                {
+                    is = new std::istringstream(buffer.code);
+                    line = buffer.line - getLineNo();
+                }
+                else
+                {
+                    result = eof_result; // EOF
+                    return;
+                }
+            }
+
+            result = is->readsome(buf, max_size);
+            done = (result != 0);
+
+            if (!done)
+            {
+                delete is;
+                is = NULL;
+            }
+        }
+    }
+
+    void namespace_decl(const std::string& block_code)
+    {
+        creax::threadfifo<code_piece> fifo;
+        fifo.push_data(code_piece(block_code, line + getLineNo()));
+        fifo.close_fifo();
+        LanCF_Context tmp(fifo);
+        LanCF_parse(&tmp);
+    }
+
+    // Defined in LanCF.l
     std::string getYYtext();
-    // Defined in LanCD.l
+    // Defined in LanCF.l
     int getLineNo();
 
 
 protected:
-    // Defined in LanCD.l
+    // Defined in LanCF.l
     void init_scanner();
-    // Defined in LanCD.l
+    // Defined in LanCF.l
 	void destroy_scanner();
 };
-
-int LanCD_parse(LanCD_Context*);
 
 #endif // LANCD_CONTEXT
