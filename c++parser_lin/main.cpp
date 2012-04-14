@@ -16,8 +16,8 @@
 #include "ast_node_global_def_include.h"
 
 #include <iostream>
-#include "LanAB_Context.h"
-#include "LanCD_Context.h"
+#include "Languages/LanAB_Context.h"
+#include "Languages/LanCD_Context.h"
 
 #include "creax_thread.h"
 #include "ParamParser.h"
