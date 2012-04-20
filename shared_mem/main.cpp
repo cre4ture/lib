@@ -2,6 +2,8 @@
 #include "creax_extern_model.h"
 
 #include <string.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "../compiler_export/Sprachumfang/creax_mutex.h"
 
@@ -26,7 +28,8 @@ int main()
         creax::mutex* mM = module.createShared<creax::mutex>();
         int* a_sh_p = module.createShared<int>();
         msg_t* msg = module.createShared<msg_t>();
-        char* buffer = module.mallocShared(640*480);
+        char* buffer = (char*)module.mallocShared(640*480);
+        cv::Mat img(480,640,CV_8UC3,buffer);
         std::cout << "created shared ressources" << std::endl;
 
         volatile int& a_sh = *a_sh_p;
@@ -39,6 +42,13 @@ int main()
             a_sh = a_sh * 3 + 1;
             msg->setMsg("HALLO VON GAST!");
             std::cout << "Child result: " << a_sh << std::endl;
+
+            cv::VideoCapture cam(0);
+            cv::waitKey(300);
+            for (int i = 0; i < 10; i++)
+            {
+                cam.read(img);
+            }
         }
         else
         {
@@ -46,6 +56,8 @@ int main()
             std::cout << "Parent" << std::endl;
             module.wait_stop();
             std::cout << "Parent result: " << a_sh << ", msg: " << msg->txt << std::endl;
+            cv::imshow("test_parent",img);
+            cv::waitKey(0);
         }
 
     }
