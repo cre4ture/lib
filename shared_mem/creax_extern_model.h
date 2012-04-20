@@ -37,7 +37,7 @@ private:
 
         for (size_t i = 0; i < pos; i++)
         {
-            result += st[i];
+            result = (char*)result + st[i];
         }
 
         return result;

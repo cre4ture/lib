@@ -2,6 +2,9 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= qt
 
+CONFIG += link_pkgconfig
+PKGCONFIG += opencv
+
 SOURCES += main.cpp \
     creax_extern_model.cpp
 
