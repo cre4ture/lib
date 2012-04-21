@@ -23,19 +23,23 @@ int main()
 {
     try
     {
-        extern_interface module("mod_test");
-        std::cout << "module started" << std::endl;
-        creax::mutex* mM = module.createShared<creax::mutex>();
-        int* a_sh_p = module.createShared<int>();
-        msg_t* msg = module.createShared<msg_t>();
-        char* buffer = (char*)module.mallocShared(640*480);
+        child_process_interface iface;
+        extern_module module(iface);
+        module.register_shared_mem("mem_test1",DEFAULT_REGION_SIZE,true,true);
+        shared_mem_stack& sh_stack = module.getSharedMem(0);
+        creax::mutex* mM = sh_stack.createShared<creax::mutex>();
+        int* a_sh_p = sh_stack.createShared<int>();
+        msg_t* msg = sh_stack.createShared<msg_t>();
+        char* buffer = (char*)sh_stack.mallocShared(640*480);
         cv::Mat img(480,640,CV_8UC3,buffer);
         std::cout << "created shared ressources" << std::endl;
+        module.start();
+        std::cout << "module started" << std::endl;
 
         volatile int& a_sh = *a_sh_p;
         a_sh = 3;
 
-        if (module.start()) // returns if child or not
+        if (iface.isChild()) // returns if child or not
         {
             // child
             std::cout << "Child" << std::endl;
@@ -44,17 +48,21 @@ int main()
             std::cout << "Child result: " << a_sh << std::endl;
 
             cv::VideoCapture cam(0);
-            cv::waitKey(300);
             for (int i = 0; i < 10; i++)
             {
-                cam.read(img);
+                cv::waitKey(30);
+                cv::Mat tmp;
+                cam.read(tmp);
+                tmp.copyTo(img);
             }
+            //cv::imshow("test_child",img);
+            //cv::waitKey(0);
         }
         else
         {
             // parent
             std::cout << "Parent" << std::endl;
-            module.wait_stop();
+            iface.wait_stop();
             std::cout << "Parent result: " << a_sh << ", msg: " << msg->txt << std::endl;
             cv::imshow("test_parent",img);
             cv::waitKey(0);
