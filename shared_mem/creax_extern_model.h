@@ -2,93 +2,174 @@
 #define CREAX_EXTERN_MODEL_H
 
 #include <string>
+#include <string.h>
 #include <memory>
 #include <vector>
 #include "../compiler_export/Sprachumfang/creax_fd.h"
+#include "../compiler_export/Sprachumfang/auto_ptr_vector.h"
 
 typedef size_t ResID;
 
-#define REGION_SIZE   (1024*1024*5)
+#define DEFAULT_REGION_SIZE   (1024*1024*5)
 
-class extern_interface
+class shared_mem_stack
 {
-public:
-    enum MemRegion
-    {
-        MR_TO_CHILD = 0,
-        MR_TO_PARENT = 1,
-        MR_SHARED = 2
-    };
-
 private:
-    std::auto_ptr<creax::fd> mr_fd[3];
-    void* memregion[3];
-    std::vector<size_t> memStack[3];
-    __pid_t pid;
+    std::string name;
+    bool read_only;
+    size_t map_size;
+    creax::fd* map_fd;
+    void* map_ptr;
+    std::vector<size_t> stack;
+    bool master;
 
-    std::string to_child;
-    std::string to_parent;
-    std::string shared;
-
-    void* getMemPtr(MemRegion region, size_t pos)
+    void* getMemPtr(size_t pos)
     {
-        void* result = memregion[region];
-        std::vector<size_t>& st = memStack[region];
+        void* result = map_ptr;
 
         for (size_t i = 0; i < pos; i++)
         {
-            result = (char*)result + st[i];
+            result = (char*)result + stack[i];
         }
 
         return result;
     }
 
-    void* register_element(MemRegion region, size_t size)
+    void* register_element(size_t size)
     {
-        std::vector<size_t> &tSt = memStack[region];
-        size_t pos = tSt.size();
-        tSt.push_back(size);
-        void* result = getMemPtr(region, pos);
+        size_t pos = stack.size();
+        stack.push_back(size);
+        void* result = getMemPtr(pos);
         // check size
-        if (((size_t)result - (size_t)memregion[region]) + size > REGION_SIZE)
+        if (((size_t)result - (size_t)map_ptr) + size > map_size)
             throw std::runtime_error("extern_interface::register_element(): region size to small!");
         return result;
     }
 
 public:
+    shared_mem_stack(std::string& a_name, size_t a_size);
 
-    extern_interface(const std::string& name);
+    ~shared_mem_stack();
+
+    void map_memory(bool a_read_only, bool a_master);
+
+    void setMaster(bool is_master)
+    {
+        master = is_master;
+    }
+
+    void* mallocShared(size_t size)
+    {
+        return register_element(size);
+    }
+
+    template<class Tp, class P1, class P2>
+    Tp* createShared(P1 param1, P2 param2)
+    {
+        return new (register_element(sizeof(Tp))) Tp(param1, param2);
+    }
+
+    template<class Tp, class P1>
+    Tp* createShared(P1 param1)
+    {
+        return new (register_element(sizeof(Tp))) Tp(param1);
+    }
+
+    template<class Tp>
+    Tp* createShared()
+    {
+        return new (register_element(sizeof(Tp))) Tp;
+    }
+};
+
+class child_process_interface
+{
+private:
+    __pid_t child_pid;
+
+public:
+    child_process_interface();
 
     bool start(); // returns if child or not
     bool wait_stop(); // wait till module terminates
 
     bool isChild()
     {
-        return (pid == 0);
+        return (child_pid == 0);
     }
 
-    void* mallocShared(size_t size, MemRegion region = MR_SHARED)
+    __pid_t getChildPID()
     {
-        return register_element(region, size);
+        return child_pid;
+    }
+};
+
+class extern_module
+{
+private:
+    child_process_interface& iface;
+    mefu::auto_ptr_vector<shared_mem_stack> shared_mem;
+
+    struct registered_shared_mem
+    {
+        size_t size;
+        std::string name;
+        bool write_by_parent;
+        bool write_by_child;
+    };
+
+    std::vector<registered_shared_mem> registered_mem;
+
+public:
+    extern_module(child_process_interface& a_iface)
+        : iface(a_iface)
+    {}
+
+    size_t register_shared_mem(const std::string &name, size_t size, bool write_by_parent, bool write_by_child);
+
+    shared_mem_stack& getSharedMem(size_t index)
+    {
+        return *shared_mem[index];
     }
 
-    template<class Tp, class P1, class P2>
-    Tp* createShared(MemRegion region, P1 param1, P2 param2)
+    // inits stack for data readable by parent and child
+    // this is done before child was started
+    virtual void initSharedDataBefore();
+
+    // inits stack for data going to child (readonly for child)
+    // or data going to parent (readonly for parent)
+    // this is done after child was started
+    virtual void initSharedDataAfter();
+
+    void start()
     {
-        return new (register_element(region, sizeof(Tp))) Tp(param1, param2);
+        initSharedDataBefore();
+        iface.start();
+        initSharedDataAfter();
+
+        if (iface.isChild())
+        {
+            // child
+        }
+        else
+        {
+            // parent
+        }
     }
 
-    template<class Tp, class P1>
-    Tp* createShared(MemRegion region, P1 param1)
-    {
-        return new (register_element(region, sizeof(Tp))) Tp(param1);
-    }
+};
 
-    template<class Tp>
-    Tp* createShared(MemRegion region = MR_SHARED)
-    {
-        return new (register_element(region, sizeof(Tp))) Tp;
-    }
+class extern_module_mgr
+{
+private:
+    mefu::auto_ptr_vector<extern_module> modules;
+
+public:
+    extern_module_mgr()
+    {}
+
+    ~extern_module_mgr()
+    {}
 };
 
 #endif // CREAX_EXTERN_MODEL_H

@@ -4,64 +4,118 @@
 #include <sys/mman.h>
 #include <sys/wait.h>
 
-extern_interface::extern_interface(const std::string &name)
+shared_mem_stack::shared_mem_stack(std::string& a_name, size_t a_size)
+    : name(a_name),
+      read_only(true),
+      map_size(a_size),
+      map_fd(NULL),
+      map_ptr(NULL),
+      master(false)
 {
-    to_child = name + "_to_child.txt";
-    to_parent = name + "_to_parent.txt";
-    shared = name + "_shared.txt";
-
-    { // create and truncate files
-        creax::fd a_shared_fd(shared, O_RDWR | O_CREAT);
-        creax::fd a_to_child_fd(to_child, O_RDWR | O_CREAT);
-        creax::fd a_to_parent_fd(to_parent, O_RDWR | O_CREAT);
-
-        struct stat buf;
-        a_shared_fd.getStat(buf);
-        if (buf.st_size < REGION_SIZE)
-        for (size_t i = 0; i < (REGION_SIZE / sizeof(i)); i++)
-            write(a_shared_fd.getFd(), &i, sizeof(i));
-
-        a_to_child_fd.getStat(buf);
-        if (buf.st_size < REGION_SIZE)
-        for (size_t i = 0; i < (REGION_SIZE / sizeof(i)); i++)
-            write(a_to_child_fd.getFd(), &i, sizeof(i));
-
-        a_to_parent_fd.getStat(buf);
-        if (buf.st_size < REGION_SIZE)
-        for (size_t i = 0; i < (REGION_SIZE / sizeof(i)); i++)
-            write(a_to_parent_fd.getFd(), &i, sizeof(i));
-    }
-
-    // create full shared mem region directly!
-    mr_fd[MR_SHARED].reset(new creax::fd(shared, O_RDWR));
-    memregion[MR_SHARED] = mmap(NULL, REGION_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mr_fd[MR_SHARED]->getFd(), 0);
+    // create file and set size!
+    // close file again after that!
+    creax::fd a_shared_fd(name, O_RDWR | O_CREAT);
+    struct stat buf;
+    a_shared_fd.getStat(buf);
+    if (buf.st_size < (int)map_size)
+    for (size_t i = 0; i < (map_size / sizeof(i)); i++)
+        write(a_shared_fd.getFd(), &i, sizeof(i));
 }
 
-bool extern_interface::start()
+shared_mem_stack::~shared_mem_stack()
 {
-    pid = fork();
-    bool child = isChild();
-    if (child)
+    if (map_ptr != NULL)
+        munmap(map_ptr, map_size);
+
+    if (map_fd != NULL)
+        delete(map_fd);
+}
+
+void shared_mem_stack::map_memory(bool a_read_only, bool a_master)
+{
+    if (map_ptr != NULL)
+        throw std::runtime_error("shared_mem_stack::map_memory(): already mapped!");
+
+    read_only = a_read_only;
+    master = a_master;
+
+    int fd_flags = 0;
+    int map_flags = 0;
+    if (read_only)
     {
-        mr_fd[MR_TO_PARENT].reset(new creax::fd(to_parent, O_RDWR));
-        memregion[MR_TO_PARENT] = mmap(NULL, REGION_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mr_fd[MR_TO_PARENT]->getFd(), 0);
-        mr_fd[MR_TO_CHILD].reset(new creax::fd(to_child, O_RDONLY));
-        memregion[MR_TO_CHILD] = mmap(NULL, REGION_SIZE, PROT_READ, MAP_SHARED, mr_fd[MR_TO_CHILD]->getFd(), 0);
+        fd_flags = O_RDONLY;
+        map_flags = PROT_READ;
     }
     else
     {
-        mr_fd[MR_TO_PARENT].reset(new creax::fd(to_parent, O_RDONLY));
-        memregion[MR_TO_PARENT] = mmap(NULL, REGION_SIZE, PROT_WRITE, MAP_SHARED, mr_fd[MR_TO_PARENT]->getFd(), 0);
-        mr_fd[MR_TO_CHILD].reset(new creax::fd(to_child, O_RDWR));
-        memregion[MR_TO_CHILD] = mmap(NULL, REGION_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mr_fd[MR_TO_CHILD]->getFd(), 0);
+        fd_flags = O_RDWR;
+        map_flags = PROT_READ | PROT_WRITE;
     }
 
+    map_fd = new creax::fd(name, fd_flags);
+    map_ptr = mmap(NULL, map_size, map_flags, MAP_SHARED, map_fd->getFd(), 0);
+
+    if (map_ptr == NULL)
+        throw std::runtime_error("shared_mem_stack::map_memory():mapping failed!");
+}
+
+
+child_process_interface::child_process_interface()
+    : child_pid(1) // init pid != 0 sice we are the parent right now!
+{
+}
+
+bool child_process_interface::start()
+{
+    child_pid = fork();
+    bool child = isChild();
     return child;
 }
 
-bool extern_interface::wait_stop()
+bool child_process_interface::wait_stop()
 {
     __WAIT_STATUS status;
     wait(&status);
     return (WEXITSTATUS(status) == 0);
+}
+
+size_t extern_module::register_shared_mem(const std::string &name, size_t size, bool write_by_parent, bool write_by_child)
+{
+    size_t result = registered_mem.size();
+    registered_shared_mem mem;
+    mem.name = name;
+    mem.size = size;
+    mem.write_by_parent = write_by_parent;
+    mem.write_by_child = write_by_child;
+    registered_mem.push_back(mem);
+
+    shared_mem_stack* stack = new shared_mem_stack(mem.name, mem.size);
+    shared_mem.push_back(stack);
+    if (mem.write_by_parent && mem.write_by_child)
+        stack->map_memory(false, !iface.isChild());
+
+    return result;
+}
+
+void extern_module::initSharedDataBefore()
+{
+}
+
+void extern_module::initSharedDataAfter()
+{
+    // do all mappings
+    for (size_t i = 0; i < registered_mem.size(); i++)
+    {
+        registered_shared_mem& mem = registered_mem[i];
+        shared_mem_stack* stack = shared_mem[i];
+
+        if (mem.write_by_parent && mem.write_by_child)
+            stack->setMaster(!iface.isChild());
+        else if (mem.write_by_parent)
+            stack->map_memory(iface.isChild(), !iface.isChild());
+        else if (mem.write_by_child)
+            stack->map_memory(!iface.isChild(), iface.isChild());
+        else
+            throw std::runtime_error("unsupported memmap style!");
+    }
 }
