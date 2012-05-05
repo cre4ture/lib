@@ -142,6 +142,7 @@ type
     function DeleteTagRoutine(checkfunction: TFindTagCheckFunction;
       Data: pointer): integer;
     procedure DeleteChildElement(index: integer);
+    function html_isClass(name: string): boolean;
   end;
   EHTMLTableError = class(Exception);
   THTMLTableRow = class(THTMLElement)
@@ -908,7 +909,9 @@ end;
 
 function THTMLGenerateHumanReadableText_dataobj.generate: string;
 begin
+  line := '';
   rootnode.FindTagRoutine(routine, nil);
+  list.Append(line);
   Result := list.Text;
 end;
 
@@ -1036,6 +1039,28 @@ begin
   else
   begin
     Result := (value = cond_content);
+  end;
+end;
+
+function THTMLElement.html_isClass(name: string): boolean;
+var i, e: integer;
+    str: string;
+begin
+  Result := false;
+  str := AttributeValue['class'];
+  i := pos(name, str);
+  if (i > 0) then
+  begin
+    // check start
+    if (i = 1) or (str[i-1] in [' ',',']) then
+    begin
+      // check end
+      e := i + length(name);
+      if (e > length(str)) or (str[e] in [' ',',']) then
+      begin
+        Result := true;
+      end;
+    end;
   end;
 end;
 
