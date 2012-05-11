@@ -29,6 +29,12 @@ public:
         std::cout << "Hello " << name.text << " from " << getpid() << std::endl;
         return 1234;
     }
+
+    int sayHello3(const mytext name, float f)
+    {
+        std::cout << "Hello " << f << " : " << name.text << " from " << getpid() << std::endl;
+        return 1234;
+    }
 };
 
 using namespace std;
@@ -43,13 +49,14 @@ int main()
     obj->startSlave();
     int result;
     //result = obj.sayHello();
-    result = obj->call_function_0<int>(&shared_test::sayHello);
+    result = obj->call_function<int>(&shared_test::sayHello);
 
     std::string name;
 
     std::cin >> name;
 
-    obj->call_function_1<int>(&shared_test::sayHello2, mytext(name.c_str()));
+    obj->call_function<int>(&shared_test::sayHello2, mytext(name.c_str()));
+    obj->call_function<int>(&shared_test::sayHello3, mytext(name.c_str()), 0.7f);
 
     cout << "return value: " << result << std::endl;
 

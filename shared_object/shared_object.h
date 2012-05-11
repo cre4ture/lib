@@ -86,6 +86,31 @@ public:
     }
 };
 
+template<class _objT, class _resultT, class _fpT, class _pT1, class _pT2>
+class shared_func_call2: public shared_func_call<_objT>
+{
+private:
+    _resultT (_objT::*func_p)(_pT1, _pT2);
+    _pT1 param1;
+    _pT2 param2;
+    _resultT result;
+
+public:
+    shared_func_call2(_resultT (_objT::*a_func_p)(_pT1, _pT2), _pT1 a_param1, _pT2 a_param2)
+        : func_p(a_func_p), param1(a_param1), param2(a_param2) {}
+
+    // be called in slave
+    void execute_function(_objT* self)
+    {
+        result = (self->*func_p)(param1, param2);
+    }
+
+    _resultT getResult()
+    {
+        return result;
+    }
+};
+
 template<class _parentT, bool _is_shared, size_t _param_buffer_size = 1024>
 class shared_object: private _parentT, // this inheritence is forces private cause noone should call memberfunctions directly! Use call_function_X instead!
                      public shared_object_execute_base
@@ -104,7 +129,7 @@ public:
     shared_object() {}
 
     template <typename _resultT, typename _fpT>
-    _resultT call_function_0(_fpT func)
+    _resultT call_function(_fpT func)
     {
         if (_is_shared)
         {
@@ -130,7 +155,7 @@ public:
     }
 
     template <class _resultT, class _p1T, class _fpT>
-    _resultT call_function_1(_fpT func, _p1T param1)
+    _resultT call_function(_fpT func, _p1T param1)
     {
         if (_is_shared)
         {
@@ -152,6 +177,32 @@ public:
         {
             // not shared: simply call function
             return (this->*func)(param1);
+        }
+    }
+
+    template <class _resultT, class _p1T, class _pT2, class _fpT>
+    _resultT call_function(_fpT func, _p1T param1, _pT2 param2)
+    {
+        if (_is_shared)
+        {
+            // check size
+            if (sizeof(shared_func_call2<thisType, _resultT, _fpT, _p1T, _pT2>) > _param_buffer_size)
+            {
+                throw std::runtime_error("shared_object::call_function(): Sizeof function call is to big!");
+            }
+            // creates function call object
+            shared_func_call2<thisType, _resultT, _fpT, _p1T, _pT2>* call = new (data_buffer) shared_func_call2<thisType, _resultT, _fpT, _p1T, _pT2>(func, param1, param2);
+
+            // let slave work:
+            triggerSlave();
+
+            // wait to be executed
+            return call->getResult();
+        }
+        else
+        {
+            // not shared: simply call function
+            return (this->*func)(param1, param2);
         }
     }
 };
