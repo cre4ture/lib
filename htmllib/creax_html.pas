@@ -178,6 +178,13 @@ type
     attr_value: string;
     function routine(CurElement: THTMLElement; Data: pointer): Boolean;
   end;
+  //For HTMLFindRoutine_NameAndClass:
+  THTMLFindRoutine_dataobj_find_name_class = class
+  public
+    tag_name: string;
+    tag_class: string;
+    function routine(CurElement: THTMLElement; Data: pointer): Boolean;
+  end;
   // for HTMLFindRoutineEx
   THTMLFindRoutingEx_FindCondition_NameType = (
     frefcnt_content,
@@ -220,8 +227,10 @@ function UnEscapeStr(s: string; esc: char = '\'): string;
 function EscapeStr(s: string; esc: char = '\'; toesc: char = '"'): string;
 function HTMLFindRoutine_NameAttribute(root_tag: THTMLElement; ftag_name,
   ftag_attribute, ftag_attribute_value: string): THTMLElement;
-function HTMLFindRoutine_NameAttribute_Within(root_tag: THTMLElement; ftag_name,
+function HTMLFindRoutine_NameAttribute_Value_Within(root_tag: THTMLElement; ftag_name,
   ftag_attribute, ftag_attribute_value: string): THTMLElement;
+function HTMLFindRoutine_NameAndClass(root_tag: THTMLElement; ftag_name,
+  ftag_class: string): THTMLElement;
 
 function HTMLGenerateHumanReadableText(node: THTMLElement): string;
 
@@ -869,7 +878,7 @@ begin
   end;
 end;
 
-function HTMLFindRoutine_NameAttribute_Within(root_tag: THTMLElement; ftag_name,
+function HTMLFindRoutine_NameAttribute_Value_Within(root_tag: THTMLElement; ftag_name,
   ftag_attribute, ftag_attribute_value: string): THTMLElement;
 var fdata: THTMLFindRoutine_dataobj_within;
 begin
@@ -878,6 +887,20 @@ begin
     fdata.tag_name := ftag_name;
     fdata.attr_name := ftag_attribute;
     fdata.attr_value := ftag_attribute_value;
+    Result := root_tag.FindTagRoutine({$ifdef lazarus}{@}{$endif}fdata.routine,nil);
+  finally
+    fdata.Free;
+  end;
+end;
+
+function HTMLFindRoutine_NameAndClass(root_tag: THTMLElement; ftag_name,
+  ftag_class: string): THTMLElement;
+var fdata: THTMLFindRoutine_dataobj_find_name_class;
+begin
+  fdata := THTMLFindRoutine_dataobj_find_name_class.Create;
+  try
+    fdata.tag_name := ftag_name;
+    fdata.tag_class := ftag_class;
     Result := root_tag.FindTagRoutine({$ifdef lazarus}{@}{$endif}fdata.routine,nil);
   finally
     fdata.Free;
@@ -1062,6 +1085,15 @@ begin
       end;
     end;
   end;
+end;
+
+{ THTMLFindRoutine_dataobj_find_name_class }
+
+function THTMLFindRoutine_dataobj_find_name_class.routine(
+  CurElement: THTMLElement; Data: pointer): Boolean;
+begin
+  Result := (CurElement.TagName = Self.tag_name)and
+            (CurElement.html_isClass(Self.tag_class));
 end;
 
 end.
