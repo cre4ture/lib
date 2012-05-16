@@ -78,6 +78,7 @@ shared_object_execute_base::~shared_object_execute_base()
 
 void shared_object_execute_base::startSlave()
 {
+    std::cout << "startSlave!" << std::endl;
     // initial state:
     // mutex_command_pending: locked
     // mutex_result_pending: locked
@@ -87,6 +88,7 @@ void shared_object_execute_base::startSlave()
     __pid_t pid = fork();
     if (pid == 0)
     {
+        std::cout << "child!" << std::endl;
         // child: command loop
         while (!terminate)
         {
@@ -101,10 +103,16 @@ void shared_object_execute_base::startSlave()
         std::cout << "slave is terminating" << std::endl;
         exit(0);
     }
+
+    std::cout << "parent!" << std::endl;
 }
 
-void shared_object_execute_base::triggerSlave()
+void shared_object_execute_base::start_execute()
 {
     pthread_mutex_unlock(&mutex_command_pending);
+}
+
+void shared_object_execute_base::end_execute()
+{
     pthread_mutex_lock(&mutex_result_pending);
 }
