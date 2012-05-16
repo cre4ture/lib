@@ -5,6 +5,9 @@ CONFIG -= qt
 LIBS += -fopenmp
 QMAKE_CXXFLAGS += -fopenmp
 
+CONFIG += link_pkgconfig
+PKGCONFIG += opencv
+
 SOURCES += main.cpp \
     shared_object.cpp \
     shared_data.cpp

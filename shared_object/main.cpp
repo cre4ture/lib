@@ -3,6 +3,11 @@
 #include "shared_object_ext.h"
 #include <cstring>
 
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#include <signal.h>
+
 #define MYTEXT_MAX_LEN 250
 
 struct mytext
@@ -62,7 +67,24 @@ public:
         text->assign(buffer.c_str());
         return 0;
     }
+
+    int captureImage(cv::Mat buffer)
+    {
+        cv::VideoCapture cap(0);
+        cv::Mat frame;
+        cap >> frame;
+        usleep(200000);
+        cap >> frame;
+        frame.copyTo(buffer);
+        return 0;
+    }
 };
+
+struct sigaction old_act;
+void sigchld_hanlder(int signum, siginfo_t* info, void* ctx)
+{
+    std::cout << "child process terminated" << std::endl;
+}
 
 using namespace std;
 
@@ -75,6 +97,11 @@ typedef shared_object_ext<shared_test, SHARED_TEST, SHARED_SEGCOUNT, SHARED_PSIZ
 
 int main()
 {
+    struct sigaction action;
+    action.sa_sigaction = &sigchld_hanlder;
+    action.sa_flags = SA_SIGINFO;
+    sigaction(SIGCHLD, &action, &old_act);
+
     cout << "Hello World from " << getpid() << endl;
 
     // create extern object
@@ -98,6 +125,15 @@ int main()
     obj->call_function<int>(&shared_test::readText, data);
 
     std::cout << "read from slave: " << data->text << std::endl;
+
+    char* img_data = obj->createSharedDataSegment(640*480*3, true, false);
+    cv::Mat img(480, 640, CV_8UC3, img_data);
+
+    obj->call_function(&shared_test::captureImage, img);
+
+    cv::imshow("new", img);
+
+    cv::waitKey(0);
 
     delete obj;
 
