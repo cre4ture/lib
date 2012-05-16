@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "shared_object.h"
+#include "shared_object_ext.h"
 #include <cstring>
 
 #define MYTEXT_MAX_LEN 250
@@ -53,24 +53,38 @@ public:
         std::cout << hello() << " " << f << " : " << name.text << " from " << getpid() << std::endl;
         return 1234;
     }
+
+    int readText(mytext* text)
+    {
+        std::cout << hello() << " please type some message to " << getpid() << std::endl;
+        std::string buffer;
+        std::cin >> buffer;
+        text->assign(buffer.c_str());
+        return 0;
+    }
 };
 
 using namespace std;
 
 #define SHARED_TEST true
 #define SHARED_PSIZE 300
+#define SHARED_SEGCOUNT 4
+
+typedef shared_object_ext<shared_test, SHARED_TEST, SHARED_SEGCOUNT, SHARED_PSIZE> my_shobj;
+//typedef shared_object<shared_test, SHARED_TEST, SHARED_PSIZE> my_shobj;
 
 int main()
 {
     cout << "Hello World from " << getpid() << endl;
 
     // create extern object
-    shared_object<shared_test, SHARED_TEST, SHARED_PSIZE>* obj = new shared_object<shared_test, SHARED_TEST, SHARED_PSIZE>();
+    my_shobj* obj = new my_shobj();
     obj->startSlave();
 
     int result;
     //result = obj.sayHello();
     result = obj->call_function<int>(&shared_test::sayHello);
+    cout << "return value: " << result << std::endl;
 
     std::string name;
 
@@ -79,7 +93,11 @@ int main()
     obj->call_function<int>(&shared_test::sayHello2, mytext(name.c_str()));
     obj->call_function<int>(&shared_test::sayHello3, mytext(name.c_str()), 0.7f);
 
-    cout << "return value: " << result << std::endl;
+    mytext* data = (mytext*)obj->createSharedDataSegment(sizeof(mytext), false, false);
+
+    obj->call_function<int>(&shared_test::readText, data);
+
+    std::cout << "read from slave: " << data->text << std::endl;
 
     delete obj;
 
