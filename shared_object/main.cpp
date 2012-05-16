@@ -11,28 +11,46 @@ struct mytext
 
     mytext(const char* a_text)
     {
+        assign(a_text);
+    }
+
+    void assign(const char* a_text)
+    {
         strncpy(text, a_text, MYTEXT_MAX_LEN);
+    }
+
+    const char* operator ()()
+    {
+        return text;
     }
 };
 
 class shared_test
 {
+private:
+    mytext hello;
+
 public:
+
+    shared_test()
+        :hello("HELLO")
+    {}
+
     int sayHello()
     {
-        std::cout << "Hello Object from " << getpid() << std::endl;
+        std::cout << hello() << " Object from " << getpid() << std::endl;
         return 1234;
     }
 
     int sayHello2(const mytext name)
     {
-        std::cout << "Hello " << name.text << " from " << getpid() << std::endl;
+        std::cout << hello() << " " << name.text << " from " << getpid() << std::endl;
         return 1234;
     }
 
     int sayHello3(const mytext name, float f)
     {
-        std::cout << "Hello " << f << " : " << name.text << " from " << getpid() << std::endl;
+        std::cout << hello() << " " << f << " : " << name.text << " from " << getpid() << std::endl;
         return 1234;
     }
 };
@@ -40,13 +58,16 @@ public:
 using namespace std;
 
 #define SHARED_TEST true
+#define SHARED_PSIZE 300
 
 int main()
 {
     cout << "Hello World from " << getpid() << endl;
 
-    shared_object<shared_test, SHARED_TEST, 300>* obj = new shared_object<shared_test, SHARED_TEST, 300>();
+    // create extern object
+    shared_object<shared_test, SHARED_TEST, SHARED_PSIZE>* obj = new shared_object<shared_test, SHARED_TEST, SHARED_PSIZE>();
     obj->startSlave();
+
     int result;
     //result = obj.sayHello();
     result = obj->call_function<int>(&shared_test::sayHello);
