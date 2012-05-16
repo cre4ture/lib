@@ -23,6 +23,7 @@ private:
     pthread_mutex_t mutex_result_pending;
     bool terminate;
 protected:
+    // will be started in child(slave) process
     virtual void execute_command() = 0;
 public:
     shared_object_execute_base();
@@ -51,7 +52,7 @@ public:
     _resultT getResult() { return result; }
 };
 
-template<class _objT, class _resultT, class _fpT>
+template<class _objT, class _resultT>
 class shared_func_call0: public shared_func_call_result<_objT, _resultT>
 {
 private:
@@ -68,7 +69,7 @@ public:
     }
 };
 
-template<class _objT, class _resultT, class _fpT, class _pT1>
+template<class _objT, class _resultT, class _pT1>
 class shared_func_call1: public shared_func_call_result<_objT, _resultT>
 {
 private:
@@ -86,7 +87,7 @@ public:
     }
 };
 
-template<class _objT, class _resultT, class _fpT, class _pT1, class _pT2>
+template<class _objT, class _resultT, class _pT1, class _pT2>
 class shared_func_call2: public shared_func_call_result<_objT, _resultT>
 {
 private:
@@ -106,7 +107,7 @@ public:
 };
 
 template<class _parentT, bool _is_shared, size_t _param_buffer_size = 1024>
-class shared_object: private _parentT, // this inheritence is forces private cause noone should call memberfunctions directly! Use call_function_X instead!
+class shared_object: protected _parentT, // this inheritence is forces private cause noone should call memberfunctions directly! Use call_function_X instead!
                      public shared_object_execute_base
 {
 private:
@@ -117,6 +118,27 @@ private:
     {
         shared_func_call<thisType>* call = (shared_func_call<thisType>*)data_buffer;
         call->execute_function(this);
+    }
+
+protected:
+
+    // "cheating" for shared_object_ext allowed
+    template<class _objT>
+    char* call_function_charp(char* (_objT::*func)(size_t, bool), size_t param1, bool param2)
+    {
+        char* (_parentT::*func_x)(size_t, bool);
+        func_x = (char* (_parentT::*)(size_t, bool))func;
+
+        if (_is_shared)
+        {
+            start_function<char*, size_t, bool>(func_x, param1, param2);
+            return end_function<char*>();
+        }
+        else
+        {
+            // not shared: simply call function
+            return (this->*func_x)(param1, param2);
+        }
     }
 
 public:
@@ -130,41 +152,41 @@ public:
         }
     }
 
-    template <class _resultT, class _fpT>
-    void start_function(_fpT func)
+    template <typename _resultT>
+    void start_function(_resultT (_parentT::*func)())
     {
-        typedef shared_func_call0<thisType, _resultT, _fpT> my_call;
+        typedef shared_func_call0<thisType, _resultT> my_call;
         // check size
         if (sizeof(my_call) > _param_buffer_size)
         { throw std::runtime_error("shared_object::start_function(): Sizeof function call is to big!"); }
         // creates function call object
-        my_call* call = new (data_buffer) my_call(func);
+        new (data_buffer) my_call(func);
         // let slave work:
         start_execute();
     }
 
-    template <class _resultT, class _p1T, class _fpT>
-    void start_function(_fpT func, _p1T param1)
+    template <typename _resultT, typename _p1T>
+    void start_function(_resultT (_parentT::*func)(_p1T), _p1T param1)
     {
-        typedef shared_func_call1<thisType, _resultT, _fpT, _p1T> my_call;
+        typedef shared_func_call1<thisType, _resultT, _p1T> my_call;
         // check size
         if (sizeof(my_call) > _param_buffer_size)
         { throw std::runtime_error("shared_object::start_function(): Sizeof function call is to big!"); }
         // creates function call object
-        my_call* call = new (data_buffer) my_call(func, param1);
+        new (data_buffer) my_call(func, param1);
         // let slave work:
         start_execute();
     }
 
-    template <typename _resultT, class _p1T, class _p2T, typename _fpT>
-    void start_function(_fpT func, _p1T param1, _p2T param2)
+    template <typename _resultT, typename _p1T, typename _p2T>
+    void start_function(_resultT (_parentT::*func)(_p1T, _p2T), _p1T param1, _p2T param2)
     {
-        typedef shared_func_call2<thisType, _resultT, _fpT, _p1T, _p2T> my_call;
+        typedef shared_func_call2<thisType, _resultT, _p1T, _p2T> my_call;
         // check size
         if (sizeof(my_call) > _param_buffer_size)
         { throw std::runtime_error("shared_object::start_function(): Sizeof function call is to big!"); }
         // creates function call object
-        my_call* call = new (data_buffer) my_call(func, param1, param2);
+        new (data_buffer) my_call(func, param1, param2);
         // let slave work:
         start_execute();
     }
@@ -178,12 +200,12 @@ public:
         return call->getResult();
     }
 
-    template <typename _resultT, typename _fpT>
-    _resultT call_function(_fpT func)
+    template <typename _resultT>
+    _resultT call_function(_resultT (_parentT::*func)())
     {
         if (_is_shared)
         {
-            start_function<_resultT, _fpT>(func);
+            start_function<_resultT>(func);
             return end_function<_resultT>();
         }
         else
@@ -193,12 +215,12 @@ public:
         }
     }
 
-    template <class _resultT, class _p1T, class _fpT>
-    _resultT call_function(_fpT func, _p1T param1)
+    template <typename _resultT, typename _p1T>
+    _resultT call_function(_resultT (_parentT::*func)(_p1T), _p1T param1)
     {
         if (_is_shared)
         {
-            start_function<_resultT, _p1T, _fpT>(func, param1);
+            start_function<_resultT, _p1T>(func, param1);
             return end_function<_resultT>();
         }
         else
@@ -208,12 +230,12 @@ public:
         }
     }
 
-    template <class _resultT, class _p1T, class _p2T, class _fpT>
-    _resultT call_function(_fpT func, _p1T param1, _p2T param2)
+    template <class _resultT, class _p1T, class _p2T>
+    _resultT call_function(_resultT (_parentT::*func)(_p1T, _p2T), _p1T param1, _p2T param2)
     {
         if (_is_shared)
         {
-            start_function<_resultT, _p1T, _p2T, _fpT>(func, param1, param2);
+            start_function<_resultT, _p1T, _p2T>(func, param1, param2);
             return end_function<_resultT>();
         }
         else
@@ -222,14 +244,6 @@ public:
             return (this->*func)(param1, param2);
         }
     }
-};
-
-template<class _parentT, bool _is_shared, size_t _param_buffer_size = 1024>
-class extendable_shared_object: public shared_object<_parentT, _is_shared, _param_buffer_size>
-{
-private:
-
-public:
 
 };
 
