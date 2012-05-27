@@ -25,19 +25,18 @@ class text_type
 public:
     std::string text;
     int type;
-    int line;
+    int lines;
 
     text_type()
     {}
 
-    text_type(const std::string& a_text, int a_type, int a_line)
-        : text(a_text), type(a_type), line(a_line)
+    text_type(const std::string& a_text, int a_type, int a_lines)
+        : text(a_text), type(a_type), lines(a_lines)
     {}
 
     text_type(const text_type& a)
-        : text(a.text), type(a.type), line(a.line)
+        : text(a.text), type(a.type), lines(a.lines)
     {}
 };
-
 
 #endif // BASIC_TYPES_H

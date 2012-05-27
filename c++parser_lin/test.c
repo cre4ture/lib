@@ -1,22 +1,41 @@
 
+// test
+// asdasd
 
+/*
+ads
+asd*/
 
 void abcd(int c)
 {
+xxxxxxx
 }
 
 namespace creax {
 
-class er: adsada asdasd adsasd
-{
+    class er: adsada
+    {
+        public:
+            
+        void test();
+    };
 
-};
+    void er::test()
+    {
+
+
+    }
 
 }
 
+void**** ich_der_is(int c, char* v);
+
 class ich: public du
 {
-
+public:
+    ich(char* name)
+    {
+    }
 };
 
 //#include "test_uli.c"

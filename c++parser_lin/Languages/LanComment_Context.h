@@ -2,7 +2,7 @@
 #define LANCOMMENT_CONTEXT
 
 #include <iostream>
-#include "threadfifo.h"
+#include "creax_threadfifo.h"
 
 #include "basic_types.h"
 
@@ -13,6 +13,7 @@ public:
     std::istream& is;
     creax::threadfifo<text_type>& fifo;
     int result;
+    int last_block_end;
 
     enum ttType {
         TTCODE = 0,
@@ -25,6 +26,7 @@ public:
         : is(in), fifo(out)
 	{
 		init_scanner();
+        last_block_end = 1;
 	}
 
     virtual ~LanComment_Context()
@@ -34,17 +36,20 @@ public:
 
     void text(const std::string& a_text)
     {
-        fifo.push_data(text_type(a_text, TTCODE, getLineNo()));
+        fifo.push_data(text_type(a_text, TTCODE, getLineNo() - last_block_end));
+        last_block_end = getLineNo();
     }
 
     void linecomment(const std::string& a_text)
     {
-        fifo.push_data(text_type(a_text, TTLINECOMMENT, getLineNo()));
+        fifo.push_data(text_type(a_text, TTLINECOMMENT, getLineNo() - last_block_end));
+        last_block_end = getLineNo();
     }
 
     void blockcomment(const std::string& a_text)
     {
-        fifo.push_data(text_type(a_text, TTBLOCKCOMMENT, getLineNo()));
+        fifo.push_data(text_type(a_text, TTBLOCKCOMMENT, getLineNo() - last_block_end));
+        last_block_end = getLineNo();
     }
 
 // Defined in LanComment.l

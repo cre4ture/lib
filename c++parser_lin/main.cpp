@@ -133,9 +133,9 @@ int main(int argc, char *argv [])
     // stage 1
     LanComment_Context lanComment_context(*new_input, stage1_2);
     // stage 2
-    LanAB_Context lanAB_context(stage1_2, stage2_3);
+    LanAB_Context lanAB_context(stage1_2, 1, stage2_3);
     // stage 3
-    LanCF_Context lanCFcont(stage2_3);
+    LanCF_Context lanCFcont(stage2_3, 1, "");
 
     //lanAB_context.setCDContext(&lanCDcont);
     lanAB_context.defines.loadDefines(defines);
