@@ -1,0 +1,243 @@
+%pure-parser
+%name-prefix="LanCC_"
+%locations
+%defines
+%error-verbose
+%parse-param { LanCC_Context* context }
+%lex-param { void* scanner  }
+
+%{
+    #include <stdio.h>
+    #include "Global.h"
+    #include "Symbols.h"
+
+    #include "ast_node_global_def_include.h"
+    #include "ast_node_types.hpp"
+    #include "ast_nodes_impl.hpp"
+    #include "ast_nodes_flow.hpp"
+    #include "ast_nodes_func.hpp"
+    #include "ast_nodes_ops.hpp"
+    #include "factory_ast_node_global_def.h"
+%}
+
+%union {
+    int i;
+    std::string *txt;
+    ast_node_global_def* gDef;
+    ast_node_global_defList *gDefList;
+    ast_node_statement *stmt;
+    ast_node_statement_value_expr* stmtExpr;
+    ast_node_statementlist *stmtList;
+    ast_node_value_expr *valExpr;
+    ast_node_lvalue_expr *lvalExpr;
+    ast_node_exprlist *exprL;
+    ast_node_parlist *parL;
+    ast_node_declaration_var *varDecl;
+    ast_node_constIntList *constL;
+    SymbolType* typeSym;
+    SymbolVar* varSym;
+    SymbolFunc* funcSym;
+}
+
+%token <i> ZAHL
+%token <txt> NAME PP_INCLUDE
+
+// Andi
+%token ADD SUB MUL DIV END
+%token CMPL CMPG CMPLE CMPGE CMPEQ CMPNE ASSIGNOP ASSIGNOPG ASSIGNOPP ASSIGNOPPG /* ASSIGN OP(ERATOR) P(OINTER) G(LOBAL) */
+
+// Benny asm_nodes_control_structures
+%token WHILE FOR IF ELSE DO VOIDDEF INTDEF INTPDEF INTVECDEF INTVECPDEF INTVECARRDEF KW_RETURN KW_UNSIGNED KW_LONG KW_INT KW_CHAR
+
+// Ewald
+%token FUNCTIONDEF FUNCTIONCALL PARLIST PAR PRGM STMTLIST STMT BLOCK TERM FAKT KLAMMER DEFLIST EXPR EXPRLIST
+%token ASM PUSH POP IMUL
+
+
+%nonassoc L_THEN
+%nonassoc ELSE
+
+%type <valExpr> exprA exprB exprC exprD funcCall assignment
+%type <exprL> exprList
+%type <lvalExpr> lvalue
+
+%token funcDef BLOCK_START PUBLIC PRIVATE PROTECTED CLASS NAMESPACE STRUCT NS_SEP
+%token <txt> BLOCK_END
+
+%{
+    #include <iostream>
+    #include <sstream>
+    #include "LanAB_Context.h"
+    #include "LanCC_Context.h"
+
+    using namespace std;
+
+    int LanCC_lex(YYSTYPE* lvalp, YYLTYPE* llocp, void* scanner);
+
+    void LanCC_error(YYLTYPE* locp, LanCC_Context* context, const char* err)
+    {
+        context->yy_error(err);
+    }
+
+    #define scanner context->scanner
+%}
+
+%%
+
+class_block:      c_blocklist
+;
+
+c_blocklist:  c_blocklist c_block
+|           /* empty */
+;
+
+c_block:    visibility_decl
+|           class_decl
+|           c_decl
+;
+
+visibility_decl:    PUBLIC ':'
+|                   PROTECTED ':'
+|                   PRIVATE ':'
+;
+
+c_decl:     '~' atype parameter_list func_decl_end /* destructor */
+|           atype parameter_list func_decl_end /* constructor */
+|           atype NAME decl_end
+;
+
+decl_end:   ';'
+|           '=' init_assignment ';'
+|           parameter_list func_decl_end
+;
+
+init_assignment:    BLOCK_START BLOCK_END
+;
+
+parameter_list:     '(' parameter_list_intern ')'
+|                   '(' ')'
+;
+
+parameter_list_intern:      atype NAME
+|                           parameter_list_intern ',' atype NAME
+;
+
+func_decl_end:  ';'
+|               BLOCK_START BLOCK_END
+;
+
+class_decl:     class_kw class_name ';'
+|               class_kw class_name class_decl_body ';'
+|               class_kw class_name ':' class_decl_inheritances class_decl_body ';'
+;
+
+class_name: NAME        { context->class_name($1); delete $1; }
+;
+
+class_kw:   CLASS       { context->class_kw(false); }
+|           STRUCT      { context->class_kw(true); }
+;
+
+class_decl_body:    BLOCK_START { context->block_start(); }
+                    BLOCK_END { context->class_decl_body(*$3); delete $3; }
+;
+
+class_decl_inheritances:    class_decl_inheritances class_decl_inheritance
+|                           class_decl_inheritance
+;
+
+class_decl_inheritance: PUBLIC NAME     { context->class_inheritance("public", *$2); delete $2; }
+|                       PROTECTED NAME  { context->class_inheritance("protected", *$2); delete $2; }
+|                       PRIVATE NAME    { context->class_inheritance("private", *$2); delete $2; }
+|                       NAME            { context->class_inheritance("", *$1); delete $1; }
+;
+
+namespace_decl:     NAMESPACE NAME BLOCK_START
+                    {
+                        context->block_start();
+                    }
+                    BLOCK_END
+                    {
+                        context->namespace_decl(*$2, *$5);
+                        delete $2;
+                        delete $5;
+                    }
+;
+
+atype:	NAME        { context->atype_name(*$1); delete $1; }
+|       atype '*'   { context->atype_add_pointer_level(1); }
+;
+
+atype:	a_none_pointer_type
+|       atype '<' template_params '>'
+|       atype '*'   { context->atype_add_pointer_level(1); }
+|       atype '&'   { context->atype_add_pointer_level(1); }
+;
+
+a_none_pointer_type: a_c_type
+|                    a_cpp_type
+;
+
+a_c_type: NAME      { context->atype_name(*$1); delete $1; }
+;
+
+a_cpp_type: NAME NS_SEP a_none_pointer_type
+|           NS_SEP a_none_pointer_type
+;
+
+template_params:
+|                   atype
+|                   template_params ',' template_params
+;
+
+exprA:
+        assignment
+        | exprB
+        ;
+
+assignment:
+	    lvalue '=' exprA    { $$ = new ast_node_assignment($1, $3, NULL); }
+	    ;
+
+lvalue:
+	    NAME                { $$ = new ast_node_identifier(
+					    context->symbContext->findSymbolT<SymbolVar>(*$1),
+					    NULL);
+				  delete $1; }
+	    | '*' exprB         { $$ = new ast_node_deref_op($2, NULL); }
+	    ;
+
+exprB:      exprB CMPL exprC        { $$ = new ast_node_op("<", $1, $3, NULL); }
+	    | exprB CMPG exprC      { $$ = new ast_node_op(">", $1, $3, NULL); }
+	    | exprB CMPLE exprC     { $$ = new ast_node_op("<=", $1, $3, NULL); }
+	    | exprB CMPGE exprC     { $$ = new ast_node_op(">=", $1, $3, NULL); }
+	    | exprB CMPEQ exprC     { $$ = new ast_node_op("==", $1, $3, NULL); }
+	    | exprB CMPNE exprC     { $$ = new ast_node_op("!=", $1, $3, NULL); }
+	    | exprB '+' exprC       { $$ = new ast_node_op("+", $1, $3, NULL); }
+	    | exprB '-' exprC       { $$ = new ast_node_op("-", $1, $3, NULL); }
+	    | exprC                 { $$ = $1; }
+	    ;
+
+exprC:
+	    exprC '*' exprD         { $$ = new ast_node_op("*", $1, $3, NULL); }
+	    | exprC '/' exprD       { $$ = new ast_node_op("/", $1, $3, NULL); }
+	    | exprD                 { $$ = $1; }
+	    ;
+
+exprD:		'(' exprA ')'       { $$ = $2; }
+	    | ZAHL              { $$ = new ast_node_constant_int($1, NULL); }
+	    | lvalue            { $$ = $1; }
+	    | '&' lvalue        { $$ = new ast_node_addr_op($2, NULL); }
+	    | funcCall          { $$ = $1; }
+			;
+
+funcCall:   NAME '(' exprList ')'     { $$ = new ast_node_functioncall(
+						    context->symbContext->findSymbolT<SymbolFunc>(*$1),
+						    $3, NULL);
+					delete $1; }
+	    ;
+
+exprList:   exprList ',' exprA              { $1->addChild(new ast_node_expression($3, NULL)); $$ = $1; }
+	    | exprA                         { $$ = new ast_node_exprlist(NULL);
+					      $$->addChild(new ast_node_expression($1, NULL)) }
+			;

@@ -1,5 +1,5 @@
 %option reentrant
-%option prefix="LanCF_"
+%option prefix="LanCC_"
 %option bison-bridge
 %option bison-locations
 %option noyywrap
@@ -19,10 +19,10 @@
     #include "factory_ast_node_global_def.h"
 
 
-    #include "LanCF_Context.h"
-    #include "LanCF.tab.hpp"
+    #include "LanCC_Context.h"
+    #include "LanCC.tab.hpp"
 
-    #define YY_EXTRA_TYPE LanCF_Context*
+    #define YY_EXTRA_TYPE LanCC_Context*
     #define YY_USER_ACTION yylloc->first_line = yylineno;
 
     #define YY_INPUT(buf,result,max_size) yyextra->yy_input(buf, result, max_size, YY_NULL)
@@ -56,13 +56,13 @@ pp_define_comp      {pp_define_name}[ ][^\n]*$
 {delim}      	{}
 "\n"         	{}
 <INITIAL>"::"               { return NS_SEP; }
-<INITIAL>"namespace"        { return NAMESPACE; }
+<INITIAL>"namespace"            { return NAMESPACE; }
 <INITIAL>"class"            { return CLASS; }
-<INITIAL>"struct"           { return STRUCT; }
-<INITIAL>"private"          { return PRIVATE; }
-<INITIAL>"public"           { return PUBLIC; }
-<INITIAL>"protected"        { return PROTECTED; }
-<INITIAL>"{"                { BEGIN(BLOCK); yyextra->level = 1; return BLOCK_START; }
+<INITIAL>"struct"            { return STRUCT; }
+<INITIAL>"private"            { return PRIVATE; }
+<INITIAL>"public"            { return PUBLIC; }
+<INITIAL>"protected"            { return PROTECTED; }
+<INITIAL>"{"    { BEGIN(BLOCK); yyextra->level = 1; return BLOCK_START; }
 <BLOCK>[^{}]+    { yymore(); }
 <BLOCK>"{"       { yyextra->level++; yymore(); }
 <BLOCK>"}"                       {
@@ -78,7 +78,7 @@ pp_define_comp      {pp_define_name}[ ][^\n]*$
                                         yymore();
                                     }
                                 }
-{zahl}       	{ yylval->_int = atoi(yytext); return ZAHL;}
+{zahl}       	{ yylval->i = atoi(yytext); return ZAHL;}
 {identifier} 	{
                     yylval->txt = new std::string(yytext);
                     return NAME;
@@ -89,23 +89,23 @@ pp_define_comp      {pp_define_name}[ ][^\n]*$
 .            	{ return yytext[0]; }
 %%
 
-std::string LanCF_Context::getYYtext()
+std::string LanCC_Context::getYYtext()
 {
     return yyget_text(scanner);
 }
 
-int LanCF_Context::getLineNo()
+int LanCC_Context::getLineNo()
 {
     return yyget_lineno(scanner);
 }
 
-void LanCF_Context::init_scanner()
+void LanCC_Context::init_scanner()
 {
     yylex_init(&scanner);
 	yyset_extra(this, scanner);
 }
 
-void LanCF_Context::destroy_scanner()
+void LanCC_Context::destroy_scanner()
 {
 	yylex_destroy(scanner);
 }

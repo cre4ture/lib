@@ -85,7 +85,8 @@ public:
     int level_on;
     int level_off;
 
-    int line;
+    int startline;
+    int additional_lines;
 
     creax::threadfifo<text_type>& input_fifo;
     creax::threadfifo<code_piece>& output_fifo;
@@ -93,13 +94,14 @@ public:
     LanCD_Context* cdcontext;
 
 public:
-    LanAB_Context(creax::threadfifo<text_type>& a_input_fifo, creax::threadfifo<code_piece>& a_output_fifo)
+    LanAB_Context(creax::threadfifo<text_type>& a_input_fifo, int a_startline, creax::threadfifo<code_piece>& a_output_fifo)
         : is(NULL), input_fifo(a_input_fifo), output_fifo(a_output_fifo), cdcontext(NULL)
 	{
 		init_scanner();
         level_on = 0;
         level_off = 0;
-        line = 0;
+        startline = a_startline-1;
+        additional_lines = 0;
 	}
 
     void setCDContext(LanCD_Context* a_context)
@@ -115,7 +117,16 @@ public:
     void text(const std::string& code)
     {
         if (level_off == 0)
-            output_fifo.push_data(code_piece(code, line + getLineNo()));
+        {
+            std::string add;
+            while (additional_lines > 0)
+            {
+                add += "\n";
+                additional_lines--;
+            }
+
+            output_fifo.push_data(code_piece(add + code, startline + getLineNo()));
+        }
     }
 
     void if_def(const std::string& name, bool not_def = false)
@@ -176,7 +187,7 @@ public:
         }
     }
 
-    void yy_input(char* const  buf, int& result, const int max_size, const int eof_result)
+    void yy_input(char* buf, int& result, const int max_size, const int eof_result)
     {
         bool done = false;
         while (!done)
@@ -190,10 +201,25 @@ public:
                         result = eof_result; // EOF
                         return;
                     }
-                } while (buffer.type != LanComment_Context::TTCODE);
+
+                    if (buffer.type == LanComment_Context::TTCODE)
+                    {
+                        break;
+                    }
+                    else if (buffer.lines > 0)
+                    {
+                        buffer.text = "\n";
+                        for (int i = 1; i < buffer.lines; i++)
+                        {
+                            buffer.text += "\n";
+                        }
+                        break;
+                    }
+
+                } while (true);
 
                 is = new std::istringstream(buffer.text);
-                line = buffer.line - getLineNo();
+                // line = buffer.line - getLineNo();
             }
 
             result = is->readsome(buf, max_size);

@@ -5,9 +5,9 @@
 #include <sstream>
 #include "ast_node_global_def_include.h"
 #include "Symbols.h"
-#include "creax_threadfifo.h"
+#include "threadfifo.h"
 
-class LanCD_Context
+class LanFS_Context
 {
 public:
     void* scanner;
@@ -33,7 +33,7 @@ public:
     }
 
 public:
-    LanCD_Context(creax::threadfifo<std::string>& a_fifo)
+    LanFS_Context(creax::threadfifo<std::string>& a_fifo)
         : fifo(a_fifo)
 	{
 		init_scanner();
@@ -44,7 +44,7 @@ public:
         beginNewSymbContext();
 	}
 
-	virtual ~LanCD_Context()
+    virtual ~LanFS_Context()
 	{
         endSymbContext();
         while (symbContext != NULL)
@@ -97,19 +97,19 @@ public:
 
 
 
-    // Defined in LanCD.l
+    // Defined in LanFS.l
     std::string getYYtext();
-    // Defined in LanCD.l
+    // Defined in LanFS.l
     int getLineNo();
 
 
 protected:
-    // Defined in LanCD.l
+    // Defined in LanFS.l
     void init_scanner();
-    // Defined in LanCD.l
+    // Defined in LanFS.l
 	void destroy_scanner();
 };
 
-int LanCD_parse(LanCD_Context*);
+int LanFS_parse(LanFS_Context*);
 
 #endif // LANCD_CONTEXT
