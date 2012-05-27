@@ -38,7 +38,6 @@
     atype* _atype;
     atype_list* _atype_list;
     decl_end* _decl_end;
-    decl* _decl;
     func_decl_end* _func_decl_end;
     init_assignment* _init_assignment;
     parameter_list* _parameter_list;
@@ -72,7 +71,6 @@
 %type <_atype> atype a_none_pointer_type a_cpp_type
 %type <_atype_list> template_param_list
 %type <_decl_end> decl_end
-%type <_decl> decl
 %type <_func_decl_end> func_decl_end
 %type <_init_assignment> init_assignment
 %type <_parameter_list> parameter_list
@@ -122,8 +120,8 @@ block:      namespace_decl
 include:    PP_INCLUDE
 ;
 
-decl:       atype NAME decl_end                 { $$ = new decl(); $$->_type = $1; $$->name = *$2; delete $2; $$->_decl_end = $3; }
-|           atype NAME NS_SEP NAME decl_end     { $$ = new decl(); $$->_type = $1; $$->namespaces.push_back(*$2); delete $2; $$->name = *$4; delete $4; $$->_decl_end = $5; }
+decl:       atype var_name decl_end                 { context->decl($1, $2, $3); }
+|           atype NAME NS_SEP var_name decl_end     { context->decl($1, *$2, $4, $5); delete $2; }
 ;
 
 decl_end:   ';'                                 { $$ = new decl_end(); }
@@ -132,6 +130,7 @@ decl_end:   ';'                                 { $$ = new decl_end(); }
 ;
 
 init_assignment:    BLOCK_START BLOCK_END       { $$ = new init_assignment(); }
+|                   NAME                        { $$ = new init_assignment(); delete $1; }
 ;
 
 parameter_list:     '(' parameter_list_intern ')'   { $$ = $2; }
@@ -153,7 +152,7 @@ var_name:       NAME                            { $$ = new var_name(); $$->name 
 ;
 
 array_size:     ZAHL                            { $$ = $1; }
-|               /* nix */                       { $$ = 0; }
+|               /* nix */                       { $$ = -1; }
 ;
 
 func_decl_end:  ';'                             { $$ = new func_decl_end(); }
@@ -168,8 +167,8 @@ class_decl:     class_kw class_name ';'
 class_name:     NAME        { context->class_name($1); delete $1; }
 ;
 
-class_kw:       CLASS       { $$ = ckw_class; }
-|               STRUCT      { $$ = ckw_struct; }
+class_kw:   CLASS       { context->class_kw(false); }
+|           STRUCT      { context->class_kw(true); }
 ;
 
 class_decl_body:    BLOCK_START { context->block_start(); }
