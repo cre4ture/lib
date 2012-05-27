@@ -18,10 +18,11 @@
     #include "ast_nodes_func.hpp"
     #include "ast_nodes_ops.hpp"
     #include "factory_ast_node_global_def.h"
+    #include "LanCC_Context.h"
 %}
 
 %union {
-    int i;
+    int _int;
     std::string *txt;
     ast_node_global_def* gDef;
     ast_node_global_defList *gDefList;
@@ -34,12 +35,22 @@
     ast_node_parlist *parL;
     ast_node_declaration_var *varDecl;
     ast_node_constIntList *constL;
-    SymbolType* typeSym;
+    atype* _atype;
+    atype_list* _atype_list;
+    decl_end* _decl_end;
+    func_decl_end* _func_decl_end;
+    init_assignment* _init_assignment;
+    parameter_list* _parameter_list;
+    parameter_list_intern* _parameter_list_intern;
+    param_decl* _param_decl;
+    var_decl* _var_decl;
+    var_name* _var_name;
+    class_kw _class_kw;
     SymbolVar* varSym;
     SymbolFunc* funcSym;
 }
 
-%token <i> ZAHL
+%token <_int> ZAHL
 %token <txt> NAME PP_INCLUDE
 
 // Andi
@@ -53,13 +64,25 @@
 %token FUNCTIONDEF FUNCTIONCALL PARLIST PAR PRGM STMTLIST STMT BLOCK TERM FAKT KLAMMER DEFLIST EXPR EXPRLIST
 %token ASM PUSH POP IMUL
 
+%token VIRTUAL STATIC
+%token CONST
+
 
 %nonassoc L_THEN
 %nonassoc ELSE
 
-%type <valExpr> exprA exprB exprC exprD funcCall assignment
-%type <exprL> exprList
-%type <lvalExpr> lvalue
+%type <_atype> atype a_none_pointer_type a_cpp_type
+%type <_atype_list> template_param_list
+%type <_decl_end> decl_end
+%type <_func_decl_end> func_decl_end
+%type <_init_assignment> init_assignment
+%type <_parameter_list> parameter_list
+%type <_parameter_list_intern> parameter_list_intern
+%type <_param_decl> param_decl
+%type <_var_decl> var_decl
+%type <_var_name> var_name
+%type <_int> array_size
+%type <_class_kw> class_kw
 
 %token funcDef BLOCK_START PUBLIC PRIVATE PROTECTED CLASS NAMESPACE STRUCT NS_SEP
 %token <txt> BLOCK_END
@@ -101,29 +124,61 @@ visibility_decl:    PUBLIC ':'
 |                   PRIVATE ':'
 ;
 
-c_decl:     '~' atype parameter_list func_decl_end /* destructor */
-|           atype parameter_list func_decl_end /* constructor */
-|           atype NAME decl_end
+decl_mod:   /* nix */
+|           STATIC
+|           VIRTUAL
 ;
 
-decl_end:   ';'
-|           '=' init_assignment ';'
-|           parameter_list func_decl_end
+c_decl:     decl_mod '~' atype parameter_list func_decl_end /* destructor */
+|           decl_mod atype parameter_list func_decl_end /* constructor */
+|           decl_mod atype NAME decl_end                 { context->c_decl($2, *$3, $4); delete $3; }
 ;
 
-init_assignment:    BLOCK_START BLOCK_END
+decl_end:   ';'                                 { $$ = new decl_end(); }
+|           '=' init_assignment ';'             { $$ = new decl_end(); $$->_init_assignment = $2; }
+|           parameter_list func_decl_end        { $$ = new decl_end(); $$->_parameter_list = $1; $$->_func_decl_end = $2; }
 ;
 
-parameter_list:     '(' parameter_list_intern ')'
-|                   '(' ')'
+init_assignment:    BLOCK_START BLOCK_END       { $$ = new init_assignment(); }
+|                   NAME                        { $$ = new init_assignment(); delete $1; }
 ;
 
-parameter_list_intern:      atype NAME
-|                           parameter_list_intern ',' atype NAME
+parameter_list:     '(' parameter_list_intern ')'   { $$ = $2; }
+|                   '(' ')'                         { $$ = new parameter_list(); }
 ;
 
-func_decl_end:  ';'
-|               BLOCK_START BLOCK_END
+parameter_list_intern:      param_decl                              { $$ = new parameter_list(); $$->push_back($1); }
+|                           parameter_list_intern ',' param_decl    { $$ = $1; $$->push_back($3); }
+;
+
+param_decl:     var_decl                        { $$ = $1; }
+;
+
+var_decl:       atype var_name                  { $$ = new var_decl(); $$->_atype = $1; $$->_var_name = $2; }
+;
+
+var_name:       NAME                            { $$ = new var_name(); $$->name = *$1; delete $1; };
+|               var_name '[' array_size ']'     { $$ = $1; $$->vector_size.push_back($3); };
+;
+
+array_size:     ZAHL                            { $$ = $1; }
+|               /* nix */                       { $$ = -1; }
+;
+
+func_decl_end:  ';'                                             { $$ = new func_decl_end(); }
+|               ':' c_initialise_list BLOCK_START BLOCK_END     { $$ = new func_decl_end(); }
+|               BLOCK_START BLOCK_END                           { $$ = new func_decl_end(); }
+;
+
+c_initialise_list:  initialise_item
+|                   c_initialise_list ',' initialise_item
+;
+
+initialise_item:    NAME '(' expr_list ')'
+;
+
+expr_list:  NAME
+|           expr_list ',' NAME
 ;
 
 class_decl:     class_kw class_name ';'
@@ -131,7 +186,7 @@ class_decl:     class_kw class_name ';'
 |               class_kw class_name ':' class_decl_inheritances class_decl_body ';'
 ;
 
-class_name: NAME        { context->class_name($1); delete $1; }
+class_name:     NAME        { context->class_name($1); delete $1; }
 ;
 
 class_kw:   CLASS       { context->class_kw(false); }
@@ -152,92 +207,23 @@ class_decl_inheritance: PUBLIC NAME     { context->class_inheritance("public", *
 |                       NAME            { context->class_inheritance("", *$1); delete $1; }
 ;
 
-namespace_decl:     NAMESPACE NAME BLOCK_START
-                    {
-                        context->block_start();
-                    }
-                    BLOCK_END
-                    {
-                        context->namespace_decl(*$2, *$5);
-                        delete $2;
-                        delete $5;
-                    }
-;
-
-atype:	NAME        { context->atype_name(*$1); delete $1; }
-|       atype '*'   { context->atype_add_pointer_level(1); }
-;
-
 atype:	a_none_pointer_type
-|       atype '<' template_params '>'
-|       atype '*'   { context->atype_add_pointer_level(1); }
-|       atype '&'   { context->atype_add_pointer_level(1); }
+|       atype '*'                                       { $$ = $1; $$->pointer_level++; }
+|       atype '&'                                       { $$ = $1; $$->is_reference = true; }
 ;
 
-a_none_pointer_type: a_c_type
-|                    a_cpp_type
+a_none_pointer_type: a_cpp_type
+|                    CONST a_cpp_type                   { $$ = $2; }
 ;
 
-a_c_type: NAME      { context->atype_name(*$1); delete $1; }
+a_cpp_type: NAME                                        { $$ = new atype(); $$->name = *$1; delete $1; }
+|           NAME '<' template_param_list '>'            { $$ = new atype(); $$->name = *$1; delete $1; $$->template_params = $3; }
+|           NAME NS_SEP a_none_pointer_type             { $$ = $3; $$->namespaces.push_back(*$1); delete $1; }
+|           NS_SEP a_none_pointer_type                  { $$ = $2; $$->namespaces.push_back(""); }
 ;
 
-a_cpp_type: NAME NS_SEP a_none_pointer_type
-|           NS_SEP a_none_pointer_type
+template_param_list:                                    { $$ = new atype_list(); }
+|                   atype                               { $$ = new atype_list(); $$->push_back($1); }
+|                   template_param_list ',' atype       { $$ = $1; $$->push_back($3); }
 ;
 
-template_params:
-|                   atype
-|                   template_params ',' template_params
-;
-
-exprA:
-        assignment
-        | exprB
-        ;
-
-assignment:
-	    lvalue '=' exprA    { $$ = new ast_node_assignment($1, $3, NULL); }
-	    ;
-
-lvalue:
-	    NAME                { $$ = new ast_node_identifier(
-					    context->symbContext->findSymbolT<SymbolVar>(*$1),
-					    NULL);
-				  delete $1; }
-	    | '*' exprB         { $$ = new ast_node_deref_op($2, NULL); }
-	    ;
-
-exprB:      exprB CMPL exprC        { $$ = new ast_node_op("<", $1, $3, NULL); }
-	    | exprB CMPG exprC      { $$ = new ast_node_op(">", $1, $3, NULL); }
-	    | exprB CMPLE exprC     { $$ = new ast_node_op("<=", $1, $3, NULL); }
-	    | exprB CMPGE exprC     { $$ = new ast_node_op(">=", $1, $3, NULL); }
-	    | exprB CMPEQ exprC     { $$ = new ast_node_op("==", $1, $3, NULL); }
-	    | exprB CMPNE exprC     { $$ = new ast_node_op("!=", $1, $3, NULL); }
-	    | exprB '+' exprC       { $$ = new ast_node_op("+", $1, $3, NULL); }
-	    | exprB '-' exprC       { $$ = new ast_node_op("-", $1, $3, NULL); }
-	    | exprC                 { $$ = $1; }
-	    ;
-
-exprC:
-	    exprC '*' exprD         { $$ = new ast_node_op("*", $1, $3, NULL); }
-	    | exprC '/' exprD       { $$ = new ast_node_op("/", $1, $3, NULL); }
-	    | exprD                 { $$ = $1; }
-	    ;
-
-exprD:		'(' exprA ')'       { $$ = $2; }
-	    | ZAHL              { $$ = new ast_node_constant_int($1, NULL); }
-	    | lvalue            { $$ = $1; }
-	    | '&' lvalue        { $$ = new ast_node_addr_op($2, NULL); }
-	    | funcCall          { $$ = $1; }
-			;
-
-funcCall:   NAME '(' exprList ')'     { $$ = new ast_node_functioncall(
-						    context->symbContext->findSymbolT<SymbolFunc>(*$1),
-						    $3, NULL);
-					delete $1; }
-	    ;
-
-exprList:   exprList ',' exprA              { $1->addChild(new ast_node_expression($3, NULL)); $$ = $1; }
-	    | exprA                         { $$ = new ast_node_exprlist(NULL);
-					      $$->addChild(new ast_node_expression($1, NULL)) }
-			;

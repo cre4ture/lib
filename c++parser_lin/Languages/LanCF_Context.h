@@ -24,6 +24,13 @@ private:
     // tmp parser data
     std::string c_name;
 
+    // for decl
+    std::vector<std::string> namespaces;
+    std::string name;
+    decl_end* _decl_end;
+    atype* _type;
+
+
     void beginNewSymbContext()
     {
         Symbols *newc = new Symbols(symbContext);
@@ -74,6 +81,29 @@ public:
         fifo.close_fifo();
         LanCF_Context tmp(fifo, blockstart, name);
         LanCF_parse(&tmp);
+    }
+
+    void decl(atype* t, var_name* n, decl_end* e)
+    {
+        std::cout << "decl: " << t->name << " ";
+        n->fancy(std::cout);
+        if (e->_func_decl_end != NULL)
+            std::cout << "()";
+        std::cout << std::endl;
+    }
+
+    void decl(atype* t, std::string ns, var_name* n, decl_end* e)
+    {
+        std::cout << "decl: " << t->name << " " << ns << "::";
+        n->fancy(std::cout);
+        if (e->_func_decl_end != NULL)
+            std::cout << "()";
+        std::cout << std::endl;
+    }
+
+    void include(std::string filename)
+    {
+        std::cout << "#include " << filename << std::endl;
     }
 
     // Defined in LanCF.l

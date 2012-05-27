@@ -56,13 +56,16 @@ pp_define_comp      {pp_define_name}[ ][^\n]*$
 {delim}      	{}
 "\n"         	{}
 <INITIAL>"::"               { return NS_SEP; }
-<INITIAL>"namespace"            { return NAMESPACE; }
+<INITIAL>"namespace"        { return NAMESPACE; }
 <INITIAL>"class"            { return CLASS; }
-<INITIAL>"struct"            { return STRUCT; }
-<INITIAL>"private"            { return PRIVATE; }
-<INITIAL>"public"            { return PUBLIC; }
-<INITIAL>"protected"            { return PROTECTED; }
-<INITIAL>"{"    { BEGIN(BLOCK); yyextra->level = 1; return BLOCK_START; }
+<INITIAL>"struct"           { return STRUCT; }
+<INITIAL>"private"          { return PRIVATE; }
+<INITIAL>"public"           { return PUBLIC; }
+<INITIAL>"protected"        { return PROTECTED; }
+<INITIAL>"virtual"          { return VIRTUAL; }
+<INITIAL>"static"           { return STATIC; }
+<INITIAL>"const"            { return CONST; }
+<INITIAL>"{"                { BEGIN(BLOCK); yyextra->level = 1; return BLOCK_START; }
 <BLOCK>[^{}]+    { yymore(); }
 <BLOCK>"{"       { yyextra->level++; yymore(); }
 <BLOCK>"}"                       {
@@ -78,7 +81,7 @@ pp_define_comp      {pp_define_name}[ ][^\n]*$
                                         yymore();
                                     }
                                 }
-{zahl}       	{ yylval->i = atoi(yytext); return ZAHL;}
+{zahl}       	{ yylval->_int = atoi(yytext); return ZAHL;}
 {identifier} 	{
                     yylval->txt = new std::string(yytext);
                     return NAME;
