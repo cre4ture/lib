@@ -55,6 +55,7 @@ pp_define_comp      {pp_define_name}[ ][^\n]*$
 <pp_def>"\n"                { BEGIN INITIAL; }
 {delim}      	{}
 "\n"         	{}
+<INITIAL>"->"               { return ARROW_RIGHT; }
 <INITIAL>"::"               { return NS_SEP; }
 <INITIAL>"namespace"        { return NAMESPACE; }
 <INITIAL>"class"            { return CLASS; }
