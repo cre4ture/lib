@@ -103,10 +103,72 @@ public:
     {}
 };
 
-typedef enum {
-    ckw_class,
-    ckw_struct
-} class_kw;
+class exprA
+{
+public:
+};
+
+typedef exprA exprB;
+typedef exprB exprC;
+typedef exprC exprD;
+typedef exprD exprE;
+
+class expr_op2: public exprE
+{
+public:
+    const char* op_name;
+    exprB* op1;
+    exprB* op2;
+public:
+    expr_op2(const char* _op_name, exprB* _op1, exprB* _op2)
+        : op_name(_op_name), op1(_op1), op2(_op2)
+    {}
+};
+
+class expr_constant_int: public exprE
+{
+public:
+    long long value;
+public:
+    expr_constant_int(long long _value)
+        : value(_value)
+    {}
+};
+
+class expr_addr_op: public exprE
+{
+public:
+    exprA* expr;
+public:
+    expr_addr_op(exprA* _expr)
+        : expr(_expr)
+    {}
+};
+
+class assignment: public exprA
+{
+public:
+    exprA* lvalue;
+    exprA* rvalue;
+public:
+    assignment(exprA* lval, exprA* rval)
+        : lvalue(lval),
+          rvalue(rval)
+    {}
+};
+
+typedef std::vector<exprA*> expr_list;
+
+class symbol_expr: public exprA
+{
+public:
+    std::string name;
+    expr_list* _expr_list;
+public:
+    symbol_expr()
+        : _expr_list(NULL)
+    {}
+};
 
 class LanXX_Context
 {

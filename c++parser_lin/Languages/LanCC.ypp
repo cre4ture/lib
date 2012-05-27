@@ -45,9 +45,17 @@
     param_decl* _param_decl;
     var_decl* _var_decl;
     var_name* _var_name;
-    class_kw _class_kw;
     SymbolVar* varSym;
     SymbolFunc* funcSym;
+
+    exprA* _exprA;
+    exprB* _exprB;
+    exprC* _exprC;
+    exprD* _exprD;
+    exprE* _exprE;
+    assignment* _assignment;
+    expr_list* _expr_list;
+    symbol_expr* _symbol_expr;
 }
 
 %token <_int> ZAHL
@@ -63,6 +71,8 @@
 // Ewald
 %token FUNCTIONDEF FUNCTIONCALL PARLIST PAR PRGM STMTLIST STMT BLOCK TERM FAKT KLAMMER DEFLIST EXPR EXPRLIST
 %token ASM PUSH POP IMUL
+
+%token ARROW_RIGHT
 
 %token VIRTUAL STATIC
 %token CONST
@@ -82,7 +92,15 @@
 %type <_var_decl> var_decl
 %type <_var_name> var_name
 %type <_int> array_size
-%type <_class_kw> class_kw
+
+%type <_exprA> exprA
+%type <_exprB> exprB
+%type <_exprC> exprC
+%type <_exprD> exprD
+%type <_exprE> exprE
+%type <_assignment> assignment
+%type <_symbol_expr> symbol_expr
+%type <_expr_list> expr_list
 
 %token funcDef BLOCK_START PUBLIC PRIVATE PROTECTED CLASS NAMESPACE STRUCT NS_SEP
 %token <txt> BLOCK_END
@@ -177,10 +195,6 @@ c_initialise_list:  initialise_item
 initialise_item:    NAME '(' expr_list ')'
 ;
 
-expr_list:  NAME
-|           expr_list ',' NAME
-;
-
 class_decl:     class_kw class_name ';'
 |               class_kw class_name class_decl_body ';'
 |               class_kw class_name ':' class_decl_inheritances class_decl_body ';'
@@ -225,5 +239,48 @@ a_cpp_type: NAME                                        { $$ = new atype(); $$->
 template_param_list:                                    { $$ = new atype_list(); }
 |                   atype                               { $$ = new atype_list(); $$->push_back($1); }
 |                   template_param_list ',' atype       { $$ = $1; $$->push_back($3); }
+;
+
+exprA:
+//                    assignment        { $$ = $1; }
+                   exprB             { $$ = $1; }
+;
+
+assignment:         exprA '=' exprA    { $$ = new assignment($1, $3); }
+;
+
+exprB:              exprB CMPL exprC        { $$ = new expr_op2("<", $1, $3); }
+|                   exprB CMPG exprC        { $$ = new expr_op2(">", $1, $3); }
+|                   exprB CMPLE exprC       { $$ = new expr_op2("<=", $1, $3); }
+|                   exprB CMPGE exprC       { $$ = new expr_op2(">=", $1, $3); }
+|                   exprB CMPEQ exprC       { $$ = new expr_op2("==", $1, $3); }
+|                   exprB CMPNE exprC       { $$ = new expr_op2("!=", $1, $3); }
+|                   exprB '+' exprC         { $$ = new expr_op2("+", $1, $3); }
+|                   exprB '-' exprC         { $$ = new expr_op2("-", $1, $3); }
+|                   exprC                   { $$ = $1; }
+;
+
+exprC:              exprC '*' exprD         { $$ = new expr_op2("*", $1, $3); }
+|                   exprC '/' exprD         { $$ = new expr_op2("/", $1, $3); }
+|                   exprD                   { $$ = $1; }
+;
+
+exprD:              exprE                           { $$ = $1; }
+|                   exprD ARROW_RIGHT symbol_expr   { $$ = new expr_addr_op($3); }
+;
+
+exprE:              '(' exprA ')'               { $$ = $2; }
+|                   ZAHL                        { $$ = new expr_constant_int($1); }
+|                   '&' exprE                   { $$ = new expr_addr_op($2); }
+|                   symbol_expr                 { $$ = $1; }
+;
+
+symbol_expr:        NAME                    { $$ = new symbol_expr(); $$->name = *$1; delete $1; }
+|                   NAME '(' expr_list ')'  { $$ = new symbol_expr(); $$->name = *$1; delete $1; $$->_expr_list = $3; }
+;
+
+expr_list:          expr_list ',' exprA     { $$ = $1; $$->push_back($3); }
+|                   exprA                   { $$ = new expr_list(); $$->push_back($1); }
+|                   /* nix */               { $$ = new expr_list(); }
 ;
 
