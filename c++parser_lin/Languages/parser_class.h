@@ -35,10 +35,26 @@ class var_name
 {
 public:
     std::string name;
-    std::vector<size_t> vector_size;
+    std::vector<int> vector_size;
 public:
     var_name()
     {}
+
+    void fancy(std::ostream& ostr)
+    {
+        ostr << name;
+        for (size_t i = 0; i < vector_size.size(); i++)
+        {
+            if (vector_size[i] == -1)
+            {
+                ostr << "[" << "]";
+            }
+            else
+            {
+                ostr << "[" << vector_size[i] << "]";
+            }
+        }
+    }
 };
 
 class var_decl
@@ -87,21 +103,6 @@ public:
     {}
 };
 
-class decl
-{
-public:
-    std::vector<std::string> namespaces;
-    std::string name;
-    decl_end* _decl_end;
-    atype* _type;
-
-public:
-    decl()
-        : _decl_end(NULL),
-          _type(NULL)
-    {}
-};
-
 typedef enum {
     ckw_class,
     ckw_struct
@@ -117,13 +118,6 @@ private:
     // for class
     std::string c_name;
     std::vector<std::string> inheritance;
-
-    // for atype
-    std::string m_atype_name;
-    int m_atype_p_level;
-
-    // for var_name
-    std::string m_var_name;
 
 protected:
     std::string m_namespace;
@@ -206,22 +200,6 @@ public:
     }
 
     void class_decl(const std::string& name, const std::string& block_code);
-
-    void atype_name(const std::string& name)
-    {
-        m_atype_name = name;
-        m_atype_p_level = 0;
-    }
-
-    void atype_add_pointer_level(int levels = 1)
-    {
-        m_atype_p_level += levels;
-    }
-
-    void var_name(const std::string& name)
-    {
-        m_var_name = name;
-    }
 
     virtual std::string getYYtext() = 0;
     virtual int getLineNo() = 0;

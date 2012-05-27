@@ -21,6 +21,12 @@ private:
     Symbols* symbContext;
     std::string m_namespace;
 
+    // for c_decl
+    std::string name;
+    decl_end* _decl_end;
+    atype* _type;
+
+
     void beginNewSymbContext()
     {
         Symbols *newc = new Symbols(symbContext);
@@ -63,6 +69,11 @@ public:
 
         destroy_scanner();
 	}
+
+    void c_decl(atype* t, std::string n, decl_end* e)
+    {
+        std::cout << "c_decl: " << t->name << " " << n << std::endl;
+    }
 
     // Defined in LanCC.l
     std::string getYYtext();

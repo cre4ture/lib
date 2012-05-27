@@ -64,6 +64,8 @@
 %token FUNCTIONDEF FUNCTIONCALL PARLIST PAR PRGM STMTLIST STMT BLOCK TERM FAKT KLAMMER DEFLIST EXPR EXPRLIST
 %token ASM PUSH POP IMUL
 
+%token STATIC
+%token CONST
 
 %nonassoc L_THEN
 %nonassoc ELSE
@@ -117,7 +119,7 @@ block:      namespace_decl
 |           include
 ;
 
-include:    PP_INCLUDE
+include:    PP_INCLUDE                          {   context->include(*$1); delete $1; }
 ;
 
 decl:       atype var_name decl_end                 { context->decl($1, $2, $3); }
@@ -155,8 +157,20 @@ array_size:     ZAHL                            { $$ = $1; }
 |               /* nix */                       { $$ = -1; }
 ;
 
-func_decl_end:  ';'                             { $$ = new func_decl_end(); }
-|               BLOCK_START BLOCK_END           { $$ = new func_decl_end(); }
+func_decl_end:  ';'                                             { $$ = new func_decl_end(); }
+|               ':' c_initialise_list BLOCK_START BLOCK_END     { $$ = new func_decl_end(); }
+|               BLOCK_START BLOCK_END                           { $$ = new func_decl_end(); }
+;
+
+c_initialise_list:  initialise_item
+|                   c_initialise_list ',' initialise_item
+;
+
+initialise_item:    NAME '(' expr_list ')'
+;
+
+expr_list:  NAME
+|           expr_list ',' NAME
 ;
 
 class_decl:     class_kw class_name ';'
@@ -203,6 +217,7 @@ atype:	a_none_pointer_type
 ;
 
 a_none_pointer_type: a_cpp_type
+|                    CONST a_cpp_type                   { $$ = $2; }
 ;
 
 a_cpp_type: NAME                                        { $$ = new atype(); $$->name = *$1; delete $1; }

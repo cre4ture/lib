@@ -62,6 +62,8 @@ pp_define_comp      {pp_define_name}[ ][^\n]*$
 <INITIAL>"private"          { return PRIVATE; }
 <INITIAL>"public"           { return PUBLIC; }
 <INITIAL>"protected"        { return PROTECTED; }
+<INITIAL>"static"           { return STATIC; }
+<INITIAL>"const"            { return CONST; }
 <INITIAL>"{"                { BEGIN(BLOCK); yyextra->level = 1; return BLOCK_START; }
 <BLOCK>[^{}]+    { yymore(); }
 <BLOCK>"{"       { yyextra->level++; yymore(); }
