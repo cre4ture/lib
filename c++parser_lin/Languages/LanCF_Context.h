@@ -25,12 +25,16 @@ private:
     std::string c_name;
 
     // for decl
-    std::vector<std::string> namespaces;
-    std::string name;
+public:
+    var_name _var_name;
     decl_end* _decl_end;
-    atype* _type;
+    parameter_list* _parameter_list;
+    func_decl_end* _func_decl_end;
+    atype _type;
+    bool is_ctor;
+    bool is_dtor;
 
-
+private:
     void beginNewSymbContext()
     {
         Symbols *newc = new Symbols(symbContext);
@@ -58,6 +62,10 @@ public:
         is = NULL;
         symbContext = NULL;
         beginNewSymbContext();
+        _decl_end = NULL;
+        _parameter_list = NULL;
+        _func_decl_end = NULL;
+        cleanup_decl();
 	}
 
     virtual ~LanCF_Context()
@@ -83,22 +91,59 @@ public:
         LanCF_parse(&tmp);
     }
 
-    void decl(atype* t, var_name* n, decl_end* e)
+    void create_decl()
     {
-        std::cout << "decl: " << t->name << " ";
-        n->fancy(std::cout);
-        if (e->_func_decl_end != NULL)
-            std::cout << "()";
-        std::cout << std::endl;
+        if (is_ctor)
+        {
+            std::cout << "decl_ctor: ";
+            _var_name.fancy(std::cout);
+            std::cout << "()" << std::endl;
+        }
+        else
+            if (is_dtor)
+            {
+                std::cout << "decl_dtor: ";
+                _var_name.fancy(std::cout);
+                std::cout << "()" << std::endl;
+            }
+            else
+                if (_decl_end->_func_decl_end != NULL)
+                {
+                    std::cout << "decl_func: ";
+                    _type.fancy(std::cout);
+                    std::cout << " ";
+                    _var_name.fancy(std::cout);
+                    std::cout << "()" << std::endl;
+                }
+                else
+                {
+                    std::cout << "decl: ";
+                    _type.fancy(std::cout);
+                    std::cout << " ";
+                    _var_name.fancy(std::cout);
+                    std::cout << std::endl;
+                }
     }
 
-    void decl(atype* t, std::string ns, var_name* n, decl_end* e)
+    void cleanup_decl()
     {
-        std::cout << "decl: " << t->name << " " << ns << "::";
-        n->fancy(std::cout);
-        if (e->_func_decl_end != NULL)
-            std::cout << "()";
-        std::cout << std::endl;
+        _var_name.namespaces.clear();
+        _var_name.name = "";
+        _var_name.vector_size.clear();
+        if (_decl_end != NULL) delete _decl_end;
+        _decl_end = NULL;
+        if (_parameter_list != NULL) delete _parameter_list;
+        _parameter_list = NULL;
+        if (_func_decl_end != NULL) delete _func_decl_end;
+        _func_decl_end = NULL;
+        _type.is_reference = false;
+        _type.name = "";
+        _type.namespaces.clear();
+        _type.pointer_level = 0;
+        if (_type.template_params != NULL) delete _type.template_params;
+        _type.template_params = NULL;
+        is_ctor = false;
+        is_dtor = false;
     }
 
     void include(std::string filename)

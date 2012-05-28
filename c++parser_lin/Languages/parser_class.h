@@ -17,16 +17,35 @@ public:
     std::vector<std::string> namespaces; // namespace::name
     std::string name; // name
     atype_list* template_params; // name<params>
-    size_t instances; // name[nummer]
     size_t pointer_level; // name *
     bool is_reference;   // name &
 public:
     atype()
         : template_params(NULL),
-          instances(1),
           pointer_level(0),
           is_reference(false)
     {}
+
+    void fancy(std::ostream& ostr)
+    {
+        for (size_t i = 0; i < namespaces.size(); i++)
+        {
+            ostr <<  namespaces[i] << "::";
+        }
+        ostr << name;
+        if (template_params != NULL)
+        {
+            std::cout << "<>";
+        }
+        for (size_t i = 0; i < pointer_level; i++)
+        {
+            ostr << "*";
+        }
+        if (is_reference)
+        {
+            ostr << "&";
+        }
+    }
 };
 
 typedef std::vector<atype*> atype_list;
@@ -36,12 +55,17 @@ class var_name
 public:
     std::string name;
     std::vector<int> vector_size;
+    std::vector<std::string> namespaces;
 public:
     var_name()
     {}
 
     void fancy(std::ostream& ostr)
     {
+        for (size_t i = 0; i < namespaces.size(); i++)
+        {
+            ostr << namespaces[i] << "::";
+        }
         ostr << name;
         for (size_t i = 0; i < vector_size.size(); i++)
         {
