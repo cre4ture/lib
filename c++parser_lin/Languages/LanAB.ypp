@@ -88,7 +88,7 @@ line:
         }
     | MACRO_BEGIN param_list MACRO_END define_value
 	    {
-            //context->defines.setDefine(*$2, *$3); // TODO
+            context->define(*$1, *$4); // TODO
             delete $1;
             delete $4;
 	    }
