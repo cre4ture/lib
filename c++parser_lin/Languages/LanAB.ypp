@@ -16,9 +16,13 @@
 	std::string* text;
 }
 
-%token <text> TEXT NAME
+%token <text> TEXT NAME K_IDENT
 %token ERR
-%token IFDEF IFNDEF INCLUDE ENDLINE ENDIF ELSE DEFINE
+%token IFDEF IFNDEF INCLUDE ENDLINE ENDIF ELSE MACRO_END
+
+%token <text> MACRO_BEGIN K_PARAM K_DEFINE K_DEFINE_VALUE K_DEFINE_VALUE_ENDLINE K_DEFINE_VALUE_ESC_ENDLINE
+
+%type <text> a_define_value define_value
 
 %{
     #include <iostream>
@@ -32,7 +36,7 @@
 
     void LanAB_error(YYLTYPE* locp, LanAB_Context* context, const char* err)
     {
-	    cout << locp->first_line << ":" << err << endl;
+        context->yy_error(err);
     }
 
     #define scanner context->scanner
@@ -53,6 +57,11 @@ line:
             context->text(*$1);
 		    delete $1;
 		}
+    | K_IDENT
+        {
+            context->ident(*$1);
+            delete $1;
+        }
 	| IFDEF NAME ENDLINE
 		{
 		    context->if_def(*$2);
@@ -71,15 +80,29 @@ line:
 		{
 		    context->end_if();
 		}
-	| DEFINE NAME ENDLINE
+    | K_DEFINE define_value
 	    {
-		context->defines.setDefine(*$2, "");
-		delete $2;
-	    }
-	| DEFINE NAME NAME ENDLINE
+            context->define(*$1, *$2);
+            delete $1;
+            delete $2;
+        }
+    | MACRO_BEGIN param_list MACRO_END define_value
 	    {
-		context->defines.setDefine(*$2, *$3);
-		delete $2;
-		delete $3;
+            //context->defines.setDefine(*$2, *$3); // TODO
+            delete $1;
+            delete $4;
 	    }
 	;
+
+param_list: /* nix */
+      | K_PARAM
+      | param_list ',' K_PARAM
+      ;
+
+define_value: a_define_value                    { $$ = $1; }
+      | define_value a_define_value             { $$ = $1; (*$$) += (*$2); delete $2; }
+
+a_define_value:   K_DEFINE_VALUE_ENDLINE        { $$ = $1; (*$$) = $$->substr(0, $$->size()-1); context->define_line_count++; }
+      |           K_DEFINE_VALUE_ESC_ENDLINE    { $$ = $1; (*$$) = $$->substr(0, $$->size()-2); context->define_line_count++; }
+      ;
+
