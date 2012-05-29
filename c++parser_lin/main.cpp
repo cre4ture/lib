@@ -128,14 +128,16 @@ int main(int argc, char *argv [])
     }
 
     creax::threadfifo<text_type> stage1_2;
+    creax::threadfifo<text_type> stage1_2a;
     creax::threadfifo<code_piece> stage2_3;
+    creax::threadfifo<code_piece> stage2_3a;
 
     // stage 1
     LanComment_Context lanComment_context(*new_input, stage1_2);
     // stage 2
-    LanAB_Context lanAB_context(stage1_2, 1, stage2_3);
+    LanAB_Context lanAB_context(stage1_2a, 1, stage2_3);
     // stage 3
-    LanCF_Context lanCFcont(stage2_3, 1, "");
+    LanCF_Context lanCFcont(stage2_3a, 1, "");
 
     //lanAB_context.setCDContext(&lanCDcont);
     lanAB_context.defines.loadDefines(defines);
@@ -155,7 +157,35 @@ int main(int argc, char *argv [])
     parserThread.join();
 #else
     commentFilterThreadRoutine(&lanComment_context);
+
+    std::cout << "12 ------------------------------------------------------------------" << std::endl;
+
+    {
+        text_type buff;
+        while (stage1_2.pop_data(buff))
+        {
+            std::cout << buff.lines << ": " << buff.text << std::endl;
+            stage1_2a.push_data(buff);
+        }
+        stage1_2a.close_fifo();
+    }
+
     preprocessorThreadRoutine(&lanAB_context);
+
+    std::cout << "23 ------------------------------------------------------------------" << std::endl;
+
+    {
+        code_piece buff;
+        while (stage2_3.pop_data(buff))
+        {
+            std::cout << buff.line << ": " << buff.code << std::endl;
+            stage2_3a.push_data(buff);
+        }
+        stage2_3a.close_fifo();
+    }
+
+    std::cout << "end -----------------------------------------------------------------" << std::endl;
+
     //parserThreadRoutine(&lanCDcont);
     blockParserThreadRoutine(&lanCFcont);
 #endif

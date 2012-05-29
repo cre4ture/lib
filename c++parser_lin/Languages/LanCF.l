@@ -35,11 +35,12 @@ digit       [0-9]
 zahl        [-]?{digit}+
 identifier  [a-zA-Z_][a-zA-Z_0-9]{0,98}
 pp_include  #include
-pp_filename ["<][^">]*[">]$
+pp_filename ["<][^">]*[">][ ]*\n
 
+/* do not use $ in regular expressions here! It breaks the internal line counter of flex! */
 pp_define           #define
 pp_define_name      [a-zA-Z_][a-zA-Z_0-9]{0,98}
-pp_define_comp      {pp_define_name}[ ][^\n]*$
+pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
 
 %x comm inline pp_incl pp_def BLOCK
 %%
