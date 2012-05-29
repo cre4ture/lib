@@ -88,6 +88,9 @@ public:
     int startline;
     int additional_lines;
 
+    // for defines:
+    int define_line_count;
+
     creax::threadfifo<text_type>& input_fifo;
     creax::threadfifo<code_piece>& output_fifo;
 
@@ -102,6 +105,7 @@ public:
         level_off = 0;
         startline = a_startline-1;
         additional_lines = 0;
+        define_line_count = 0;
 	}
 
     void setCDContext(LanCD_Context* a_context)
@@ -126,6 +130,36 @@ public:
             }
 
             output_fifo.push_data(code_piece(add + code, startline + getLineNo()));
+        }
+    }
+
+    void define(const std::string& name, const std::string& value)
+    {
+        defines.setDefine(name, value);
+        std::string replacement;
+        for (int i = 0; i < define_line_count; i++)
+        {
+            replacement += "\n";
+        }
+        text(replacement);
+        define_line_count = 0;
+    }
+
+    void ident(const std::string& name)
+    {
+        // defines.addDependency(name); TODO: shall or shall we not ?
+        if (defines.isSet(name))
+        {
+            // replace with defined value:
+            std::string value;
+            defines.getValue(name, value);
+            text(value);
+            // TODO MACROS!
+        }
+        else
+        {
+            // treat like normal text:
+            text(name);
         }
     }
 
@@ -233,10 +267,19 @@ public:
         }
     }
 
-    // Defined in LanCD.l
+    void yy_error(const char* err)
+    {
+        std::cerr << "preproc line:" << startline + getLineNo()
+         << ",\"" << getYYtext()
+         << "\", msg: " << err << std::endl;
+    }
+
+    // Defined in LanAB.l
+    std::string getYYtext();
+    // Defined in LanAB.l
     int getLineNo();
 
-// Defined in LanAB.l
+    // Defined in LanAB.l
 protected:
 	void init_scanner();	
 	void destroy_scanner();
