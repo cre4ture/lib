@@ -10,6 +10,10 @@
 #include "LanCC_Context.h"
 #include "basic_types.h"
 
+#include "creax_filenamepath.h"
+
+#include "cpp_parser.h"
+
 class LanCF_Context;
 int LanCF_parse(LanCF_Context*);
 
@@ -23,6 +27,9 @@ private:
 
     // tmp parser data
     std::string c_name;
+
+    // workingdir: (used with #include)
+    std::string workdir;
 
     // for decl
 public:
@@ -54,8 +61,10 @@ public:
     int parser_result;
     int level;
 
-    LanCF_Context(creax::threadfifo<code_piece>& a_fifo, int a_line, const std::string& a_namespace)
-        : LanXX_Context(a_fifo, a_line), m_namespace(a_namespace)
+    LanCF_Context(creax::threadfifo<code_piece>& a_fifo, int a_line, const std::string& a_namespace, const std::string& a_workdir)
+        : LanXX_Context(a_fifo, a_line),
+          m_namespace(a_namespace),
+          workdir(a_workdir)
 	{
 		init_scanner();
         wurzel = NULL;
@@ -87,7 +96,7 @@ public:
         creax::threadfifo<code_piece> fifo;
         fifo.push_data(code_piece(block_code, blockstart));
         fifo.close_fifo();
-        LanCF_Context tmp(fifo, blockstart, name);
+        LanCF_Context tmp(fifo, blockstart, name, workdir);
         LanCF_parse(&tmp);
     }
 
@@ -149,6 +158,22 @@ public:
     void include(std::string filename)
     {
         std::cout << "#include " << filename << std::endl;
+        cpp_parser parser(workdir);
+        switch (filename[0])
+        {
+        case '<':
+            return; // TODO
+            break;
+        case '"':
+            filename = filename.substr(1,filename.size()-2);
+            break;
+        default:
+            throw std::runtime_error("include: expected \" or < before filename!");
+        }
+
+        std::cout << "include file \"" << filename << "\" ++++++++++++++++++++++++++++++++++++++++++++++++ " << std::endl;
+        parser.parse_file(filename);
+        std::cout << "returned from file \"" << filename << "\" ------------------------------------------------ " << std::endl;
     }
 
     // Defined in LanCF.l
