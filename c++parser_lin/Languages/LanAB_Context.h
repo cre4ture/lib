@@ -131,6 +131,22 @@ public:
 
             output_fifo.push_data(code_piece(add + code, startline + getLineNo()));
         }
+        else
+        {
+            // only take the newlines!
+            const char* c = code.c_str();
+            while ((*c) != 0)
+            {
+                if ((*c) == '\n')
+                    additional_lines++;
+                c++;
+            }
+        }
+    }
+
+    void endline()
+    {
+        additional_lines++;
     }
 
     void define(const std::string& name, const std::string& value)

@@ -65,21 +65,25 @@ line:
 	| IFDEF NAME ENDLINE
 		{
 		    context->if_def(*$2);
-		    delete $2;
+            context->endline();
+            delete $2;
 		}
 	| IFNDEF NAME ENDLINE
 		{
-		    context->if_n_def(*$2);
+            context->if_n_def(*$2);
+            context->endline();
 		    delete $2;
 		}
 	| ELSE ENDLINE
 		{
 		    context->else_if();
-		}
+            context->endline();
+        }
 	| ENDIF ENDLINE
 		{
 		    context->end_if();
-		}
+            context->endline();
+        }
     | K_DEFINE define_value
 	    {
             context->define(*$1, *$2);
