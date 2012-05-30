@@ -75,6 +75,16 @@ public:
         std::cout << "c_decl: " << t->name << " " << n << std::endl;
     }
 
+    void c_constructor(atype* t, parameter_list* pl, func_decl_end* fe)
+    {
+        std::cout << "c_constructor: " << t->name << "()" << std::endl;
+    }
+
+    void c_destructor(const std::string& name, parameter_list* pl, func_decl_end* fe)
+    {
+        std::cout << "c_destructor: ~" << name << "()" << std::endl;
+    }
+
     // Defined in LanCC.l
     std::string getYYtext();
     // Defined in LanCC.l

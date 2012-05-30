@@ -27,7 +27,6 @@
 
     #define YY_INPUT(buf,result,max_size) yyextra->yy_input(buf, result, max_size, YY_NULL)
 
-    extern int zeile;
 %}
 
 delim       [ \t]

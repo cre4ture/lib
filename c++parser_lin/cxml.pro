@@ -2,6 +2,9 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= qt
 
+LIBS += -lpthread
+QMAKE_CXXFLAGS += -pthread
+
 SOURCES += \
     ast_nodes_flow.cpp \
     ast_node_global_def_include.cpp \
@@ -27,7 +30,8 @@ SOURCES += \
     Languages/LanCF.tab.cpp \
     Languages/parser_class.cpp \
     Languages/lex.LanCC_.cpp \
-    Languages/LanCC.tab.cpp
+    Languages/LanCC.tab.cpp \
+    cpp_parser.cpp
 
 HEADERS += \
     ast_nodes_flow.hpp \
@@ -68,7 +72,9 @@ HEADERS += \
     Languages/LanCC.ypp \
     Languages/LanCC.l \
     Languages/parser_class.h \
-    creax_stringinput.h
+    creax_stringinput.h \
+    cpp_parser.h \
+    creax_filenamepath.h
 
 OTHER_FILES += \
     Languages/Makefile

@@ -147,9 +147,9 @@ decl_mod:   /* nix */
 |           VIRTUAL
 ;
 
-c_decl:     decl_mod '~' atype parameter_list func_decl_end /* destructor */
-|           decl_mod atype parameter_list func_decl_end /* constructor */
-|           decl_mod atype NAME decl_end                 { context->c_decl($2, *$3, $4); delete $3; }
+c_decl:     decl_mod '~' NAME parameter_list func_decl_end         { context->c_destructor(*$3, $4, $5); delete $3; }
+|           decl_mod atype parameter_list func_decl_end             { context->c_constructor($2, $3, $4); }
+|           decl_mod atype NAME decl_end                            { context->c_decl($2, *$3, $4); delete $3; }
 ;
 
 decl_end:   ';'                                 { $$ = new decl_end(); }

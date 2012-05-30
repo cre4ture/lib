@@ -20,7 +20,10 @@
 #include "Languages/LanCF_Context.h"
 
 #include "creax_thread.h"
+#include "creax_filenamepath.h"
 #include "ParamParser.h"
+
+#include "cpp_parser.h"
 
 void parseDefines(std::map<std::string, std::string>& defines, mefu::ParamParser& parser)
 {
@@ -46,61 +49,10 @@ void parseDefines(std::map<std::string, std::string>& defines, mefu::ParamParser
     }
 }
 
-int* commentFilterThreadRoutine(LanComment_Context* param)
-{
-    try {
-        LanComment_parse(param);
-        param->result = 0;
-    } catch (std::runtime_error& err) {
-        fprintf(stderr,"comment filter error: %s\n", err.what());
-        param->result = -1;
-    }
-    param->fifo.close_fifo();
-    return NULL;
-}
-
-int* preprocessorThreadRoutine(LanAB_Context* param)
-{
-    try {
-        LanAB_parse(param);
-        param->preprocessor_result = 0;
-    } catch (std::runtime_error& err) {
-        fprintf(stderr,"preprocessor error: %s\n", err.what());
-        param->preprocessor_result = -1;
-    }
-    param->output_fifo.close_fifo();
-    return NULL;
-}
-
-int* parserThreadRoutine(LanCD_Context* param)
-{
-    try {
-        LanCD_parse(param);
-        param->parser_result = 0;
-    } catch (std::runtime_error& err) {
-        fprintf(stderr,"parser error: %s\n", err.what());
-        param->parser_result = -1;
-    }
-    return NULL;
-}
-
-int* blockParserThreadRoutine(LanCF_Context* param)
-{
-    try {
-        LanCF_parse(param);
-        param->parser_result = 0;
-    } catch (std::runtime_error& err) {
-        fprintf(stderr,"block parser error: %s\n", err.what());
-        param->parser_result = -1;
-    }
-    return NULL;
-}
-
 int main(int argc, char *argv [])
 {
     mefu::ParamParser parser(argc, argv);
     std::ostream* new_output;
-    std::ifstream* new_input;
     int result = 0;
 
     std::string in_file  = parser.getStringVal("in","");
@@ -119,84 +71,15 @@ int main(int argc, char *argv [])
     std::map<std::string,std::string> defines;
     parseDefines(defines, parser);
 
-    new_input = new std::ifstream(in_file.c_str());
-
-    if (!new_input->is_open())
-    {
-        std::cerr << "could not open file: " << in_file << std::endl;
-        return -1;
-    }
-
-    creax::threadfifo<text_type> stage1_2;
-    creax::threadfifo<text_type> stage1_2a;
-    creax::threadfifo<code_piece> stage2_3;
-    creax::threadfifo<code_piece> stage2_3a;
-
-    // stage 1
-    LanComment_Context lanComment_context(*new_input, stage1_2);
-    // stage 2
-    LanAB_Context lanAB_context(stage1_2a, 1, stage2_3);
-    // stage 3
-    LanCF_Context lanCFcont(stage2_3a, 1, "");
-
-    //lanAB_context.setCDContext(&lanCDcont);
-    lanAB_context.defines.loadDefines(defines);
-
-    lanCFcont.dependencies = new ast_node_define_depencies(NULL);
-    lanAB_context.defines.saveDependencies(lanCFcont.dependencies);
-
-//#define USE_THREADS
-
-#ifdef USE_THREADS
-    creax::thread<LanComment_Context, int> commentFilterThread(&preprocessorThreadRoutine, &lanComment_context);
-    creax::thread<LanAB_Context, int> preprocessorThread(&preprocessorThreadRoutine, &lanAB_context);
-    creax::thread<LanCD_Context, int> parserThread(&parserThreadRoutine, &lanCDcont);
-
-    commentFilterThread.join();
-    preprocessorThread.join();
-    parserThread.join();
-#else
-    commentFilterThreadRoutine(&lanComment_context);
-
-    std::cout << "12 ------------------------------------------------------------------" << std::endl;
-
-    {
-        text_type buff;
-        while (stage1_2.pop_data(buff))
-        {
-            std::cout << buff.lines << ": " << buff.text << std::endl;
-            stage1_2a.push_data(buff);
-        }
-        stage1_2a.close_fifo();
-    }
-
-    preprocessorThreadRoutine(&lanAB_context);
-
-    std::cout << "23 ------------------------------------------------------------------" << std::endl;
-
-    {
-        code_piece buff;
-        while (stage2_3.pop_data(buff))
-        {
-            std::cout << buff.line << ": " << buff.code << std::endl;
-            stage2_3a.push_data(buff);
-        }
-        stage2_3a.close_fifo();
-    }
-
-    std::cout << "end -----------------------------------------------------------------" << std::endl;
-
-    //parserThreadRoutine(&lanCDcont);
-    blockParserThreadRoutine(&lanCFcont);
-#endif
-
-    /*std::string text;
-    while (context.codefifo.pop_data(text))
-    {
-        std::cout << text;
-    }*/
-
     try {
+
+
+        cpp_parser cpp(extractFilepath(in_file));
+        cpp.setDefines(defines);
+        cpp.parse_file(in_file);
+
+
+
         xmlwriter writer(*new_output);
         writer.beginTag("root");
         //if (lanCDcont.wurzel != NULL) lanCDcont.wurzel->writeToXML(writer);
@@ -205,8 +88,6 @@ int main(int argc, char *argv [])
         fprintf(stderr,"Compilerfehler: %s\n", err.what());
         result = -1;
     }
-
-    delete new_input;
 
     return result;
 }
