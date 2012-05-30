@@ -46,8 +46,9 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
 %%
 
 {pp_include}    { BEGIN pp_incl; }
+<pp_incl>[ ]*               { /* ignore space between #include and filename */ }
 <pp_incl>{pp_filename}      {
-                                yylval->txt = new std::string(yytext);
+                                yylval->txt = new std::string(yytext, strlen(yytext)-1);
                                 BEGIN INITIAL;
                                 return PP_INCLUDE;
                             }
