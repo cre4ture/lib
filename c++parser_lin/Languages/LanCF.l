@@ -34,12 +34,12 @@ digit       [0-9]
 zahl        [-]?{digit}+
 identifier  [a-zA-Z_][a-zA-Z_0-9]{0,98}
 pp_include  #include
-pp_filename ["<][^">]*[">][ ]*\n
+pp_filename ["<][^">]*[">][ ]*[\n\r]
 
 /* do not use $ in regular expressions here! It breaks the internal line counter of flex! */
 pp_define           #define
 pp_define_name      [a-zA-Z_][a-zA-Z_0-9]{0,98}
-pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
+pp_define_comp      {pp_define_name}[ ][^\n]*[\n\r]
 
 %x comm inline pp_incl pp_def BLOCK squote dquote
 %%
@@ -63,9 +63,10 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
 <squote>.       { yymore(); }
 
 {pp_define}     { BEGIN pp_def; }
-<pp_def>"\n"                { BEGIN INITIAL; }
+<pp_def>"\n"    { BEGIN INITIAL; }
 {delim}      	{}
 "\n"         	{}
+"\r"         	{}
 <INITIAL>"->"               { return ARROW_RIGHT; }
 <INITIAL>"::"               { return NS_SEP; }
 <INITIAL>"template"         { return K_TEMPLATE; }
@@ -73,6 +74,7 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
 <INITIAL>"namespace"        { return NAMESPACE; }
 <INITIAL>"class"            { return CLASS; }
 <INITIAL>"enum"             { return K_ENUM; }
+<INITIAL>"typedef"          { return K_TYPEDEF; }
 <INITIAL>"struct"           { return STRUCT; }
 <INITIAL>"private"          { return PRIVATE; }
 <INITIAL>"public"           { return PUBLIC; }
