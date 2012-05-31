@@ -51,12 +51,21 @@ public:
 
 typedef std::vector<atype*> atype_list;
 
+class exprA
+{
+public:
+    void fancy(std::ostream& ostr)
+    {
+        ostr << "exprA";
+    }
+};
+
 class array_decl
 {
 public:
-    std::vector<int> sizes;
+    std::vector<exprA*> sizes;
 public:
-    array_decl(int first)
+    array_decl(exprA* first)
     {
         sizes.push_back(first);
     }
@@ -65,13 +74,15 @@ public:
     {
         for (size_t i = 0; i < sizes.size(); i++)
         {
-            if (sizes[i] == -1)
+            if (sizes[i] == NULL)
             {
                 ostr << "[" << "]";
             }
             else
             {
-                ostr << "[" << sizes[i] << "]";
+                ostr << "[";
+                sizes[i]->fancy(ostr);
+                ostr << "]";
             }
         }
     }
@@ -147,11 +158,6 @@ public:
           _func_decl_end(NULL),
           _array_decl(NULL)
     {}
-};
-
-class exprA
-{
-public:
 };
 
 typedef exprA exprB;
