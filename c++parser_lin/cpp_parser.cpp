@@ -71,7 +71,7 @@ void cpp_parser::setDefines(std::map<std::string,std::string> a_defines)
     defines = a_defines;
 }
 
-void cpp_parser::parse_stream(std::istream * const new_input)
+bool cpp_parser::parse_stream(std::istream * const new_input)
 {
     creax::threadfifo<text_type> stage1_2;
     creax::threadfifo<code_piece> stage2_3;
@@ -151,15 +151,14 @@ void cpp_parser::parse_stream(std::istream * const new_input)
     blockParserThreadRoutine(&lanCFcont);
 #endif
 
-    /*std::string text;
-    while (context.codefifo.pop_data(text))
-    {
-        std::cout << text;
-    }*/
+    bool result = (lanComment_context.result == 0);
+    result &= (lanAB_context.preprocessor_result == 0);
+    result &= (lanCFcont.parser_result == 0);
 
+    return result;
 }
 
-void cpp_parser::parse_file(const std::string &filename)
+bool cpp_parser::parse_file(const std::string &filename)
 {
     std::string abs_file;
 
@@ -179,5 +178,5 @@ void cpp_parser::parse_file(const std::string &filename)
         throw std::runtime_error("could not open file: " + filename);
     }
 
-    parse_stream(&new_input);
+    return parse_stream(&new_input);
 }

@@ -45,6 +45,7 @@
     param_decl* _param_decl;
     var_decl* _var_decl;
     var_name* _var_name;
+    array_decl* _array_decl;
     SymbolVar* varSym;
     SymbolFunc* funcSym;
 
@@ -90,7 +91,8 @@
 %type <_param_decl> param_decl
 %type <_var_decl> var_decl
 %type <_var_name> var_name
-%type <_int> array_size
+%type <_int> array_size array_dim_decl
+%type <_array_decl> array_decl
 
 %type <_exprA> exprA
 %type <_exprB> exprB
@@ -101,7 +103,8 @@
 %type <_symbol_expr> symbol_expr
 %type <_expr_list> expr_list
 
-%token funcDef BLOCK_START PUBLIC PRIVATE PROTECTED CLASS NAMESPACE STRUCT NS_SEP
+%token funcDef PUBLIC PRIVATE PROTECTED CLASS NAMESPACE STRUCT NS_SEP K_ENUM
+%token <_int> BLOCK_START /* line number of block-start */
 %token <txt> BLOCK_END
 
 %{
@@ -133,6 +136,7 @@ blocklist:  blocklist block
 
 block:      namespace_decl
 |           class_decl
+|           enum_decl
 |           decl                                { context->create_decl(); context->cleanup_decl(); }
 |           include
 ;
@@ -177,7 +181,7 @@ location_mod:   INLINE
 |               STATIC
 ;
 
-decl_end:       '[' array_size ']' decl_end     { $$ = $4; context->_var_name.vector_size.push_back($2); }
+decl_end:       array_decl decl_end2            { $$ = $2; $$->_array_decl = $1; }
 |               decl_end2                       { $$ = $1; }
 ;
 
@@ -202,11 +206,18 @@ param_decl:     var_decl                        { $$ = $1; }
 ;
 
 var_decl:       atype var_name                  { $$ = new var_decl(); $$->_atype = $1; $$->_var_name = $2; }
+|               atype                           { $$ = new var_decl(); $$->_atype = $1; }
+|               atype array_decl                { $$ = new var_decl(); $$->_atype = $1; $$->_array_decl = $2; }
 ;
 
 var_name:       NAME                            { $$ = new var_name(); $$->name = *$1; delete $1; };
-|               var_name '[' array_size ']'     { $$ = $1; $$->vector_size.push_back($3); };
+|               NAME array_decl                 { $$ = new var_name(); $$->name = *$1; delete $1; };
 ;
+
+array_decl:     array_dim_decl                  { $$ = new array_decl($1); }
+|               array_decl array_dim_decl       { $$ = $1; $$->sizes.push_back($2); }
+
+array_dim_decl:     '[' array_size ']'          { $$ = $2; }
 
 array_size:     ZAHL                            { $$ = $1; }
 |               /* nix */                       { $$ = -1; }
@@ -249,6 +260,8 @@ class_decl_inheritance: PUBLIC NAME     { context->class_inheritance("public", *
 |                       PRIVATE NAME    { context->class_inheritance("private", *$2); delete $2; }
 |                       NAME            { context->class_inheritance("", *$1); delete $1; }
 ;
+
+enum_decl:          K_ENUM NAME BLOCK_START BLOCK_END ';' { delete $2; delete $4; }
 
 namespace_decl:     NAMESPACE NAME BLOCK_START
                     {

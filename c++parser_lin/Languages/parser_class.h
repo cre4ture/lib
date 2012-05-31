@@ -6,6 +6,7 @@
 #include "basic_types.h"
 
 #include <iostream>
+#include <sstream>
 
 class atype;
 
@@ -50,14 +51,41 @@ public:
 
 typedef std::vector<atype*> atype_list;
 
+class array_decl
+{
+public:
+    std::vector<int> sizes;
+public:
+    array_decl(int first)
+    {
+        sizes.push_back(first);
+    }
+
+    void fancy(std::ostream& ostr)
+    {
+        for (size_t i = 0; i < sizes.size(); i++)
+        {
+            if (sizes[i] == -1)
+            {
+                ostr << "[" << "]";
+            }
+            else
+            {
+                ostr << "[" << sizes[i] << "]";
+            }
+        }
+    }
+};
+
 class var_name
 {
 public:
     std::string name;
-    std::vector<int> vector_size;
+    array_decl* _array_decl;
     std::vector<std::string> namespaces;
 public:
     var_name()
+        : _array_decl(NULL)
     {}
 
     void fancy(std::ostream& ostr)
@@ -67,17 +95,8 @@ public:
             ostr << namespaces[i] << "::";
         }
         ostr << name;
-        for (size_t i = 0; i < vector_size.size(); i++)
-        {
-            if (vector_size[i] == -1)
-            {
-                ostr << "[" << "]";
-            }
-            else
-            {
-                ostr << "[" << vector_size[i] << "]";
-            }
-        }
+        if (_array_decl != NULL)
+            _array_decl->fancy(ostr);
     }
 };
 
@@ -86,6 +105,7 @@ class var_decl
 public:
     atype* _atype;
     var_name* _var_name;
+    array_decl* _array_decl;
 public:
     var_decl()
         : _atype(NULL),
@@ -118,12 +138,14 @@ public:
     init_assignment* _init_assignment;
     parameter_list* _parameter_list;
     func_decl_end* _func_decl_end;
+    array_decl* _array_decl;
 
 public:
     decl_end()
         : _init_assignment(NULL),
           _parameter_list(NULL),
-          _func_decl_end(NULL)
+          _func_decl_end(NULL),
+          _array_decl(NULL)
     {}
 };
 
@@ -226,9 +248,11 @@ public:
 
     void yy_error(const char* err)
     {
-        std::cerr << "block<" << m_namespace << ">: line:" << startline + getLineNo()
+        std::ostringstream ostr;
+        ostr << "block<" << m_namespace << ">: line:" << startline + getLineNo()
           << ",\"" << getYYtext()
          << "\", msg: " << err << std::endl;
+        throw std::runtime_error(ostr.str());
     }
 
     void yy_input(char* const buf, int& result, int max_size, const int eof_result)

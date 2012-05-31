@@ -45,6 +45,7 @@
     param_decl* _param_decl;
     var_decl* _var_decl;
     var_name* _var_name;
+    array_decl* _array_decl;
     SymbolVar* varSym;
     SymbolFunc* funcSym;
 
@@ -91,7 +92,8 @@
 %type <_param_decl> param_decl
 %type <_var_decl> var_decl
 %type <_var_name> var_name
-%type <_int> array_size
+%type <_int> array_size array_dim_decl
+%type <_array_decl> array_decl
 
 %type <_exprA> exprA
 %type <_exprB> exprB
@@ -173,11 +175,18 @@ param_decl:     var_decl                        { $$ = $1; }
 ;
 
 var_decl:       atype var_name                  { $$ = new var_decl(); $$->_atype = $1; $$->_var_name = $2; }
+|               atype                           { $$ = new var_decl(); $$->_atype = $1; }
+|               atype array_decl                { $$ = new var_decl(); $$->_atype = $1; $$->_array_decl = $2; }
 ;
 
 var_name:       NAME                            { $$ = new var_name(); $$->name = *$1; delete $1; };
-|               var_name '[' array_size ']'     { $$ = $1; $$->vector_size.push_back($3); };
+|               NAME array_decl                 { $$ = new var_name(); $$->name = *$1; delete $1; };
 ;
+
+array_decl:     array_dim_decl                  { $$ = new array_decl($1); }
+|               array_decl array_dim_decl       { $$ = $1; $$->sizes.push_back($2); }
+
+array_dim_decl:     '[' array_size ']'          { $$ = $2; }
 
 array_size:     ZAHL                            { $$ = $1; }
 |               /* nix */                       { $$ = -1; }

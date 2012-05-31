@@ -76,7 +76,6 @@ class LanAB_Context
 {
 public:
 	void* scanner;
-	int result;
 	int esc_depth;
     int preprocessor_result;
     std::istringstream* is;
