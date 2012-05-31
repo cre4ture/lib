@@ -92,7 +92,7 @@
 %type <_param_decl> param_decl
 %type <_var_decl> var_decl
 %type <_var_name> var_name
-%type <_int> array_size array_dim_decl
+%type <_exprA> array_size array_dim_decl
 %type <_array_decl> array_decl
 
 %type <_exprA> exprA
@@ -187,6 +187,8 @@ location_mod:   INLINE
 ;
 
 decl_operator_end:  '[' ']' parameter_list func_decl_end
+|                   '<' '<' parameter_list func_decl_end
+|                   '>' '>' parameter_list func_decl_end
 ;
 
 decl_end:       array_decl decl_end2            { $$ = $2; $$->_array_decl = $1; }
@@ -199,7 +201,7 @@ decl_end2:  ';'                                 { $$ = new decl_end(); }
 ;
 
 init_assignment:    BLOCK_START BLOCK_END       { $$ = new init_assignment(); }
-|                   NAME                        { $$ = new init_assignment(); delete $1; }
+|                   exprA                       { $$ = new init_assignment(); delete $1; }
 ;
 
 parameter_list:     '(' parameter_list_intern ')'   { $$ = $2; }
@@ -227,8 +229,8 @@ array_decl:     array_dim_decl                  { $$ = new array_decl($1); }
 
 array_dim_decl:     '[' array_size ']'          { $$ = $2; }
 
-array_size:     ZAHL                            { $$ = $1; }
-|               /* nix */                       { $$ = -1; }
+array_size:     exprA                           { $$ = $1; }
+|               /* nix */                       { $$ = NULL; }
 ;
 
 func_decl_end:  ';'                                             { $$ = new func_decl_end(); }
