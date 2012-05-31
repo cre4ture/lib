@@ -19,7 +19,7 @@ inline std::string extractFilename(const std::string& filename)
             break;
         }
     }
-
+    last_slash++;
     return std::string(last_slash);
 }
 
