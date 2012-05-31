@@ -138,7 +138,6 @@ public:
     {
         _var_name.namespaces.clear();
         _var_name.name = "";
-        _var_name.vector_size.clear();
         if (_decl_end != NULL) delete _decl_end;
         _decl_end = NULL;
         if (_parameter_list != NULL) delete _parameter_list;
@@ -172,7 +171,15 @@ public:
         }
 
         std::cout << "include file \"" << filename << "\" ++++++++++++++++++++++++++++++++++++++++++++++++ " << std::endl;
-        parser.parse_file(filename);
+        bool result = parser.parse_file(filename);
+
+        if (!result)
+        {
+            std::cout << "error in file \"" << filename << "\" ************************************************ " << std::endl;
+
+            throw std::runtime_error("failed parsing include...");
+        }
+
         std::cout << "returned from file \"" << filename << "\" ------------------------------------------------ " << std::endl;
     }
 

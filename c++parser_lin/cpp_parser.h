@@ -15,9 +15,9 @@ public:
 
     void setDefines(std::map<std::string,std::string> a_defines);
 
-    void parse_stream(std::istream *const input);
+    bool parse_stream(std::istream *const input);
 
-    void parse_file(const std::string& filename);
+    bool parse_file(const std::string& filename);
 };
 
 #endif // CPP_PARSER_H

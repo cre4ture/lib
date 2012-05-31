@@ -60,6 +60,7 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
 <INITIAL>"::"               { return NS_SEP; }
 <INITIAL>"namespace"        { return NAMESPACE; }
 <INITIAL>"class"            { return CLASS; }
+<INITIAL>"enum"             { return K_ENUM; }
 <INITIAL>"struct"           { return STRUCT; }
 <INITIAL>"private"          { return PRIVATE; }
 <INITIAL>"public"           { return PUBLIC; }
@@ -67,8 +68,8 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
 <INITIAL>"static"           { return STATIC; }
 <INITIAL>"const"            { return CONST; }
 <INITIAL>"inline"           { return INLINE; }
-<INITIAL>"extern"           { return INLINE; }
-<INITIAL>"{"                { BEGIN(BLOCK); yyextra->level = 1; return BLOCK_START; }
+<INITIAL>"extern"           { return EXTERN; }
+<INITIAL>"{"                { BEGIN(BLOCK); yyextra->level = 1; yylval->_int = yyextra->getLineNo(); return BLOCK_START; }
 <BLOCK>[^{}]+    { yymore(); }
 <BLOCK>"{"       { yyextra->level++; yymore(); }
 <BLOCK>"}"                       {
