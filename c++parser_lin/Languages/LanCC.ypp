@@ -104,7 +104,8 @@
 %type <_symbol_expr> symbol_expr
 %type <_expr_list> expr_list
 
-%token funcDef BLOCK_START PUBLIC PRIVATE PROTECTED CLASS NAMESPACE STRUCT NS_SEP
+%token funcDef PUBLIC PRIVATE PROTECTED CLASS NAMESPACE STRUCT NS_SEP K_ENUM
+%token <_int> BLOCK_START /* line number of block-start */
 %token <txt> BLOCK_END
 
 %{
@@ -136,6 +137,7 @@ c_blocklist:  c_blocklist c_block
 
 c_block:    visibility_decl
 |           class_decl
+|			enum_decl
 |           c_decl
 ;
 
@@ -193,6 +195,7 @@ array_size:     ZAHL                            { $$ = $1; }
 ;
 
 func_decl_end:  ';'                                             { $$ = new func_decl_end(); }
+|               '=' ZAHL ';'                                    { $$ = new func_decl_end(); }
 |               ':' c_initialise_list BLOCK_START BLOCK_END     { $$ = new func_decl_end(); }
 |               BLOCK_START BLOCK_END                           { $$ = new func_decl_end(); }
 ;
@@ -229,6 +232,8 @@ class_decl_inheritance: PUBLIC NAME     { context->class_inheritance("public", *
 |                       PRIVATE NAME    { context->class_inheritance("private", *$2); delete $2; }
 |                       NAME            { context->class_inheritance("", *$1); delete $1; }
 ;
+
+enum_decl:          K_ENUM NAME BLOCK_START BLOCK_END ';' { delete $2; delete $4; }
 
 atype:	a_none_pointer_type
 |       atype '*'                                       { $$ = $1; $$->pointer_level++; }
