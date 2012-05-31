@@ -68,6 +68,8 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
 "\n"         	{}
 <INITIAL>"->"               { return ARROW_RIGHT; }
 <INITIAL>"::"               { return NS_SEP; }
+<INITIAL>"template"         { return K_TEMPLATE; }
+<INITIAL>"typename"         { return K_TYPENAME; }
 <INITIAL>"namespace"        { return NAMESPACE; }
 <INITIAL>"class"            { return CLASS; }
 <INITIAL>"enum"             { return K_ENUM; }
