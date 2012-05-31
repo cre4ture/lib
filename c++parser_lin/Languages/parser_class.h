@@ -250,7 +250,7 @@ public:
     {
         std::ostringstream ostr;
         ostr << "block<" << m_namespace << ">: line:" << startline + getLineNo()
-          << ",\"" << getYYtext()
+             << ",\"" << getYYtext() // << "[0]:" << (int)getYYtext()[0]
          << "\", msg: " << err << std::endl;
         throw std::runtime_error(ostr.str());
     }
