@@ -76,9 +76,8 @@ int main(int argc, char *argv [])
 
         cpp_parser cpp(extractFilepath(in_file));
         cpp.setDefines(defines);
-        cpp.parse_file(in_file);
-
-
+        if (!cpp.parse_file(in_file))
+            result = -1;
 
         xmlwriter writer(*new_output);
         writer.beginTag("root");
