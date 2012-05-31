@@ -107,6 +107,7 @@
 
 %token funcDef PUBLIC PRIVATE PROTECTED CLASS NAMESPACE 
 %token STRUCT NS_SEP K_ENUM K_TEMPLATE K_TYPENAME K_TYPEDEF
+%token K_OPERATOR
 %token <_int> BLOCK_START /* line number of block-start */
 %token <txt> BLOCK_END
 
@@ -154,9 +155,13 @@ decl_mod:   /* nix */
 |           VIRTUAL
 ;
 
-c_decl:     decl_mod '~' NAME parameter_list func_decl_end         { context->c_destructor(*$3, $4, $5); delete $3; }
+c_decl:     decl_mod '~' NAME parameter_list func_decl_end          { context->c_destructor(*$3, $4, $5); delete $3; }
 |           decl_mod atype parameter_list func_decl_end             { context->c_constructor($2, $3, $4); }
 |           decl_mod atype NAME decl_end                            { context->c_decl($2, *$3, $4); delete $3; }
+|           decl_mod atype K_OPERATOR decl_operator_end             { }
+;
+
+decl_operator_end:  '[' ']' parameter_list func_decl_end
 ;
 
 decl_end:   ';'                                 { $$ = new decl_end(); }

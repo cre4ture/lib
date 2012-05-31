@@ -106,6 +106,7 @@
 
 %token funcDef PUBLIC PRIVATE PROTECTED CLASS NAMESPACE 
 %token STRUCT NS_SEP K_ENUM K_TEMPLATE K_TYPENAME K_TYPEDEF
+%token K_OPERATOR
 %token <_int> BLOCK_START /* line number of block-start */
 %token <txt> BLOCK_END
 
@@ -171,6 +172,7 @@ decl_c:     '*' decl_c          { context->_type.pointer_level++; }
 // nach typ-bezeichner:
 decl_d:     NAME NS_SEP decl_d                         { context->_var_name.namespaces.push_back(*$1); delete $1; }
 |           NAME decl_end                              { context->_var_name.name = *$1; delete $1; context->_decl_end = $2; }
+|           K_OPERATOR decl_operator_end               { }
 ;
 
 /*decl:       atype var_name decl_end                             { context->decl($1, $2, $3); }
@@ -182,6 +184,9 @@ decl_d:     NAME NS_SEP decl_d                         { context->_var_name.name
 location_mod:   INLINE
 |               EXTERN
 |               STATIC
+;
+
+decl_operator_end:  '[' ']' parameter_list func_decl_end
 ;
 
 decl_end:       array_decl decl_end2            { $$ = $2; $$->_array_decl = $1; }

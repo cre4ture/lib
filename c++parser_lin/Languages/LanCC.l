@@ -75,6 +75,7 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n\r]
 <INITIAL>"class"            { return CLASS; }
 <INITIAL>"enum"             { return K_ENUM; }
 <INITIAL>"typedef"          { return K_TYPEDEF; }
+<INITIAL>"operator"         { return K_OPERATOR; }
 <INITIAL>"struct"           { return STRUCT; }
 <INITIAL>"private"          { return PRIVATE; }
 <INITIAL>"public"           { return PUBLIC; }
