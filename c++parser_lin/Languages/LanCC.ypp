@@ -61,6 +61,7 @@
 
 %token <_int> ZAHL
 %token <txt> NAME PP_INCLUDE
+%token <txt> DQUOTE_TEXT SQUOTE_TEXT
 
 // Andi
 %token ADD SUB MUL DIV END
@@ -285,6 +286,8 @@ exprD:              exprE                           { $$ = $1; }
 
 exprE:              '(' exprA ')'               { $$ = $2; }
 |                   ZAHL                        { $$ = new expr_constant_int($1); }
+|                   DQUOTE_TEXT                 { $$ = new expr_constant_int(-99); }
+|                   SQUOTE_TEXT                 { $$ = new expr_constant_int(-98); }
 |                   '&' exprE                   { $$ = new expr_addr_op($2); }
 |                   symbol_expr                 { $$ = $1; }
 ;

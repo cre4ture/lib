@@ -41,7 +41,7 @@ pp_define           #define
 pp_define_name      [a-zA-Z_][a-zA-Z_0-9]{0,98}
 pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
 
-%x comm inline pp_incl pp_def BLOCK
+%x comm inline pp_incl pp_def BLOCK squote dquote
 %%
 
 {pp_include}    { BEGIN pp_incl; }
@@ -51,6 +51,16 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
                                 BEGIN INITIAL;
                                 return PP_INCLUDE;
                             }
+"\""            { yymore(); BEGIN(dquote); }
+<dquote>"\\\""  { yymore(); }
+<dquote>"\""    { BEGIN(INITIAL); yylval->txt = new std::string(yytext); return DQUOTE_TEXT; }
+<dquote>"\n"    { yyextra->yy_error("newline in quotated text not allowed!"); }
+<dquote>.       { yymore(); }
+"'"             { yymore(); BEGIN(squote); }
+<squote>"\\'"   { yymore(); }
+<squote>"'"     { BEGIN(INITIAL); yylval->txt = new std::string(yytext); return SQUOTE_TEXT; }
+<squote>"\n"    { yyextra->yy_error("newline in quotated text not allowed!"); }
+<squote>.       { yymore(); }
 
 {pp_define}     { BEGIN pp_def; }
 <pp_def>"\n"                { BEGIN INITIAL; }
@@ -60,6 +70,7 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
 <INITIAL>"::"               { return NS_SEP; }
 <INITIAL>"namespace"        { return NAMESPACE; }
 <INITIAL>"class"            { return CLASS; }
+<INITIAL>"enum"             { return K_ENUM; }
 <INITIAL>"struct"           { return STRUCT; }
 <INITIAL>"private"          { return PRIVATE; }
 <INITIAL>"public"           { return PUBLIC; }
@@ -67,7 +78,7 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n]
 <INITIAL>"virtual"          { return VIRTUAL; }
 <INITIAL>"static"           { return STATIC; }
 <INITIAL>"const"            { return CONST; }
-<INITIAL>"{"                { BEGIN(BLOCK); yyextra->level = 1; return BLOCK_START; }
+<INITIAL>"{"                { BEGIN(BLOCK); yyextra->level = 1; yylval->_int = yyextra->getLineNo(); return BLOCK_START; }
 <BLOCK>[^{}]+    { yymore(); }
 <BLOCK>"{"       { yyextra->level++; yymore(); }
 <BLOCK>"}"                       {
