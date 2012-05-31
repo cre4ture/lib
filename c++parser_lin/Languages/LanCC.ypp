@@ -105,7 +105,7 @@
 %type <_symbol_expr> symbol_expr
 %type <_expr_list> expr_list
 
-%token funcDef PUBLIC PRIVATE PROTECTED CLASS NAMESPACE STRUCT NS_SEP K_ENUM
+%token funcDef PUBLIC PRIVATE PROTECTED CLASS NAMESPACE STRUCT NS_SEP K_ENUM K_TEMPLATE K_TYPENAME
 %token <_int> BLOCK_START /* line number of block-start */
 %token <txt> BLOCK_END
 
@@ -137,9 +137,9 @@ c_blocklist:  c_blocklist c_block
 ;
 
 c_block:    visibility_decl
-|           class_decl
+|           template_decl_pos class_decl
 |			enum_decl
-|           c_decl
+|           template_decl_pos c_decl
 ;
 
 visibility_decl:    PUBLIC ':'
@@ -238,6 +238,7 @@ enum_decl:          K_ENUM NAME BLOCK_START BLOCK_END ';' { delete $2; delete $4
 
 atype:	a_none_pointer_type
 |       atype '*'                                       { $$ = $1; $$->pointer_level++; }
+|       atype '*' CONST                                 { $$ = $1; $$->pointer_level++; }
 |       atype '&'                                       { $$ = $1; $$->is_reference = true; }
 ;
 
@@ -251,9 +252,22 @@ a_cpp_type: NAME                                        { $$ = new atype(); $$->
 |           NS_SEP a_none_pointer_type                  { $$ = $2; $$->namespaces.push_back(""); }
 ;
 
-template_param_list:                                    { $$ = new atype_list(); }
+template_param_list:   /* nix */                        { $$ = new atype_list(); }
 |                   atype                               { $$ = new atype_list(); $$->push_back($1); }
 |                   template_param_list ',' atype       { $$ = $1; $$->push_back($3); }
+;
+
+template_decl_pos:  /* nix */
+|                   K_TEMPLATE '<' template_decl_param_list '>'
+;
+
+template_decl_param_list:   template_decl_param
+|                           template_decl_param_list template_decl_param
+;
+
+template_decl_param:        CLASS NAME
+|                           K_TYPENAME NAME
+|                           atype NAME
 ;
 
 exprA:
