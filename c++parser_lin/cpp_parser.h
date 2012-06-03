@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <map>
+#include <set>
 
 class cpp_parser
 {
@@ -11,13 +12,23 @@ private:
     std::string workdir;
 
 public:
+    std::set<std::string> src_includes;
+    std::set<std::string> lib_includes;
+
     cpp_parser(const std::string& a_workdir);
 
-    void setDefines(std::map<std::string,std::string> a_defines);
+    void setDefines(std::map<std::string,std::string>& a_defines);
+    std::map<std::string,std::string>& getDefines();
+
+    void addIncludePaths(const std::set<std::string>& includes);
+    void addLibSearchPaths(const std::set<std::string>& includes);
+
+    std::string searchInclude(bool is_lib, const std::string& search_filename);
 
     bool parse_stream(std::istream *const input);
-
     bool parse_file(const std::string& filename);
+
+    std::string getWorkdir() { return workdir; }
 };
 
 #endif // CPP_PARSER_H

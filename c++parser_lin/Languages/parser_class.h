@@ -222,6 +222,8 @@ public:
     {}
 };
 
+class cpp_parser;
+
 class LanXX_Context
 {
 private:
@@ -236,13 +238,14 @@ private:
 protected:
     std::string m_namespace;
     int blockstart;
+    cpp_parser* parent;
 
 public:
     void* scanner;
     int level;
 
-    LanXX_Context(creax::threadfifo<code_piece>& a_fifo, int a_line)
-        : fifo(a_fifo)
+    LanXX_Context(creax::threadfifo<code_piece>& a_fifo, int a_line, cpp_parser* a_parent)
+        : fifo(a_fifo), parent(a_parent)
     {
         startline = a_line-1;
         is = NULL;

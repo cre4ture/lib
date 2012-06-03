@@ -24,6 +24,7 @@
 %union {
     int _int;
     std::string *txt;
+    const char* ctxt;
     ast_node_global_def* gDef;
     ast_node_global_defList *gDefList;
     ast_node_statement *stmt;
@@ -110,6 +111,9 @@
 %token <_int> BLOCK_START /* line number of block-start */
 %token <txt> BLOCK_END
 
+%token K_LONG K_INT
+%token K_UNSIGNED
+%type <ctxt> a_build_in_type
 %{
     #include <iostream>
     #include <sstream>
@@ -155,6 +159,7 @@ decl:       location_mod decl_a
 // start typ
 decl_a:     NAME NS_SEP decl_t_go_on            { context->_type.namespaces.push_back(*$1); delete $1; }
 |           NAME decl_c                         { context->_type.name = *$1; delete $1; }
+|           a_build_in_type decl_c              { context->_type.name = $1; }
 ;
 
 decl_t_go_on:   NAME NS_SEP decl_t_go_on                    { context->_type.namespaces.push_back(*$1); delete $1; }
@@ -213,6 +218,7 @@ parameter_list_intern:      param_decl                              { $$ = new p
 ;
 
 param_decl:     var_decl                        { $$ = $1; }
+|               var_decl '=' exprA              { $$ = $1; }
 ;
 
 var_decl:       atype var_name                  { $$ = new var_decl(); $$->_atype = $1; $$->_var_name = $2; }
@@ -295,6 +301,13 @@ atype:	typename_pos a_none_pointer_type                { $$ = $2; }
 |       atype '&'                                       { $$ = $1; $$->is_reference = true; }
 ;
 
+a_build_in_type:    K_LONG              { $$ = "long"; }
+|                   K_LONG K_LONG       { $$ = "long long"; }
+|                   K_INT               { $$ = "int"; }
+|                   K_UNSIGNED          { $$ = "unsigned"; }
+|                   K_UNSIGNED K_LONG   { $$ = "unsigned long"; }
+|                   K_UNSIGNED K_INT    { $$ = "unsigned int"; }
+;
 a_none_pointer_type: a_cpp_type
 |                    CONST a_cpp_type                   { $$ = $2; }
 ;
@@ -307,6 +320,7 @@ a_cpp_type: NAME                                        { $$ = new atype(); $$->
 |           NAME '<' template_param_list '>'            { $$ = new atype(); $$->name = *$1; delete $1; $$->template_params = $3; }
 |           NAME NS_SEP a_none_pointer_type             { $$ = $3; $$->namespaces.push_back(*$1); delete $1; }
 |           NS_SEP a_none_pointer_type                  { $$ = $2; $$->namespaces.push_back(""); }
+|           a_build_in_type                             { $$ = new atype(); $$->name = $1; }
 ;
 
 template_param_list:   /* nix */                        { $$ = new atype_list(); }
@@ -353,6 +367,7 @@ exprC:              exprC '*' exprD         { $$ = new expr_op2("*", $1, $3); }
 
 exprD:              exprE                           { $$ = $1; }
 |                   exprD ARROW_RIGHT symbol_expr   { $$ = new expr_addr_op($3); }
+|                   exprD '.' symbol_expr           { $$ = new expr_addr_op($3); }
 ;
 
 exprE:              '(' exprA ')'               { $$ = $2; }

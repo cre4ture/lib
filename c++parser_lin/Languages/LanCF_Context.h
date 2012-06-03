@@ -28,9 +28,6 @@ private:
     // tmp parser data
     std::string c_name;
 
-    // workingdir: (used with #include)
-    std::string workdir;
-
     // for decl
 public:
     var_name _var_name;
@@ -61,10 +58,9 @@ public:
     int parser_result;
     int level;
 
-    LanCF_Context(creax::threadfifo<code_piece>& a_fifo, int a_line, const std::string& a_namespace, const std::string& a_workdir)
-        : LanXX_Context(a_fifo, a_line),
-          m_namespace(a_namespace),
-          workdir(a_workdir)
+    LanCF_Context(creax::threadfifo<code_piece>& a_fifo, int a_line, const std::string& a_namespace, cpp_parser* a_parent)
+        : LanXX_Context(a_fifo, a_line, a_parent),
+          m_namespace(a_namespace)
 	{
 		init_scanner();
         wurzel = NULL;
@@ -96,7 +92,7 @@ public:
         creax::threadfifo<code_piece> fifo;
         fifo.push_data(code_piece(block_code, blockstart));
         fifo.close_fifo();
-        LanCF_Context tmp(fifo, blockstart, name, workdir);
+        LanCF_Context tmp(fifo, blockstart, name, parent);
         LanCF_parse(&tmp);
     }
 
@@ -157,18 +153,25 @@ public:
     void include(std::string filename)
     {
         std::cout << "#include " << filename << std::endl;
-        cpp_parser parser(workdir);
         switch (filename[0])
         {
         case '<':
+            filename = filename.substr(1,filename.size()-2);
+            filename = parent->searchInclude(true, filename);
             return; // TODO
             break;
         case '"':
             filename = filename.substr(1,filename.size()-2);
+            filename = parent->searchInclude(false, filename);
             break;
         default:
             throw std::runtime_error("include: expected \" or < before filename!");
         }
+
+        cpp_parser parser(extractFilepath(filename));
+        parser.setDefines(parent->getDefines());
+        parser.addIncludePaths(parent->src_includes);
+        parser.addLibSearchPaths(parent->lib_includes);
 
         std::cout << "include file \"" << filename << "\" ++++++++++++++++++++++++++++++++++++++++++++++++ " << std::endl;
         bool result = parser.parse_file(filename);
@@ -179,7 +182,7 @@ public:
 
             throw std::runtime_error("failed parsing include...");
         }
-
+        parent->setDefines(parser.getDefines());
         std::cout << "returned from file \"" << filename << "\" ------------------------------------------------ " << std::endl;
     }
 

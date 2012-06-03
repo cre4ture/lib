@@ -7,6 +7,19 @@
 namespace creax
 {
 
+    inline bool fileexists(const std::string& filename)
+    {
+        int mfd;
+        mfd = open(filename.c_str(), O_RDONLY);
+        if (mfd == -1)
+            return false;
+        else
+        {
+            close(mfd);
+            return true;
+        }
+    }
+
     class fd
     {
     private:
