@@ -13,6 +13,13 @@
 class LanCC_Context;
 int LanCC_parse(LanCC_Context*);
 
+enum visibility_t
+{
+    vis_private,
+    vis_protected,
+    vis_public
+};
+
 class LanCC_Context: public LanXX_Context
 {
 private:
@@ -44,6 +51,10 @@ public:
     ast_node_define_depencies* dependencies;
     int parser_result;
     int level;
+    bool decl_virtual;
+    bool decl_static;
+    // current visibility while parsing
+    visibility_t visibility;
 
     LanCC_Context(creax::threadfifo<code_piece>& a_fifo, int a_line, const std::string& a_namespace, cpp_parser* a_parent)
         : LanXX_Context(a_fifo, a_line, a_parent), m_namespace(a_namespace)
@@ -54,6 +65,7 @@ public:
         symbContext = NULL;
         beginNewSymbContext();
         m_namespace = a_namespace;
+        visibility = vis_private;
 	}
 
     virtual ~LanCC_Context()
@@ -83,6 +95,14 @@ public:
     void c_destructor(const std::string& name, parameter_list* pl, func_decl_end* fe)
     {
         std::cout << "c_destructor: ~" << name << "()" << std::endl;
+    }
+
+    void c_operator(atype* t, decl_operator_end* oe)
+    {
+        std::cout << "c_operator: ";
+        t->fancy(std::cout);
+        std::cout << oe->name << "(";
+        std::cout << ")" << std::endl;
     }
 
     // Defined in LanCC.l

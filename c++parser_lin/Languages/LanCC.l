@@ -72,6 +72,9 @@ pp_define_comp      {pp_define_name}[ ][^\n]*[\n\r]
 <INITIAL>"unsigned"         { return K_UNSIGNED; }
 <INITIAL>"int"              { return K_INT; }
 
+<INITIAL>">>"               { return K_SHIFT_RIGHT; }
+<INITIAL>"<<"               { return K_SHIFT_LEFT; }
+
 <INITIAL>"->"               { return ARROW_RIGHT; }
 <INITIAL>"::"               { return NS_SEP; }
 <INITIAL>"template"         { return K_TEMPLATE; }
