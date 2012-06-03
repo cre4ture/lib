@@ -203,6 +203,7 @@ var_decl:       atype var_name                  { $$ = new var_decl(); $$->_atyp
 
 var_name:       NAME                            { $$ = new var_name(); $$->name = *$1; delete $1; };
 |               NAME array_decl                 { $$ = new var_name(); $$->name = *$1; delete $1; };
+|               '(' '*' NAME ')' parameter_list { $$ = new var_name(); $$->name = *$3; delete $3; }; // TODO
 ;
 
 array_decl:     array_dim_decl                  { $$ = new array_decl($1); }
