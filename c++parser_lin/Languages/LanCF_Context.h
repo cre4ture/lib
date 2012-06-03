@@ -152,23 +152,27 @@ public:
         is_dtor = false;
     }
 
-    void include(std::string filename)
+    void include(std::string _filename)
     {
-        std::cout << "#include " << filename << std::endl;
-        switch (filename[0])
+        std::string filename;
+
+        std::cout << "#include " << _filename << std::endl;
+        switch (_filename[0])
         {
         case '<':
-            filename = filename.substr(1,filename.size()-2);
+            filename = _filename.substr(1,_filename.size()-2);
             filename = parent->searchInclude(true, filename);
-            return; // TODO
             break;
         case '"':
-            filename = filename.substr(1,filename.size()-2);
+            filename = _filename.substr(1,_filename.size()-2);
             filename = parent->searchInclude(false, filename);
             break;
         default:
             throw std::runtime_error("include: expected \" or < before filename!");
         }
+
+        if (filename.length() == 0)
+            throw std::runtime_error("include file not found: " + _filename);
 
         cpp_parser parser(extractFilepath(filename));
         parser.setDefines(parent->getDefines());

@@ -1,5 +1,6 @@
 %{
 #include <string>
+#include "LanAB_Context.h"
 %}
 
 %pure-parser
@@ -12,17 +13,27 @@
 
 %union
 {
-	int integer;
+    int _int;
 	std::string* text;
+    condition* _condition;
+    std::vector<condition*>* _condition_vec;
 }
 
 %token <text> TEXT NAME K_IDENT
 %token ERR
 %token IFDEF IFNDEF INCLUDE ENDLINE ENDIF ELSE MACRO_END
 
-%token <text> MACRO_BEGIN K_PARAM K_DEFINE K_DEFINE_VALUE K_DEFINE_VALUE_ENDLINE K_DEFINE_VALUE_ESC_ENDLINE
+%token <text> MACRO_BEGIN K_PARAM K_DEFINE K_DEFINE_VALUE K_DEFINE_VALUE_ENDLINE K_DEFINE_VALUE_ESC_ENDLINE K_UNDEF
 
 %type <text> a_define_value define_value
+
+%token CMD_IF K_IF_END K_DEFINED OP_AND OP_OR OP_GE OP_SE OP_EQ CMD_ELIF
+%type <_condition> condition conditionA
+%type <_condition_vec> condition_list
+%token <text> K_NUMBER K_NUMBER_L
+
+%token CMD_ERROR K_MESSAGE_START
+%token <text> K_MESSAGE_END
 
 %{
     #include <iostream>
@@ -68,7 +79,13 @@ line:
             context->endline();
             delete $2;
 		}
-	| IFNDEF NAME ENDLINE
+    | K_UNDEF NAME ENDLINE
+        {
+            context->undef(*$2);
+            context->endline();
+            delete $2;
+        }
+    | IFNDEF NAME ENDLINE
 		{
             context->if_n_def(*$2);
             context->endline();
@@ -96,7 +113,20 @@ line:
             delete $1;
             delete $4;
 	    }
-	;
+    | CMD_IF condition K_IF_END
+        {
+            context->if_condition($2);
+        }
+    | CMD_ELIF condition K_IF_END
+        {
+            context->elif_condition($2);
+        }
+    | CMD_ERROR K_MESSAGE_START K_MESSAGE_END
+        {
+            context->error(*$3);
+            delete $3;
+        }
+    ;
 
 param_list: /* nix */
       | K_PARAM
@@ -109,4 +139,29 @@ define_value: a_define_value                    { $$ = $1; }
 a_define_value:   K_DEFINE_VALUE_ENDLINE        { $$ = $1; (*$$) = $$->substr(0, $$->size()-1); context->define_line_count++; }
       |           K_DEFINE_VALUE_ESC_ENDLINE    { $$ = $1; (*$$) = $$->substr(0, $$->size()-2); context->define_line_count++; }
       ;
+
+condition:  conditionA OP_OR condition          { $$ = new condition(cot_or, $1, $3); }
+      |     conditionA OP_AND condition         { $$ = new condition(cot_and, $1, $3); }
+      |     conditionA OP_SE condition          { $$ = new condition(cot_se, $1, $3); }
+      |     conditionA OP_GE condition          { $$ = new condition(cot_ge, $1, $3); }
+      |     conditionA OP_EQ condition          { $$ = new condition(cot_eq, $1, $3); }
+      |     conditionA '>' condition            { $$ = new condition(cot_gt, $1, $3); }
+      |     conditionA '<' condition            { $$ = new condition(cot_st, $1, $3); }
+      |     conditionA '+' condition            { $$ = new condition(cot_add, $1, $3); }
+      |     conditionA '-' condition            { $$ = new condition(cot_sub, $1, $3); }
+      |     conditionA                          { $$ = $1; }
+      ;
+
+conditionA: NAME                                { $$ = new condition(cot_variable, *$1); delete $1; }
+      |     NAME '(' condition_list ')'         { $$ = new condition(cot_macro, *$1, $3); delete $1; }
+      |     K_NUMBER                            { $$ = new condition(cot_const, *$1); delete $1; }
+      |     K_NUMBER_L                          { $$ = new condition(cot_const, *$1); delete $1; }
+      |     '(' condition ')'                   { $$ = $2; }
+      |     '!' conditionA                      { $$ = new condition(cot_not, $2); }
+      |     K_DEFINED NAME                      { $$ = new condition(cot_defined, *$2); delete $2; }
+      |     K_DEFINED '(' NAME ')'              { $$ = new condition(cot_defined, *$3); delete $3; }
+      ;
+
+condition_list: condition                       { $$ = new std::vector<condition*>(); $$->push_back($1); }
+      |         condition_list ',' condition    { $$ = $1; $$->push_back($3); }
 

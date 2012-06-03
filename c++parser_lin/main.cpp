@@ -51,6 +51,18 @@ void parseDefines(std::map<std::string, std::string>& defines, mefu::ParamParser
 
 int main(int argc, char *argv [])
 {
+    std::string libs = "/usr/include/c++/4.4/"
+            ":/usr/include/c++/4.4/i486-linux-gnu/"
+            ":/usr/include/c++/4.4/backward/"
+            ":/usr/local/include/"
+            ":/usr/lib/gcc/i486-linux-gnu/4.4.5/include/"
+            ":/usr/lib/gcc/i486-linux-gnu/4.4.5/include-fixed/"
+            ":/usr/include/";
+    std::vector<std::string> lib_dirs;
+
+    mefu::readStringListFromString(libs, lib_dirs, ':');
+
+
     mefu::ParamParser parser(argc, argv);
     std::ostream* new_output;
     int result = 0;
@@ -75,6 +87,7 @@ int main(int argc, char *argv [])
 
 
         cpp_parser cpp(extractFilepath(in_file));
+        cpp.addLibSearchPaths(lib_dirs);
         cpp.setDefines(defines);
         if (!cpp.parse_file(in_file))
             result = -1;

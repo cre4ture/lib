@@ -83,7 +83,12 @@ void cpp_parser::addIncludePaths(const std::set<std::string>& includes)
     src_includes.insert(includes.begin(), includes.end());
 }
 
-void cpp_parser::addLibSearchPaths(const std::set<std::string>& includes)
+void cpp_parser::addLibSearchPaths(const std::set<std::string> &includes)
+{
+    lib_includes.insert(includes.begin(), includes.end());
+}
+
+void cpp_parser::addLibSearchPaths(const std::vector<std::string> &includes)
 {
     lib_includes.insert(includes.begin(), includes.end());
 }
@@ -170,39 +175,48 @@ bool cpp_parser::parse_stream(std::istream * const new_input)
 #else
     commentFilterThreadRoutine(&lanComment_context);
 
-#define PRINT_STAGE_DATA(TEXT)
-//#define PRINT_STAGE_DATA(TEXT) TEXT
-
-    PRINT_STAGE_DATA(std::cout << "12 ------------------------------------------------------------------" << std::endl);
-
+    if (lanComment_context.result == 0)
     {
-        text_type buff;
-        while (stage1_2.pop_data(buff))
+
+    #define PRINT_STAGE_DATA(TEXT)
+    //#define PRINT_STAGE_DATA(TEXT) TEXT
+
+        PRINT_STAGE_DATA(std::cout << "12 ------------------------------------------------------------------" << std::endl);
+
         {
-            PRINT_STAGE_DATA(std::cout << buff.lines << ": " << buff.text << std::endl);
-            stage1_2a.push_data(buff);
+            text_type buff;
+            while (stage1_2.pop_data(buff))
+            {
+                PRINT_STAGE_DATA(std::cout << buff.lines << ": " << buff.text << std::endl);
+                stage1_2a.push_data(buff);
+            }
+            stage1_2a.close_fifo();
         }
-        stage1_2a.close_fifo();
+
+        preprocessorThreadRoutine(&lanAB_context);
+
+        if (lanAB_context.preprocessor_result == 0)
+        {
+
+            PRINT_STAGE_DATA(std::cout << "23 ------------------------------------------------------------------" << std::endl);
+
+            {
+                code_piece buff;
+                while (stage2_3.pop_data(buff))
+                {
+                    PRINT_STAGE_DATA(std::cout << buff.line << ": " << buff.code << std::endl);
+                    stage2_3a.push_data(buff);
+                }
+                stage2_3a.close_fifo();
+            }
+
+            PRINT_STAGE_DATA(std::cout << "end -----------------------------------------------------------------" << std::endl);
+
+            //parserThreadRoutine(&lanCDcont);
+            blockParserThreadRoutine(&lanCFcont);
+        }
     }
 
-    preprocessorThreadRoutine(&lanAB_context);
-
-    PRINT_STAGE_DATA(std::cout << "23 ------------------------------------------------------------------" << std::endl);
-
-    {
-        code_piece buff;
-        while (stage2_3.pop_data(buff))
-        {
-            PRINT_STAGE_DATA(std::cout << buff.line << ": " << buff.code << std::endl);
-            stage2_3a.push_data(buff);
-        }
-        stage2_3a.close_fifo();
-    }
-
-    PRINT_STAGE_DATA(std::cout << "end -----------------------------------------------------------------" << std::endl);
-
-    //parserThreadRoutine(&lanCDcont);
-    blockParserThreadRoutine(&lanCFcont);
 #endif
 
     lanAB_context.defines.saveDefines(defines);
