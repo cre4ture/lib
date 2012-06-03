@@ -11,6 +11,45 @@
 
 #include "basic_types.h"
 
+#include "ParamParser.h"
+
+enum condition_type
+{
+    cot_defined,
+    cot_variable,
+    cot_macro,
+    cot_const,
+    cot_add,
+    cot_sub,
+    cot_not,
+    cot_and,
+    cot_or,
+    cot_eq,
+    cot_gt,
+    cot_st,
+    cot_ge,
+    cot_se
+};
+
+class condition
+{
+public:
+    std::string name;
+    condition_type type;
+public:
+    std::vector<condition*> prms;
+
+    condition(condition_type _type, std::string _name, std::vector<condition*>* _prms = NULL)
+        : name(_name), type(_type)
+    { if (_prms != NULL) prms.assign(_prms->begin(), _prms->end()); }
+    condition(condition_type _type, condition* _child1)
+        : name(""), type(_type)
+    { prms.push_back(_child1); }
+    condition(condition_type _type, condition* _child1, condition* _child2)
+        : name(""), type(_type)
+    { prms.push_back(_child1); prms.push_back(_child2); }
+};
+
 class definelist
 {
 private:
@@ -77,6 +116,42 @@ public:
 
 };
 
+inline int readIntFromString(const char* str, const char* trim_start = " \t\n\r")
+{
+    // skip all chars from ignore at begining of string
+    while ((str[0] != 0) && (strchr(trim_start, str[0]) != NULL)) str++;
+
+    // sign?
+    bool negative;
+    switch (str[0])
+    {
+    case '-':
+        negative = true;
+        str++;
+        break;
+    case '+':
+        negative = false;
+        str++;
+        break;
+    }
+
+    // buffer number:
+    std::string tmp;
+    for (char c = str++[0]; c != 0; c = str++[0])
+    {
+       if ((c >= '0') && (c <= '9'))
+       {
+           tmp += c;
+       }
+       else
+       {
+           break;
+       }
+    }
+
+    return atoi(tmp.c_str()) * (negative ? -1 : 1);
+}
+
 class LanAB_Context
 {
 public:
@@ -88,6 +163,7 @@ public:
     definelist defines;
     int level_on;
     int level_off;
+    std::vector<int> if_level_stack;
 
     int startline;
     int additional_lines;
@@ -110,7 +186,7 @@ public:
         startline = a_startline-1;
         additional_lines = 0;
         define_line_count = 0;
-	}
+    }
 
     void setCDContext(LanCD_Context* a_context)
     {
@@ -183,8 +259,15 @@ public:
         }
     }
 
+    void undef(const std::string& name)
+    {
+        defines.unsetDefine(name);
+    }
+
     void if_def(const std::string& name, bool not_def = false)
     {
+        if_level_stack.push_back(level_on + level_off);
+
         if (level_off > 0)
         {
             level_off++;
@@ -219,26 +302,99 @@ public:
         }
         else if (level_off == 1)
         {
-            level_off = 0;
+            level_off = 0; // --
             level_on++;
         }
         else // level_off == 0
         {
             level_on--;
-            level_off = 1;
+            level_off = 1; // ++
         }
     }
 
     void end_if()
     {
+        while ((level_on + level_off) > (*if_level_stack.rbegin()))
+        {
+            if (level_off > 0)
+            {
+                level_off--;
+            }
+            else
+            {
+                level_on--;
+            }
+        }
+
+        if_level_stack.pop_back();
+    }
+
+    void if_condition(condition* cond, bool from_elif = false)
+    {
+        if (!from_elif)
+            if_level_stack.push_back(level_on + level_off);
+
         if (level_off > 0)
         {
-            level_off--;
+            level_off++;
         }
         else
         {
-            level_on--;
+            int result = evaluate_condition(cond);
+            if (result != 0)
+            {
+                level_on++;
+            }
+            else
+            {
+                level_off++;
+            }
         }
+    }
+
+    void elif_condition(condition* cond)
+    {
+        else_if();
+        if_condition(cond, true);
+    }
+
+    int evaluate_condition(condition* cond)
+    {
+        switch (cond->type)
+        {
+        case cot_defined:
+            return defines.isSet(cond->name);
+        case cot_variable:
+            {
+                std::string value;
+                if (defines.getValue(cond->name, value))
+                {
+                    return readIntFromString(value.c_str());
+                }
+                return 0;
+            }
+        case cot_macro: return false; // TODO: implement macro feature!
+        case cot_const: return readIntFromString(cond->name.c_str());
+
+        case cot_add: return evaluate_condition(cond->prms[0]) +  evaluate_condition(cond->prms[1]);
+        case cot_sub: return evaluate_condition(cond->prms[0]) -  evaluate_condition(cond->prms[1]);
+        case cot_not: return ! evaluate_condition(cond->prms[0]);
+        case cot_and: return evaluate_condition(cond->prms[0]) && evaluate_condition(cond->prms[1]);
+        case cot_or:  return evaluate_condition(cond->prms[0]) || evaluate_condition(cond->prms[1]);
+        case cot_eq:  return evaluate_condition(cond->prms[0]) == evaluate_condition(cond->prms[1]);
+        case cot_gt:  return evaluate_condition(cond->prms[0]) >  evaluate_condition(cond->prms[1]);
+        case cot_st:  return evaluate_condition(cond->prms[0]) <  evaluate_condition(cond->prms[1]);
+        case cot_ge:  return evaluate_condition(cond->prms[0]) >= evaluate_condition(cond->prms[1]);
+        case cot_se:  return evaluate_condition(cond->prms[0]) <= evaluate_condition(cond->prms[1]);
+        default:
+            throw std::runtime_error("internal error: unknown preprocessor condition!");
+        }
+    }
+
+    void error(std::string message)
+    {
+        message = "user code error: " + message;
+        this->yy_error(message.c_str());
     }
 
     void yy_input(char* buf, int& result, const int max_size, const int eof_result)
@@ -289,9 +445,11 @@ public:
 
     void yy_error(const char* err)
     {
-        std::cerr << "preproc line:" << startline + getLineNo()
-         << ",\"" << getYYtext()
-         << "\", msg: " << err << std::endl;
+        std::ostringstream ostr;
+        ostr << "preproc line:" << startline + getLineNo()
+             << ",\"" << getYYtext()
+             << "\", msg: " << err << std::endl;
+        throw std::runtime_error(ostr.str());
     }
 
     // Defined in LanAB.l

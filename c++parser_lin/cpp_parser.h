@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <set>
+#include <vector>
 
 class cpp_parser
 {
@@ -21,7 +22,8 @@ public:
     std::map<std::string,std::string>& getDefines();
 
     void addIncludePaths(const std::set<std::string>& includes);
-    void addLibSearchPaths(const std::set<std::string>& includes);
+    void addLibSearchPaths(const std::set<std::string> &includes);
+    void addLibSearchPaths(const std::vector<std::string> &includes);
 
     std::string searchInclude(bool is_lib, const std::string& search_filename);
 
