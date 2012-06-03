@@ -6,10 +6,14 @@
 ads
 asd*/
 
+#include "test.h"
+
 void abcd(int c)
 {
 xxxxxxx
 }
+
+#include "test.h"
 
 namespace creax {
 

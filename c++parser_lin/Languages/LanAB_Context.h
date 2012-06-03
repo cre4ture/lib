@@ -65,9 +65,14 @@ public:
         return getValue(name, value);
     }
 
-    void loadDefines(std::map<std::string, std::string> map)
+    void loadDefines(const std::map<std::string, std::string>& map)
     {
         defines.insert(map.begin(), map.end());
+    }
+
+    void saveDefines(std::map<std::string, std::string>& map)
+    {
+        map.insert(defines.begin(), defines.end());
     }
 
 };

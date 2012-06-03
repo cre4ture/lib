@@ -205,6 +205,8 @@ bool cpp_parser::parse_stream(std::istream * const new_input)
     blockParserThreadRoutine(&lanCFcont);
 #endif
 
+    lanAB_context.defines.saveDefines(defines);
+
     bool result = (lanComment_context.result == 0);
     result &= (lanAB_context.preprocessor_result == 0);
     result &= (lanCFcont.parser_result == 0);
