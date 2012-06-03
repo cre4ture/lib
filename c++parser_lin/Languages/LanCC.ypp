@@ -23,6 +23,7 @@
 
 %union {
     int _int;
+    bool _bool;
     std::string *txt;
     const char* ctxt;
     ast_node_global_def* gDef;
@@ -47,8 +48,8 @@
     var_decl* _var_decl;
     var_name* _var_name;
     array_decl* _array_decl;
-    SymbolVar* varSym;
-    SymbolFunc* funcSym;
+    decl_operator_end* _decl_operator_end;
+    code_block* _code_block;
 
     exprA* _exprA;
     exprB* _exprB;
@@ -96,7 +97,13 @@
 %type <_var_name> var_name
 %type <_exprA> array_size array_dim_decl
 %type <_array_decl> array_decl
+%type <_decl_operator_end> decl_operator_end
+%type <_code_block> code_block
 
+// class-specific:
+%type <_bool> const_opt
+
+// expressions
 %type <_exprA> exprA
 %type <_exprB> exprB
 %type <_exprC> exprC
@@ -115,6 +122,8 @@
 %token K_LONG K_INT
 %token K_UNSIGNED
 %type <ctxt> a_build_in_type
+
+%token K_SHIFT_LEFT K_SHIFT_RIGHT
 
 %{
     #include <iostream>
@@ -136,39 +145,39 @@
 
 %%
 
-class_block:      c_blocklist
+class_block:      blocklist
 ;
 
-c_blocklist:  c_blocklist c_block
+blocklist:  blocklist block
 |           /* empty */
 ;
 
-c_block:    template_decl_pos class_decl
+block:    template_decl_pos class_decl
 |           template_decl_pos c_decl
 |           enum_decl
 |           typedef_decl
 |           visibility_decl
 ;
 
-visibility_decl:    PUBLIC ':'
-|                   PROTECTED ':'
-|                   PRIVATE ':'
+visibility_decl:    PUBLIC ':'              { context->visibility = vis_public; }
+|                   PROTECTED ':'           { context->visibility = vis_protected; }
+|                   PRIVATE ':'             { context->visibility = vis_private; }
 ;
 
-decl_mod:   /* nix */
-|           STATIC
-|           VIRTUAL
+decl_mod:   /* nix */                       { context->decl_virtual = false; context->decl_static = false; }
+|           STATIC                          { context->decl_virtual = false; context->decl_static = true; }
+|           VIRTUAL                         { context->decl_virtual = true;  context->decl_static = false; }
 ;
 
 c_decl:     decl_mod '~' NAME parameter_list func_decl_end          { context->c_destructor(*$3, $4, $5); delete $3; }
 |           decl_mod atype parameter_list func_decl_end             { context->c_constructor($2, $3, $4); }
 |           decl_mod atype NAME decl_end                            { context->c_decl($2, *$3, $4); delete $3; }
-|           decl_mod atype K_OPERATOR decl_operator_end             { }
+|           decl_mod atype K_OPERATOR decl_operator_end             { context->c_operator($2, $4); }
 ;
 
-decl_operator_end:  '[' ']' parameter_list func_decl_end
-|                   '<' '<' parameter_list func_decl_end
-|                   '>' '>' parameter_list func_decl_end
+decl_operator_end:  '[' ']' parameter_list func_decl_end            { $$ = new decl_operator_end("[]", $3, $4); }
+|                   K_SHIFT_LEFT parameter_list func_decl_end       { $$ = new decl_operator_end("<<", $2, $3); }
+|                   K_SHIFT_RIGHT parameter_list func_decl_end      { $$ = new decl_operator_end(">>", $2, $3); }
 ;
 
 decl_end:       array_decl decl_end2            { $$ = $2; $$->_array_decl = $1; }
@@ -180,8 +189,8 @@ decl_end2:  ';'                                 { $$ = new decl_end(); }
 |           parameter_list func_decl_end        { $$ = new decl_end(); $$->_parameter_list = $1; $$->_func_decl_end = $2; }
 ;
 
-init_assignment:    BLOCK_START BLOCK_END       { $$ = new init_assignment(); }
-|                   exprA                       { $$ = new init_assignment(); delete $1; }
+init_assignment:    code_block                  { $$ = new init_assignment(NULL, $1); }
+|                   exprA                       { $$ = new init_assignment($1, NULL); }
 ;
 
 parameter_list:     '(' parameter_list_intern ')'   { $$ = $2; }
@@ -215,13 +224,17 @@ array_size:     exprA                           { $$ = $1; }
 |               /* nix */                       { $$ = NULL; }
 ;
 
-func_decl_end:  ';'                                             { $$ = new func_decl_end(); }
-|               CONST ';'                                       { $$ = new func_decl_end(); }
-|               '=' ZAHL ';'                                    { $$ = new func_decl_end(); }
-|               ':' c_initialise_list BLOCK_START BLOCK_END     { $$ = new func_decl_end(); }
-|               BLOCK_START BLOCK_END                           { $$ = new func_decl_end(); }
-|               CONST BLOCK_START BLOCK_END                     { $$ = new func_decl_end(); }
+func_decl_end:  const_opt ';'                               { $$ = new func_decl_end($1, NULL); }
+|               const_opt '=' ZAHL ';'                      { $$ = new func_decl_end($1, NULL); $$->setInitVal($3); }
+|               const_opt ':' c_initialise_list code_block  { $$ = new func_decl_end($1, $4); } // TODO
+|               const_opt code_block                        { $$ = new func_decl_end($1, $2); }
 ;
+
+const_opt:      /* nix */       { $$ = false; }
+|               CONST           { $$ = true; }
+;
+
+code_block:   BLOCK_START BLOCK_END                         { $$ = new code_block($1, *$2); delete $2; }
 
 c_initialise_list:  initialise_item
 |                   c_initialise_list ',' initialise_item
@@ -242,8 +255,7 @@ class_kw:   CLASS       { context->class_kw(false); }
 |           STRUCT      { context->class_kw(true); }
 ;
 
-class_decl_body:    BLOCK_START { context->block_start(); }
-                    BLOCK_END { context->class_decl_body(*$3); delete $3; }
+class_decl_body:            code_block  { context->class_decl_body($1); }
 ;
 
 class_decl_inheritances:    class_decl_inheritances ',' class_decl_inheritance
@@ -256,10 +268,10 @@ class_decl_inheritance: PUBLIC atype     { context->class_inheritance("public", 
 |                       atype            { context->class_inheritance("", "*$1"); }
 ;
 
-enum_decl:          K_ENUM NAME BLOCK_START BLOCK_END ';'   { delete $2; delete $4; }
+enum_decl:          K_ENUM NAME code_block ';'   { delete $2; delete $3; }
 ;
 
-typedef_decl:       K_TYPEDEF atype NAME ';'                { delete $2; delete $3; }
+typedef_decl:       K_TYPEDEF atype NAME ';'            { delete $2; delete $3; }
 
 atype:	typename_pos a_none_pointer_type                { $$ = $2; }
 |       atype '*'                                       { $$ = $1; $$->pointer_level++; }

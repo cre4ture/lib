@@ -8,6 +8,17 @@
 #include <iostream>
 #include <sstream>
 
+class code_block
+{
+public:
+    int start_line;
+    std::string text;
+public:
+    code_block(int _start_line, const std::string& _text)
+        : start_line(_start_line), text(_text)
+    {}
+};
+
 class atype;
 
 typedef std::vector<atype*> atype_list;
@@ -129,9 +140,12 @@ typedef var_decl param_decl;
 class init_assignment
 {
 public:
-
+    exprA* expr;
+    code_block* block;
 public:
-    init_assignment() {}
+    init_assignment(exprA* _expr, code_block* _block)
+        : expr(_expr), block(_block)
+    {}
 };
 
 typedef std::vector<param_decl*> parameter_list;
@@ -140,7 +154,23 @@ typedef parameter_list parameter_list_intern;
 
 class func_decl_end
 {
+public:
+    bool is_const;
+    bool is_abstract;
+    code_block* block;
 
+public:
+    func_decl_end(bool _is_const, code_block* _block)
+        : is_const(_is_const), is_abstract(false), block(_block)
+    {}
+
+    void setInitVal(int value)
+    {
+        if (value == 0)
+            is_abstract = true;
+        else
+            throw std::runtime_error("func_decl_end(): '= 0' expected for abstract function!");
+    }
 };
 
 class decl_end
@@ -222,13 +252,24 @@ public:
     {}
 };
 
+class decl_operator_end
+{
+public:
+    std::string name;
+    parameter_list* params;
+    func_decl_end* func_decl;
+public:
+    decl_operator_end(const char* _name, parameter_list* _params, func_decl_end* _func_decl)
+        : name(_name), params(_params), func_decl(_func_decl)
+    {}
+};
+
 class cpp_parser;
 
 class LanXX_Context
 {
 private:
     creax::stringinput* is;
-    int startline;
     creax::threadfifo<code_piece>& fifo;
 
     // for class
@@ -236,8 +277,8 @@ private:
     std::vector<std::string> inheritance;
 
 protected:
+    int startline;
     std::string m_namespace;
-    int blockstart;
     cpp_parser* parent;
 
 public:
@@ -311,12 +352,7 @@ public:
         inheritance.push_back(type + " " + name);
     }
 
-    void class_decl_body(const std::string& block_code);
-
-    void block_start()
-    {
-        blockstart = startline + getLineNo();
-    }
+    void class_decl_body(code_block* block_code);
 
     void class_decl(const std::string& name, const std::string& block_code);
 

@@ -87,10 +87,12 @@ public:
 		destroy_scanner();
 	}
 
-    void namespace_decl(const std::string& name, const std::string& block_code)
+    void namespace_decl(const std::string& name, code_block* block)
     {
+        int blockstart = startline + block->start_line;
+
         creax::threadfifo<code_piece> fifo;
-        fifo.push_data(code_piece(block_code, blockstart));
+        fifo.push_data(code_piece(block->text, blockstart));
         fifo.close_fifo();
         LanCF_Context tmp(fifo, blockstart, name, parent);
         LanCF_parse(&tmp);
