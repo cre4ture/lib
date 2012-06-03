@@ -4,6 +4,7 @@
 
 #include "creax_threadfifo.h"
 #include "creax_thread.h"
+#include "creax_fd.h"
 
 #include "Languages/LanComment_Context.h"
 #include "Languages/LanAB_Context.h"
@@ -64,11 +65,64 @@ int* blockParserThreadRoutine(LanCF_Context* param)
 cpp_parser::cpp_parser(const std::string &a_workdir)
     : workdir(a_workdir)
 {
+    src_includes.insert(a_workdir);
 }
 
-void cpp_parser::setDefines(std::map<std::string,std::string> a_defines)
+void cpp_parser::setDefines(std::map<std::string,std::string>& a_defines)
 {
     defines = a_defines;
+}
+
+std::map<std::string,std::string>& cpp_parser::getDefines()
+{
+    return defines;
+}
+
+void cpp_parser::addIncludePaths(const std::set<std::string>& includes)
+{
+    src_includes.insert(includes.begin(), includes.end());
+}
+
+void cpp_parser::addLibSearchPaths(const std::set<std::string>& includes)
+{
+    lib_includes.insert(includes.begin(), includes.end());
+}
+
+std::string findFileInDirs(const std::set<std::string>& dirs, const std::string filename)
+{
+    std::string result = "";
+    for (std::set<std::string>::const_iterator i = dirs.begin(); i != dirs.end(); i++)
+    {
+        if (creax::fileexists((*i) + filename))
+        {
+            result = (*i);
+            break;
+        }
+    }
+    return result;
+}
+
+std::string cpp_parser::searchInclude(bool is_lib, const std::string &search_filename)
+{
+    if (isAbsolutePath(search_filename))
+        return search_filename;
+
+    if (is_lib)
+    {
+        std::string dir = findFileInDirs(lib_includes, search_filename);
+        if (dir.length() != 0)
+        {
+            return dir + search_filename;
+        }
+    }
+
+    std::string dir = findFileInDirs(src_includes, search_filename);
+    if (dir.length() != 0)
+    {
+        return dir + search_filename;
+    }
+
+    return "";
 }
 
 bool cpp_parser::parse_stream(std::istream * const new_input)
@@ -87,7 +141,7 @@ bool cpp_parser::parse_stream(std::istream * const new_input)
     // stage 2
     LanAB_Context lanAB_context(stage1_2a, 1, stage2_3);
     // stage 3
-    LanCF_Context lanCFcont(stage2_3a, 1, "", workdir);
+    LanCF_Context lanCFcont(stage2_3a, 1, "", this);
 #else
     // stage 1
     LanComment_Context lanComment_context(*new_input, stage1_2);
@@ -160,18 +214,7 @@ bool cpp_parser::parse_stream(std::istream * const new_input)
 
 bool cpp_parser::parse_file(const std::string &filename)
 {
-    std::string abs_file;
-
-    if (isAbsolutePath(filename))
-    {
-        abs_file = filename;
-    }
-    else
-    {
-        abs_file = workdir + filename;
-    }
-
-    std::ifstream new_input(abs_file.c_str());
+    std::ifstream new_input(filename.c_str());
 
     if (!new_input.is_open())
     {

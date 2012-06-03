@@ -14,7 +14,7 @@ void LanXX_Context::class_decl_body(const std::string& block_code)
     creax::threadfifo<code_piece> fifo;
     fifo.push_data(code_piece(block_code, blockstart));
     fifo.close_fifo();
-    LanCC_Context tmp(fifo, blockstart, c_name);
+    LanCC_Context tmp(fifo, blockstart, c_name, parent);
     LanCC_parse(&tmp);
 }
 

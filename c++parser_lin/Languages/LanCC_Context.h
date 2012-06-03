@@ -45,8 +45,8 @@ public:
     int parser_result;
     int level;
 
-    LanCC_Context(creax::threadfifo<code_piece>& a_fifo, int a_line, const std::string& a_namespace)
-        : LanXX_Context(a_fifo, a_line), m_namespace(a_namespace)
+    LanCC_Context(creax::threadfifo<code_piece>& a_fifo, int a_line, const std::string& a_namespace, cpp_parser* a_parent)
+        : LanXX_Context(a_fifo, a_line, a_parent), m_namespace(a_namespace)
 	{
         init_scanner();
         wurzel = NULL;
