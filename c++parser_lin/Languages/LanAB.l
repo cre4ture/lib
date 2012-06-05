@@ -28,7 +28,11 @@ some_number     [+-]?[0-9]+[a-zA-Z]*
 const_num       [+-]?[0-9]+
 const_num_l     [+-]?[0-9]+[L]
 
-%x CMD DEFINE_NAME MACRO_PARAMS DEFINE_VALUE COND MESSAGE_START MESSAGE
+filename        [a-zA-Z0-9_\-/.]+
+
+/* whitespaces */
+
+%x CMD DEFINE_NAME MACRO_PARAMS DEFINE_VALUE COND MESSAGE_START MESSAGE INCLUDE_FN
 
 %%
 
@@ -46,14 +50,16 @@ const_num_l     [+-]?[0-9]+[L]
 <CMD>"undef"        CREAD("UNDEF");  return K_UNDEF;
 <CMD>"ifndef"       CREAD("IFNDEF"); return IFNDEF;
 <CMD>"else"         CREAD("ELSE");   return ELSE;
-<CMD>"endif"        CREAD("ENDIF");  return ENDIF;
-<CMD>"include"[ ]*  CREAD("INCLUDE; CMD END"); yymore(); BEGIN(INITIAL);
-<CMD>"define"[ ]*   CREAD("START DEFINE"); BEGIN(DEFINE_NAME);
+<CMD>"endif"        CREAD("ENDIF");  return ENDIF; /* <CMD>"include"[ ]*  CREAD("INCLUDE; CMD END"); yymore(); BEGIN(INITIAL); */
+<CMD>"include"[ \t]*  CREAD("INCLUDE"); BEGIN(INCLUDE_FN); return K_INCLUDE;
+<CMD>"define"[ \t]*   CREAD("START DEFINE"); BEGIN(DEFINE_NAME);
  <DEFINE_NAME>{macro_begin}     CREAD("macro_begin"); yylval->text = new std::string(yytext); BEGIN(MACRO_PARAMS); return MACRO_BEGIN;
  <DEFINE_NAME>{identifier}      CREAD("simple define"); yylval->text = new std::string(yytext); BEGIN(DEFINE_VALUE); return K_DEFINE;
      <MACRO_PARAMS>","              CREAD("NEXT_PARAM"); return ',';
      <MACRO_PARAMS>{identifier}     CREAD("MACRO_PARAM"); yylval->text = new std::string(yytext); return K_PARAM;
      <MACRO_PARAMS>")"              CREAD("MACRO_END"); BEGIN(DEFINE_VALUE); return MACRO_END;
+     <MACRO_PARAMS>" "              /* ignore whitespace */
+     <MACRO_PARAMS>"\t"             /* ignore whitespace */
  <DEFINE_VALUE>.                CREAD("yymore()"); yymore();
  <DEFINE_VALUE>"\\"\n           CREAD("K_DEFINE_VALUE_ENDLINE"); yylval->text = new std::string(yytext); return K_DEFINE_VALUE_ESC_ENDLINE;
  <DEFINE_VALUE>\n               CREAD("K_DEFINE_VALUE"); yylval->text = new std::string(yytext); BEGIN(INITIAL); return K_DEFINE_VALUE_ENDLINE;
@@ -69,6 +75,7 @@ const_num_l     [+-]?[0-9]+[L]
 <COND>"<="          CREAD("&&"); return OP_SE;
 <COND>"=="          CREAD("&&"); return OP_EQ;
 <COND>[ ]+          { /* ignore whitespace */ }
+<COND>[\t]+         { /* ignore whitespace */ }
 <COND>{identifier}  CREAD("NAME"); yylval->text = new std::string(yytext); return NAME;
 <COND>{const_num}   CREAD("NAME"); yylval->text = new std::string(yytext); return K_NUMBER;
 <COND>{const_num_l} CREAD("NAME"); yylval->text = new std::string(yytext); return K_NUMBER_L;
@@ -78,10 +85,17 @@ const_num_l     [+-]?[0-9]+[L]
 
 <MESSAGE_START>"\"" BEGIN(MESSAGE); return K_MESSAGE_START;
 <MESSAGE_START>" "  /* ignore whitespace */
+<MESSAGE_START>"\t" /* ignore whitespace */
 <MESSAGE_START>.    return yytext[0];
 <MESSAGE>"\""       BEGIN(INITIAL); yylval->text = new std::string(yytext); return K_MESSAGE_END;
 <MESSAGE>"\n"       throw std::runtime_error("preprocessor error message must end with \" in same line!");
 <MESSAGE>.          yymore();
+
+<INCLUDE_FN>{filename} yylval->text = new std::string(yytext); return K_FILENAME;
+<INCLUDE_FN>"\n"       BEGIN(INITIAL); return ENDLINE;
+<INCLUDE_FN>" "        /* ignore whitespace */
+<INCLUDE_FN>\t         /* ignore whitespace */
+<INCLUDE_FN>.          return yytext[0];
 %%
 
 std::string LanAB_Context::getYYtext()

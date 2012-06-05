@@ -175,7 +175,7 @@ public:
             throw std::runtime_error("include file not found: " + _filename);
 
         cpp_parser parser(extractFilepath(filename));
-        parser.setDefines(parent->getDefines());
+        //parser.setDefines(parent->getDefines());
         parser.addIncludePaths(parent->src_includes);
         parser.addLibSearchPaths(parent->lib_includes);
 
@@ -188,7 +188,7 @@ public:
 
             throw std::runtime_error("failed parsing include...");
         }
-        parent->setDefines(parser.getDefines());
+        //parent->setDefines(parser.getDefines());
         std::cout << "returned from file \"" << filename << "\" ------------------------------------------------ " << std::endl;
     }
 
