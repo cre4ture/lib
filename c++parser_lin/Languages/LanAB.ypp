@@ -32,8 +32,8 @@
 %type <_condition_vec> condition_list
 %token <text> K_NUMBER K_NUMBER_L
 
-%token CMD_ERROR K_MESSAGE_START
-%token <text> K_MESSAGE_END
+%token CMD_ERROR K_MESSAGE_START K_INCLUDE
+%token <text> K_MESSAGE_END K_FILENAME
 
 %{
     #include <iostream>
@@ -68,6 +68,18 @@ line:
             context->text(*$1);
 		    delete $1;
 		}
+    | K_INCLUDE '"' K_FILENAME '"' ENDLINE
+        {
+            context->endline();
+            context->include(false, *$3);
+            delete $3;
+        }
+    | K_INCLUDE '<' K_FILENAME '>' ENDLINE
+        {
+            context->endline();
+            context->include(true, *$3);
+            delete $3;
+        }
     | K_IDENT
         {
             context->ident(*$1);

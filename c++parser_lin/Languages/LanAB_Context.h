@@ -13,6 +13,8 @@
 
 #include "ParamParser.h"
 
+#include "cpp_parser.h"
+
 enum condition_type
 {
     cot_defined,
@@ -48,72 +50,6 @@ public:
     condition(condition_type _type, condition* _child1, condition* _child2)
         : name(""), type(_type)
     { prms.push_back(_child1); prms.push_back(_child2); }
-};
-
-class definelist
-{
-private:
-    std::map<std::string, std::string> defines;
-    std::map<std::string, int> depends;
-
-public:
-
-    void saveDependencies(ast_node_define_depencies* dependencies)
-    {
-        for (std::map<std::string, int>::iterator i = depends.begin();
-             i != depends.end(); i++)
-        {
-            if (i->second > 0)
-            {
-                std::string value;
-                bool isset = getValue(i->first, value);
-                dependencies->addChild(new ast_node_define_depencie(i->first, value, isset));
-            }
-        }
-    }
-
-    void addDependency(const std::string& define)
-    {
-        depends[define]++;
-    }
-
-    void setDefine(const std::string& name, const std::string& value)
-    {
-        defines[name] = value;
-    }
-
-    void unsetDefine(const std::string& name)
-    {
-        defines.erase(name);
-    }
-
-    bool getValue(const std::string name, std::string& value)
-    {
-        std::map<std::string, std::string>::iterator i = defines.find(name);
-        if (i != defines.end())
-        {
-            value = i->second;
-            return true;
-        }
-        return false;
-    }
-
-    bool isSet(const std::string name)
-    {
-        std::string value;
-        return getValue(name, value);
-    }
-
-    void loadDefines(const std::map<std::string, std::string>& map)
-    {
-        defines.insert(map.begin(), map.end());
-    }
-
-    void saveDefines(std::map<std::string, std::string>& map)
-    {
-        map.insert(defines.begin(), defines.end());
-    }
-
 };
 
 inline int readIntFromString(const char* str, const char* trim_start = " \t\n\r")
@@ -160,7 +96,10 @@ public:
     int preprocessor_result;
     std::istringstream* is;
 
-    definelist defines;
+private:
+    definelist& defines;
+
+public:
     int level_on;
     int level_off;
     std::vector<int> if_level_stack;
@@ -176,9 +115,19 @@ public:
 
     LanCD_Context* cdcontext;
 
+    cpp_parser* parent;
+
 public:
-    LanAB_Context(creax::threadfifo<text_type>& a_input_fifo, int a_startline, creax::threadfifo<code_piece>& a_output_fifo)
-        : is(NULL), input_fifo(a_input_fifo), output_fifo(a_output_fifo), cdcontext(NULL)
+    LanAB_Context(creax::threadfifo<text_type>& a_input_fifo,
+                  int a_startline,
+                  creax::threadfifo<code_piece>& a_output_fifo,
+                  cpp_parser* _parent)
+        : is(NULL),
+          input_fifo(a_input_fifo),
+          output_fifo(a_output_fifo),
+          cdcontext(NULL),
+          parent(_parent),
+          defines(_parent->defines)
 	{
 		init_scanner();
         level_on = 0;
@@ -231,6 +180,8 @@ public:
 
     void define(const std::string& name, const std::string& value)
     {
+        if (level_off > 0) return;
+
         defines.setDefine(name, value);
         std::string replacement;
         for (int i = 0; i < define_line_count; i++)
@@ -261,6 +212,8 @@ public:
 
     void undef(const std::string& name)
     {
+        if (level_off > 0) return;
+
         defines.unsetDefine(name);
     }
 
@@ -393,6 +346,8 @@ public:
 
     void error(std::string message)
     {
+        if (level_off > 0) return;
+
         message = "user code error: " + message;
         this->yy_error(message.c_str());
     }
@@ -440,6 +395,26 @@ public:
                 delete is;
                 is = NULL;
             }
+        }
+    }
+
+    void include(bool is_lib, std::string filename)
+    {
+        if (level_off > 0) return;
+
+        std::cout << "include: " << filename << std::endl;
+        std::string full = parent->searchInclude(is_lib, filename);
+        std::ifstream input(full.c_str());
+        if (!input.is_open())
+            throw std::runtime_error("include file not found: " + filename);
+        try
+        {
+            parent->preprocessor(&input, output_fifo);
+        }
+        catch (...)
+        {
+            std::cerr << "error in file " << filename << " included from line " << startline + getLineNo() << std::endl;
+            throw;
         }
     }
 

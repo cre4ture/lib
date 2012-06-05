@@ -68,14 +68,14 @@ cpp_parser::cpp_parser(const std::string &a_workdir)
     src_includes.insert(a_workdir);
 }
 
-void cpp_parser::setDefines(std::map<std::string,std::string>& a_defines)
+void cpp_parser::setDefines(const std::map<std::string,std::string>& a_defines)
 {
-    defines = a_defines;
+    defines.loadDefines(a_defines);
 }
 
-std::map<std::string,std::string>& cpp_parser::getDefines()
+void cpp_parser::getDefines(std::map<std::string,std::string>& map)
 {
-    return defines;
+    defines.saveDefines(map);
 }
 
 void cpp_parser::addIncludePaths(const std::set<std::string>& includes)
@@ -130,6 +130,19 @@ std::string cpp_parser::searchInclude(bool is_lib, const std::string &search_fil
     return "";
 }
 
+void cpp_parser::preprocessor(std::istream *const input, creax::threadfifo<code_piece> output_fifo)
+{
+    creax::threadfifo<text_type> tmp;
+    // stage 1
+    LanComment_Context lanComment_context(*input, tmp);
+    // stage 2
+    LanAB_Context lanAB_context(tmp, 1, output_fifo, this);
+
+    LanComment_parse(&lanComment_context);
+    tmp.close_fifo();
+    LanAB_parse(&lanAB_context);
+}
+
 bool cpp_parser::parse_stream(std::istream * const new_input)
 {
     creax::threadfifo<text_type> stage1_2;
@@ -144,7 +157,8 @@ bool cpp_parser::parse_stream(std::istream * const new_input)
     // stage 1
     LanComment_Context lanComment_context(*new_input, stage1_2);
     // stage 2
-    LanAB_Context lanAB_context(stage1_2a, 1, stage2_3);
+    LanAB_Context lanAB_context(stage1_2a, 1, stage2_3, this);
+
     // stage 3
     LanCF_Context lanCFcont(stage2_3a, 1, "", this);
 #else
@@ -157,10 +171,7 @@ bool cpp_parser::parse_stream(std::istream * const new_input)
 #endif
 
     //lanAB_context.setCDContext(&lanCDcont);
-    lanAB_context.defines.loadDefines(defines);
-
     lanCFcont.dependencies = new ast_node_define_depencies(NULL);
-    lanAB_context.defines.saveDependencies(lanCFcont.dependencies);
 
 //#define USE_THREADS
 
@@ -218,8 +229,6 @@ bool cpp_parser::parse_stream(std::istream * const new_input)
     }
 
 #endif
-
-    lanAB_context.defines.saveDefines(defines);
 
     bool result = (lanComment_context.result == 0);
     result &= (lanAB_context.preprocessor_result == 0);
