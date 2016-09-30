@@ -34,7 +34,7 @@ type
     function LoadFromStream(AStream: TStream): Boolean;
     procedure SaveToStream(AStream: TStream);
     procedure ReadClipbrd;
-    procedure WriteClipbrd;
+    procedure WriteClipbrd(useStoredIDs: boolean);
     constructor Create;
     destructor Destroy; override;
     procedure Clear;
@@ -205,7 +205,6 @@ begin
 {$endif}
 end;
 
-
 procedure SaveClipboardtoFile(Filename, Description, PlugInName, ogame_domain: String;
   UserUniName: String);
 
@@ -332,9 +331,14 @@ end;
 
 procedure TClipbrdCopy.ReadClipbrd;
 var i, ID, size: integer;
+{$ifdef UNICODE}
+    s: array[byte] of WideChar;
+{$else}
     s: array[byte] of AnsiChar;
+{$endif}
     hndl: THandle;
     data: pointer;
+    format_name: AnsiString;
 begin
   Clear;
   ClipBoard.Open;
@@ -343,13 +347,20 @@ begin
     begin
       ID := Clipboard.Formats[i];
       FillChar(s,sizeof(s),0);
+
+{$ifdef UNICODE}
       GetClipboardFormatName(ID,@s,sizeof(s));
+      format_name := UTF8Encode(s);
+{$else}
+      GetClipboardFormatName(ID,@s,sizeof(s));
+      format_name := s;
+{$endif}
 
       hndl := Clipboard.GetAsHandle(ID);
       size := GlobalSize(hndl);
       data := GlobalLock(hndl);
 
-      AddFormat(ID,s,data^,size);
+      AddFormat(ID,format_name,data^,size);
 
       GlobalUnlock(hndl);
     end;
@@ -386,7 +397,7 @@ begin
 
 end;
 
-procedure TClipbrdCopy.WriteClipbrd;
+procedure TClipbrdCopy.WriteClipbrd(useStoredIDs: boolean);
 var i, nID: integer;
     clpb: TClipboardEx;
 begin
@@ -406,7 +417,11 @@ begin
       begin
         Warning('New ID of ' + conv_UTF8(Name) + ': ' + IntToStr(nID) +
           '. The old was: ' + IntToStr(ID) + '.');
-        ID := nID;
+
+        if not useStoredIDs then
+        begin
+          ID := nID;
+        end;
       end;
       clpb.SetBuffer(ID,Data^,Size);
     end;

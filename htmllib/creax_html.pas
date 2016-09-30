@@ -178,6 +178,13 @@ type
     attr_value: string;
     function routine(CurElement: THTMLElement; Data: pointer): Boolean;
   end;
+  //For HTMLFindRoutine_NameContentWithin:
+  THTMLFindRoutine_dataobj_content_within = class
+  public
+    tag_name: string;
+    content_value: string;
+    function routine(CurElement: THTMLElement; Data: pointer): Boolean;
+  end;
   //For HTMLFindRoutine_NameAndClass:
   THTMLFindRoutine_dataobj_find_name_class = class
   public
@@ -229,6 +236,8 @@ function HTMLFindRoutine_NameAttribute(root_tag: THTMLElement; ftag_name,
   ftag_attribute, ftag_attribute_value: string): THTMLElement;
 function HTMLFindRoutine_NameAttribute_Value_Within(root_tag: THTMLElement; ftag_name,
   ftag_attribute, ftag_attribute_value: string): THTMLElement;
+function HTMLFindRoutine_NameContent_Value_Within(root_tag: THTMLElement; ftag_name,
+  ftag_content_value: string): THTMLElement;
 function HTMLFindRoutine_NameAndClass(root_tag: THTMLElement; ftag_name,
   ftag_class: string): THTMLElement;
 
@@ -893,6 +902,20 @@ begin
   end;
 end;
 
+function HTMLFindRoutine_NameContent_Value_Within(root_tag: THTMLElement; ftag_name,
+  ftag_content_value: string): THTMLElement;
+var fdata: THTMLFindRoutine_dataobj_content_within;
+begin
+  fdata := THTMLFindRoutine_dataobj_content_within.Create;
+  try
+    fdata.tag_name := ftag_name;
+    fdata.content_value := ftag_content_value;
+    Result := root_tag.FindTagRoutine({$ifdef lazarus}{@}{$endif}fdata.routine,nil);
+  finally
+    fdata.Free;
+  end;
+end;
+
 function HTMLFindRoutine_NameAndClass(root_tag: THTMLElement; ftag_name,
   ftag_class: string): THTMLElement;
 var fdata: THTMLFindRoutine_dataobj_find_name_class;
@@ -1079,7 +1102,7 @@ begin
     begin
       // check end
       e := i + length(name);
-      if (e > length(str)) or (str[e] in [' ',',']) then
+      if (e > length(str)) or (str[e] in [' ',',',#$A]) then
       begin
         Result := true;
       end;
@@ -1094,6 +1117,26 @@ function THTMLFindRoutine_dataobj_find_name_class.routine(
 begin
   Result := (CurElement.TagName = Self.tag_name)and
             (CurElement.html_isClass(Self.tag_class));
+end;
+
+{ THTMLFindRoutine_dataobj_content_within }
+
+function THTMLFindRoutine_dataobj_content_within.routine(
+  CurElement: THTMLElement; Data: pointer): Boolean;
+var i: integer;
+begin
+  Result := false;
+  if (CurElement.TagName = Self.tag_name) then
+  begin
+    for i := 0 to CurElement.childs.Count-1 do
+    begin
+      if (pos(Self.content_value, CurElement.ChildElements[i].Content) > 0) then
+      begin
+        Result := true;
+        exit;
+      end;
+    end;
+  end;
 end;
 
 end.
