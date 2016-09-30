@@ -18,6 +18,7 @@ type
     namelist: array of string;
     procedure addsubexprname(nr: integer; name: string);
     procedure namedsubexpr(ex: string);
+
   public
     //Use this to access subexpressions by index!
     regexpr: TRegExpr;
@@ -114,9 +115,9 @@ begin
   p := Pos('(',ex);
   while (p > 0) do
   begin
-    pe := PosEx('>',ex,p);
     if ((p = 1)or(ex[p-1] <> '\')) then
     begin
+      pe := PosEx('>',ex,p);
       inc(i);
       if ((copy(ex,p,3) = '(?<')and(pe > 0)) then
       begin
